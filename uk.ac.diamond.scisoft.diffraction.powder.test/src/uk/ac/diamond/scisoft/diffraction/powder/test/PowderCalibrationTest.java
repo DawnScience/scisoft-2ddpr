@@ -19,6 +19,12 @@ import uk.ac.diamond.scisoft.diffraction.powder.CentreFitter;
 import uk.ac.diamond.scisoft.diffraction.powder.ImageFitter;
 import uk.ac.diamond.scisoft.diffraction.powder.LambdaFitter;
 
+/**
+ * Testing of powder diffraction calibration output against the I12 matlab values.
+ * <p>
+ * Ellipse parameters provided by I12
+ * 
+ */
 public class PowderCalibrationTest {
 
 	@Test
@@ -204,7 +210,7 @@ public class PowderCalibrationTest {
 	@Test
 	public void CalibrateTestRun(){
 		//EllipticalROI roi = new EllipticalROI()double major, double minor, double angle, double ptx, double pty;
-		CalibrationStruct st = getCalibrationStruct();
+		CalibrationStruct st = getCalibrationStruct(5);
 		List<List<EllipticalROI>> ellipses =  st.ellipses;
 		List<double[]> allDSpacings = st.dSpacings;
 		
@@ -218,7 +224,7 @@ public class PowderCalibrationTest {
 		
 		CalibrationOutput output = CalibrateEllipses.run(ellipses, allDSpacings,deltad,0.2);
 		
-		assertEquals(4.250447566358648e-02, output.getWavelength(), 0.000001);
+		assertEquals(4.250447566358648e-01, output.getWavelength(), 0.00001);
 		assertEquals(1.050750806712749e+03, output.getBeamCentreX().getDouble(2), 0.00001);
 		assertEquals(1.017214604396353e+03, output.getBeamCentreY().getDouble(2), 0.00001);
 		assertEquals(1.384041774843228e-01, output.getTilt().getDouble(2), 0.000001);
@@ -226,6 +232,23 @@ public class PowderCalibrationTest {
 		assertEquals(4.890426912810556e+02, output.getDistance().getDouble(2), 0.01);
 		
 	}
+	
+	@Test
+	public void CalibrateKnownWavelength() {
+		CalibrationStruct st = getCalibrationStruct(1);
+		List<List<EllipticalROI>> ellipses =  st.ellipses;
+		List<double[]> allDSpacings = st.dSpacings;
+
+		CalibrationOutput output = CalibrateEllipses.runKnownWavelength(ellipses, allDSpacings,0.2,4.250447566358648e-01);
+		
+		assertEquals(4.250447566358648e-01, output.getWavelength(), 0.000001);
+		assertEquals(1.051567822834576e+03, output.getBeamCentreX().getDouble(0), 0.00001);
+		assertEquals(1.017507361310649e+03, output.getBeamCentreY().getDouble(0), 0.00001);
+		assertEquals(1.472049755053897e-01, output.getTilt().getDouble(0), 0.0001);
+		assertEquals(1.274805927288948e+02, output.getTiltAngle().getDouble(0), 0.001);
+		assertEquals(2.890385482880284e+02, output.getDistance().getDouble(0), 0.1);
+	}
+	
 	
 	@Test
 	public void CalibrateTestRunTilted(){
@@ -240,7 +263,7 @@ public class PowderCalibrationTest {
 		
 		CalibrationOutput output = CalibrateEllipses.run(ellipses, allDSpacings,deltad,0.148);
 		
-		assertEquals(1.408202018705987e-02, output.getWavelength(), 0.01);
+		assertEquals(1.408202018705987e-01, output.getWavelength(), 0.01);
 		assertEquals(1.439670961792122e+03, output.getBeamCentreX().getDouble(2), 0.00001);
 		assertEquals(1.444618931598524e+03, output.getBeamCentreY().getDouble(2), 0.00001);
 		assertEquals(6.345158939804580e+00, output.getTilt().getDouble(2), 0.001);
@@ -248,14 +271,14 @@ public class PowderCalibrationTest {
 		assertEquals(9.917933454838078e+02, output.getDistance().getDouble(2), 0.1);
 	}
 	
-	private CalibrationStruct getCalibrationStruct() {
+	private CalibrationStruct getCalibrationStruct(int nRings) {
 		
 		List<List<EllipticalROI>> allEllipses = new ArrayList<List<EllipticalROI>>(5);
 		List<double[]> allDSpacings = new ArrayList<double[]>();
 		
 		
 		try {
-			for (int i = 0; i < 5; i++) {
+			for (int i = 0; i < nRings; i++) {
 				List<EllipticalROI> ellipses = new ArrayList<EllipticalROI>();
 				
 				int max = 4;
@@ -287,38 +310,38 @@ public class PowderCalibrationTest {
 		return st;
 	}
 	
-private CalibrationStruct getCalibrationStructTilted() {
-		
+	private CalibrationStruct getCalibrationStructTilted() {
+
 		List<List<EllipticalROI>> allEllipses = new ArrayList<List<EllipticalROI>>(5);
 		List<double[]> allDSpacings = new ArrayList<double[]>();
-		
-		
+
+
 		try {
 			for (int i = 0; i < 8; i++) {
 				List<EllipticalROI> ellipses = new ArrayList<EllipticalROI>();
-				
+
 				int max = 4;
-				
+
 				if (i < 5) max = 6;
 				if (i == 5) max = 5;
-				
+
 				double[] dspacings = new double[max];
-					
+
 				for (int j = 1; j< 5; j++) {
 					loadEllipse(i,j,j,dspacings,ellipses,".ellipse_t");
 				}
-				
+
 				if (i < 5) {
 					loadEllipse(i,9,5,dspacings,ellipses,".ellipse_t");
 					loadEllipse(i,10,6,dspacings,ellipses,".ellipse_t");
 				}
-				
+
 				if (i == 5) loadEllipse(i,9,5,dspacings,ellipses,".ellipse_t");
-				
+
 				allDSpacings.add(dspacings);
 				allEllipses.add(ellipses);
 			}
-			
+
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -327,8 +350,8 @@ private CalibrationStruct getCalibrationStructTilted() {
 		st.ellipses = allEllipses;
 		st.dSpacings = allDSpacings;
 		return st;
-}
-	
+	}
+
 	private void loadEllipse(int i, int j, int j2, double[] dspacings,List<EllipticalROI> ellipses, String ext) throws Exception{
 		File file = new File(getTestFilePath("0000" + String.valueOf(i)+"_"+ String.valueOf(j)+ext));
 		BufferedReader br = new BufferedReader(new FileReader(file));

@@ -9,9 +9,48 @@ import uk.ac.diamond.scisoft.analysis.dataset.DoubleDataset;
 import uk.ac.diamond.scisoft.analysis.dataset.Maths;
 import uk.ac.diamond.scisoft.analysis.roi.EllipticalROI;
 
+/**
+ * Direct conversion of I12 Matlab calibrateD_forDAWN.m
+ * <p>
+ * Used to calibrate a powder diffraction experiment from a set of ellipse parameters matched
+ * to d-space values
+ * 
+ */
 public class CalibrateEllipses {
 	
-	public static CalibrationOutput run(List<List<EllipticalROI>> allEllipses, List<double[]> allDSpacings, AbstractDataset deltaDistance,double pixel){
+	/**
+	 * Calibrate a set of images at a unknown distance and wavelength, but known delta distance
+	 * <p>
+	 * Returns the wavelength, distances, detector tilts and beam centres for each image
+	 * <p>
+	 * @param allEllipses - list of ellipses for each image
+	 * @param allDSpacings - array of d-spacings for each image
+	 * @param deltaDistance - approximate distances between each image with accurate differences between distances
+	 * @param pixel size in mm
+	 * @param wavelength in angstroms
+	 * @return calibrationOutput
+	 */
+	public static CalibrationOutput run(List<List<EllipticalROI>> allEllipses, List<double[]> allDSpacings, AbstractDataset deltaDistance, double pixel) {
+		return run(allEllipses, allDSpacings, deltaDistance,pixel, -1);
+	}
+	
+	/**
+	 * Calibrate a single image at a known wavelength
+	 * <p>
+	 * Returns distance, detector tilt and beam centre
+	 * <p>
+	 * @param allEllipses - list of ellipses for each image (should only be one image)
+	 * @param allDSpacings - array of d-spacings for each image (should only be one image)
+	 * @param pixel size in mm
+	 * @param wavelength in angstroms
+	 * @return calibrationOutput
+	 */
+	public static CalibrationOutput runKnownWavelength(List<List<EllipticalROI>> allEllipses, List<double[]> allDSpacings,double pixel,double knownWavelength) {
+		AbstractDataset deltaDistance = AbstractDataset.zeros(new int[]{1}, AbstractDataset.FLOAT64);
+		return run(allEllipses, allDSpacings, deltaDistance,pixel, knownWavelength);
+	}
+	
+	private static CalibrationOutput run(List<List<EllipticalROI>> allEllipses, List<double[]> allDSpacings, AbstractDataset deltaDistance,double pixel, double knownWavelength){
 		
 		//double w = 2048, h = 2048;
 		//double pixel = 0.2;
@@ -67,22 +106,30 @@ public class CalibrateEllipses {
 		AbstractDataset allDD = DatasetUtils.concatenate(allD, 0);
 		AbstractDataset allDSinD = DatasetUtils.concatenate(allDSin, 0);
 		
-		AbstractDataset xcen = new DoubleDataset(beamcentres[0].clone(), beamcentres[0].length);
-		AbstractDataset ycen = new DoubleDataset(beamcentres[1].clone(), beamcentres[1].length);
+		double[] out;
+		double wavelength;
+		double distFactor = 0;
 		
-		AbstractDataset hyp  = Maths.hypot(xcen.isubtract(xcen.getDouble(xcen.getSize()-1)),ycen.isubtract(ycen.getDouble(ycen.getSize()-1)));
-		
-		double[] mc = CentreFitter.fit(deltaDistance, hyp);
-		
-		double distFactor = 1/Math.cos(Math.atan(Math.abs(mc[0])));
-		
-		double[] out = LambdaFitter.fit(Maths.multiply(allMajorD, pixel), Maths.multiply(allNormDistD, distFactor), allDD, Maths.multiply(allDSinD, pixel), deltaDistance.getDouble(deltaDistance.getSize()-1), 0.14);
+		if (knownWavelength == -1) {
+			AbstractDataset xcen = new DoubleDataset(beamcentres[0].clone(), beamcentres[0].length);
+			AbstractDataset ycen = new DoubleDataset(beamcentres[1].clone(), beamcentres[1].length);
+			
+			AbstractDataset hyp  = Maths.hypot(xcen.isubtract(xcen.getDouble(xcen.getSize()-1)),ycen.isubtract(ycen.getDouble(ycen.getSize()-1)));
+			
+			double[] mc = CentreFitter.fit(deltaDistance, hyp);
+			
+			distFactor = 1/Math.cos(Math.atan(Math.abs(mc[0])));
+			
+			out = LambdaFitter.fit(Maths.multiply(allMajorD, pixel), Maths.multiply(allNormDistD, distFactor), allDD, Maths.multiply(allDSinD, pixel), deltaDistance.getDouble(deltaDistance.getSize()-1), 0.14);
+			wavelength = out[1];
+		} else {
+			wavelength = knownWavelength;
+			out = LambdaFitter.fit(Maths.multiply(allMajorD, pixel), allDD, Maths.multiply(allDSinD, pixel), deltaDistance.getDouble(deltaDistance.getSize()-1), wavelength);
+		}
 		
 		AbstractDataset tilts = getFittedTilts(out[0], Maths.multiply(normDist, distFactor), dSint,pixel);
 		
 		AbstractDataset distances = Maths.subtract(out[0], Maths.multiply(normDist, distFactor));
-		
-		double wavelength = out[1] / 10;
 		
 		AbstractDataset tiltAngles = getTiltAngles(ellipseParams, mcs);
 		

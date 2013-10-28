@@ -14,12 +14,31 @@ import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.SimplexOptimizer;
 import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
 import uk.ac.diamond.scisoft.analysis.dataset.Maths;
 
+/**
+ * Direct conversion of I12 Matlab fit_image8.m
+ * <p>
+ * Used to find the beam centre from the ellipse major axis length and centre co-ordinates (equations 14 and 16
+ * in J Appl Cryst (2013) 46 1249)
+ */
 public class ImageFitter {
 	
 	private static final double REL_TOL = 1e-10;
 	private static final double ABS_TOL = 1e-10;
 	private static final int MAX_EVAL = 100000;
 	
+	/**
+	 * Uses a NelderMeadSimplex with bounds on the beam centre position. Best initial parameters are
+	 * calculated fitting a range of x-centre values.
+	 * <p>
+	 * Returns a double array containing the x and y positions, the x used to calculate y using the equation fitted earlier
+	 * <p>
+	 * @param major
+	 * @param x
+	 * @param y
+	 * @param line
+	 * @param pixel
+	 * @return mc
+	 */
 	public static double[] fit(final AbstractDataset major, final AbstractDataset x, final AbstractDataset y, final double[] line, double pixel){
 
 		//TODO check same length
