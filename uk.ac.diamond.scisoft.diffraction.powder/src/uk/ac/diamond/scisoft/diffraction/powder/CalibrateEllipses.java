@@ -3,6 +3,9 @@ package uk.ac.diamond.scisoft.diffraction.powder;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
 import uk.ac.diamond.scisoft.analysis.dataset.DatasetUtils;
 import uk.ac.diamond.scisoft.analysis.dataset.DoubleDataset;
@@ -17,6 +20,8 @@ import uk.ac.diamond.scisoft.analysis.roi.EllipticalROI;
  * 
  */
 public class CalibrateEllipses {
+	
+	private final static Logger logger = LoggerFactory.getLogger(CalibrateEllipses.class);
 	
 	/**
 	 * Calibrate a set of images at a unknown distance and wavelength, but known delta distance
@@ -109,6 +114,7 @@ public class CalibrateEllipses {
 		double[] out;
 		double wavelength;
 		double distFactor = 0;
+		AbstractDataset calculatedMajors;
 		
 		if (knownWavelength == -1) {
 			AbstractDataset xcen = new DoubleDataset(beamcentres[0].clone(), beamcentres[0].length);
@@ -122,10 +128,23 @@ public class CalibrateEllipses {
 			
 			out = LambdaFitter.fit(Maths.multiply(allMajorD, pixel), Maths.multiply(allNormDistD, distFactor), allDD, Maths.multiply(allDSinD, pixel), deltaDistance.getDouble(deltaDistance.getSize()-1), 0.14);
 			wavelength = out[1];
+			
+			calculatedMajors = LambdaFitter.calculateMajorAxesfinal(Maths.multiply(allNormDistD, distFactor), allDD, Maths.multiply(allDSinD, pixel), out[0], wavelength);
+			calculatedMajors.imultiply(1/pixel);
+			
 		} else {
 			wavelength = knownWavelength;
 			out = LambdaFitter.fit(Maths.multiply(allMajorD, pixel), allDD, Maths.multiply(allDSinD, pixel), deltaDistance.getDouble(deltaDistance.getSize()-1), wavelength);
+			AbstractDataset d0 = AbstractDataset.zeros(allNormDistD);
+			calculatedMajors = LambdaFitter.calculateMajorAxesfinal(d0, allDD, Maths.multiply(allDSinD, pixel), out[0], wavelength);
+			calculatedMajors.imultiply(1/pixel);
 		}
+		
+		double ssTot = (double)Maths.power(Maths.subtract(allMajorD, allMajorD.mean()),2).sum();
+		double ssRes = (double)Maths.power(Maths.subtract(allMajorD, calculatedMajors),2).sum();
+		double rCoeff = 1 - ssRes/ssTot;
+		
+		logger.debug("R2 value: " + rCoeff);
 		
 		AbstractDataset tilts = getFittedTilts(out[0], Maths.multiply(normDist, distFactor), dSint,pixel);
 		

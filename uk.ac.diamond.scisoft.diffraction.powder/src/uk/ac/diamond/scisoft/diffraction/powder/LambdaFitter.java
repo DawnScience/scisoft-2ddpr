@@ -94,9 +94,14 @@ public class LambdaFitter {
 	
 	private static double calculateResidual(final AbstractDataset major, final AbstractDataset distance, final AbstractDataset dspace,  final AbstractDataset sint, final double dApprox, final double lApprox) {
 		
-		AbstractDataset ddif = Maths.subtract(dApprox, distance);
+		AbstractDataset calcMajor= calculateMajorAxesfinal(distance, dspace, sint, dApprox, lApprox);
+		return major.residual(calcMajor);
+	}
+	
+	public static AbstractDataset calculateMajorAxesfinal(final AbstractDataset distance, final AbstractDataset dspace,  final AbstractDataset sint, final double d0, final double wavelength) {
+		AbstractDataset ddif = Maths.subtract(d0, distance);
 		AbstractDataset ld = Maths.multiply(dspace, 2);
-		ld = Maths.divide(lApprox, ld);
+		ld = Maths.divide(wavelength, ld);
 		ld = Maths.arcsin(ld);
 		ld.imultiply(2);
 		ld = Maths.tan(ld);// tan(2 * asin(lambda./(2 * ddata)))
@@ -114,6 +119,6 @@ public class LambdaFitter {
 		numer.imultiply(ld);
 		numer.imultiply(ddif);
 		
-		return major.residual(numer);
+		return numer;
 	}
 }
