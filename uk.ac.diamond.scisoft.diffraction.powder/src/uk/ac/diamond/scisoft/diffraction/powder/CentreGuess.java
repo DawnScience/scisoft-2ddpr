@@ -3,6 +3,8 @@ package uk.ac.diamond.scisoft.diffraction.powder;
 import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
 import uk.ac.diamond.scisoft.analysis.dataset.DatasetUtils;
 import uk.ac.diamond.scisoft.analysis.dataset.Signal;
+import uk.ac.diamond.scisoft.analysis.dataset.function.Downsample;
+import uk.ac.diamond.scisoft.analysis.dataset.function.DownsampleMode;
 import uk.ac.diamond.scisoft.analysis.fitting.Fitter;
 import uk.ac.diamond.scisoft.analysis.fitting.functions.AFunction;
 
@@ -13,13 +15,11 @@ public class CentreGuess {
 		int downSample = 5;
 		int samFW = 9;
 		int samW = (samFW-1)/2;
-
-		int[] shape = image.getShape();
 		
-		int h = (shape[0]/downSample)*downSample;
-		int w = (shape[0]/downSample)*downSample;
+		Downsample ds = new Downsample(DownsampleMode.MEAN, new int[]{downSample, downSample});
 		
-		AbstractDataset small = image.getSlice(null,new int[] {h,w},new int[] {5,5});
+		AbstractDataset small = ds.value(image).get(0);
+		//AbstractDataset small = image.getSlice(null,new int[] {h,w},new int[] {5,5});
 		
 		small = DatasetUtils.cast(small, AbstractDataset.FLOAT64);
 		

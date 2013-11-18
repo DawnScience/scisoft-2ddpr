@@ -21,7 +21,7 @@ public class EllipseCentreFindingTest {
 			
 			double[] expected = new double[]{ 1387.1, 1361.5};
 			
-			Assert.assertArrayEquals(expected, centre, 0.9);
+			Assert.assertArrayEquals(expected, centre, 2);
 			
 		} catch (Exception e) {
 			Assert.fail(e.getMessage());
