@@ -10,15 +10,17 @@ public class CalibrationOutput {
 	private AbstractDataset tilt;
 	private AbstractDataset tiltAngle;
 	private AbstractDataset distance;
+	private double residual;
 	
 	public CalibrationOutput(double wavelength, AbstractDataset beamCentreX, AbstractDataset beamCentreY,
-			AbstractDataset tilt, AbstractDataset tiltAngle, AbstractDataset distance) {
+			AbstractDataset tilt, AbstractDataset tiltAngle, AbstractDataset distance, double residual) {
 		this.wavelength = wavelength;
 		this.beamCentreX = beamCentreX;
 		this.beamCentreY = beamCentreY;
 		this.tilt = tilt;
 		this.tiltAngle = tiltAngle;
 		this.distance = distance;
+		this.residual = residual;
 	}
 
 	public double getWavelength() {
@@ -43,6 +45,10 @@ public class CalibrationOutput {
 
 	public AbstractDataset getDistance() {
 		return distance;
+	}
+	
+	public double getResidual() {
+		return residual;
 	}
 
 }

@@ -155,7 +155,7 @@ public class CalibrateEllipses {
 		AbstractDataset beamCentreX = new DoubleDataset(beamcentres[0], new int[]{beamcentres[0].length});
 		AbstractDataset beamCentreY = new DoubleDataset(beamcentres[1], new int[]{beamcentres[1].length});
 		
-		return new CalibrationOutput(wavelength, beamCentreX, beamCentreY, tilts, tiltAngles, distances);
+		return new CalibrationOutput(wavelength, beamCentreX, beamCentreY, tilts, tiltAngles, distances,ssRes/ssTot);
 	}
 	
 	private static double calculateApproximateAngle(double x1, double x2, double y1, double y2) {

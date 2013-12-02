@@ -271,6 +271,49 @@ public class PowderCalibrationTest {
 		assertEquals(9.917933454838078e+02, output.getDistance().getDouble(2), 0.1);
 	}
 	
+//	@Test
+//	public void CalibrateTestRunTiltedFixedWavelength(){
+//		CalibrationStruct st = getCalibrationStructTilted();
+//		
+//		List<List<EllipticalROI>> ellipses =  new ArrayList<List<EllipticalROI>>();
+//		List<double[]> allDSpacings = new ArrayList<double[]>();
+//		
+//		ellipses.add(st.ellipses.get(0));
+//		allDSpacings.add(st.dSpacings.get(0));
+//		
+//		
+//		CalibrationOutput output = CalibrateEllipses.runKnownWavelength(ellipses, allDSpacings, 0.148, 1.408202018705987e-01);
+//		
+//		assertEquals(1437.456167355806, output.getBeamCentreX().getDouble(0), 0.00001);
+//		assertEquals(1443.6626304492486, output.getBeamCentreY().getDouble(0), 0.00001);
+//		assertEquals(6.345171501781432, output.getTilt().getDouble(0), 0.2);
+//		assertEquals(-0.5730278231886173, output.getTiltAngle().getDouble(0), 0.001);
+//		assertEquals(591.7734097777318, output.getDistance().getDouble(0), 0.1);
+//	}
+	
+	
+//	@Test
+//	public void CalibrateTestRunTiltedFixedWavelengthLast(){
+//		CalibrationStruct st = getCalibrationStructTilted();
+//		
+//		List<List<EllipticalROI>> ellipses =  new ArrayList<List<EllipticalROI>>();
+//		List<double[]> allDSpacings = new ArrayList<double[]>();
+//		
+//		ellipses.add(st.ellipses.get(7));
+//		allDSpacings.add(st.dSpacings.get(7));
+//		
+//		
+//		//CalibrationOutput output = CalibrateEllipses.run(ellipses, allDSpacings,deltad,0.148);
+//		CalibrationOutput output = CalibrateEllipses.runKnownWavelength(ellipses, allDSpacings, 0.148, 1.408202018705987e-01);
+//		
+//		assertEquals(1442.3815669173396, output.getBeamCentreX().getDouble(0), 0.00001);
+//		assertEquals(1443.6626304492486, output.getBeamCentreY().getDouble(0), 0.00001);
+//		assertEquals(6.3720630054024054, output.getTilt().getDouble(0), 0.2);
+//		assertEquals(-0.2191573440183457, output.getTiltAngle().getDouble(0), 0.001);
+//		assertEquals(1991.7833735729205, output.getDistance().getDouble(0), 0.1);
+//	}
+	
+	
 	private CalibrationStruct getCalibrationStruct(int nRings) {
 		
 		List<List<EllipticalROI>> allEllipses = new ArrayList<List<EllipticalROI>>(5);

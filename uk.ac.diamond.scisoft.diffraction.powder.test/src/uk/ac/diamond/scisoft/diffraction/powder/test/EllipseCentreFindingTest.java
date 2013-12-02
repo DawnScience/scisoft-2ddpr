@@ -23,6 +23,13 @@ public class EllipseCentreFindingTest {
 			
 			Assert.assertArrayEquals(expected, centre, 2);
 			
+			for (int i = 0; i < 10; i++) {
+				image = (AbstractDataset)LoaderFactory.getDataSet(getTestFilePath("centre_pixi_00001.tif"),"image-01",null);
+				double[] centre2 = CentreGuess.guessCentre(image);
+				
+				Assert.assertArrayEquals(centre, centre2, 0.001);
+			}
+			
 		} catch (Exception e) {
 			Assert.fail(e.getMessage());
 		}

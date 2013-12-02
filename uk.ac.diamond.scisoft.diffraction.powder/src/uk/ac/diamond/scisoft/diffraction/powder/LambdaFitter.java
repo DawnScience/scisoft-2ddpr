@@ -20,8 +20,8 @@ import uk.ac.diamond.scisoft.analysis.dataset.Maths;
  */
 public class LambdaFitter {
 
-	private static final double REL_TOL = 1e-10;
-	private static final double ABS_TOL = 1e-10;
+	private static final double REL_TOL = 1e-21;
+	private static final double ABS_TOL = 1e-21;
 	private static final int MAX_EVAL = 100000;
 	
 	/**
