@@ -20,8 +20,8 @@ import uk.ac.diamond.scisoft.analysis.dataset.Maths;
  */
 public class LambdaFitter {
 
-	private static final double REL_TOL = 1e-21;
-	private static final double ABS_TOL = 1e-21;
+	private static final double REL_TOL = 1e-14;
+	private static final double ABS_TOL = 1e-14;
 	private static final int MAX_EVAL = 100000;
 	
 	/**
@@ -118,6 +118,7 @@ public class LambdaFitter {
 		numer.ipower(0.5);
 		numer.imultiply(ld);
 		numer.imultiply(ddif);
+		numer.idivide(denom);
 		
 		return numer;
 	}
