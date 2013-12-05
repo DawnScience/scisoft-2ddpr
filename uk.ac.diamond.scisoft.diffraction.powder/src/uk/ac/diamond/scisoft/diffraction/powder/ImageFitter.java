@@ -22,8 +22,8 @@ import uk.ac.diamond.scisoft.analysis.dataset.Maths;
  */
 public class ImageFitter {
 	
-	private static final double REL_TOL = 1e-10;
-	private static final double ABS_TOL = 1e-10;
+	private static final double REL_TOL = 1e-21;
+	private static final double ABS_TOL = 1e-21;
 	private static final int MAX_EVAL = 100000;
 	
 	/**
@@ -66,7 +66,8 @@ public class ImageFitter {
 			public double value(double[] arg0) {
 				
 				AbstractDataset sqrtxval =  calculateLine(x, y, line, arg0);
-				return major.residual(sqrtxval);
+				double res =  major.residual(sqrtxval);
+				return res;
 			}
 		};
 		

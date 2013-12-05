@@ -16,7 +16,7 @@ public class CentreGuess {
 	public static double[] guessCentre(AbstractDataset image) {
 		
 		int downSample = 5;
-		int samFW = 36;
+		int samFW = 18;
 		int samW = (samFW-1)/2;
 		
 		Downsample ds = new Downsample(DownsampleMode.MEAN, new int[]{downSample, downSample});

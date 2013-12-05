@@ -12,6 +12,8 @@ import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.SimplexOptimizer;
 
 import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
 import uk.ac.diamond.scisoft.analysis.dataset.Maths;
+import uk.ac.diamond.scisoft.analysis.fitting.Fitter;
+import uk.ac.diamond.scisoft.analysis.fitting.functions.Polynomial;
 
 /**
  * Direct conversion of I12 Matlab fit_centres.m
@@ -41,8 +43,20 @@ public class CentreFitter {
 		
 		int last = y.getSize()-1;
 		
-		double m_approx = (y.getDouble(last) - y.getDouble(0)) / (x.getDouble(last) - x.getDouble(0));
+		double m_approx = (y.max().doubleValue() - y.min().doubleValue()) / (x.max().doubleValue() - x.min().doubleValue());
 	    double c_approx = y.getDouble(last) - x.getDouble(last) * m_approx;
+		
+//		double m_approx = (y.getDouble(last) - y.getDouble(0)) / (x.getDouble(last) - x.getDouble(0));
+//	    double c_approx = y.getDouble(last) - x.getDouble(last) * m_approx;
+	    Polynomial poly = null;;
+		try {
+			poly = Fitter.polyFit(new AbstractDataset[]{x}, y, 1e-15, 1);
+			
+			return poly.getParameterValues();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 	    MultivariateOptimizer opt = new SimplexOptimizer(REL_TOL,ABS_TOL);
 	    

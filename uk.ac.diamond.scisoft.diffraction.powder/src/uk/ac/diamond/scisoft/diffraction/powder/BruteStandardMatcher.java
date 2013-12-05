@@ -18,12 +18,12 @@ import uk.ac.diamond.scisoft.analysis.diffraction.DiffractionCrystalEnvironment;
 public class BruteStandardMatcher {
 	
 	private static final double minDistance = 100;
-	private static final double maxDistance = 1200;
+	private static final double maxDistance = 2000;
 	private static final double distanceStep = 2;
 	
 	private static final double defaultWidth = 7;
 	
-	private static final double[] energies = new double[] {10,11, 12,13, 14, 17, 20, 25, 30, 40, 50, 70, 90, 120, 170};
+	private static final double[] energies = new double[] {10,11, 12,13, 14, 17, 20, 25, 30, 40, 50, 70, 90, 120, 150, 170};
 	
 	/**
 	 * Match a radial profile to a set of d-space values, returns a map contain the d-space values as keys and the radius as values
@@ -56,7 +56,7 @@ public class BruteStandardMatcher {
 				AbstractDataset out = Maths.multiply(filter, clean);
 				double ssq = (double)out.sum();
 				
-				//if (en == 13 && dist == 174) ssq = Double.MAX_VALUE;
+				//if (en == 130 && dist == 1790) ssq = Double.MAX_VALUE;
 				
 				if (ssq > bestssq) {
 					bestssq = ssq;
