@@ -463,13 +463,27 @@ public class DiffractionCalibrationView extends ViewPart {
 		goBabyGoButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				Job job = PowderCalibrationUtils.autoFindEllipses(display, plottingSystem, currentData);
+				Job job = null;
+				
+				if (model.size() == 1) {
+					job = PowderCalibrationUtils.autoFindEllipses(display, plottingSystem, currentData);
+				} else {
+					
+					double[] deltaDistance = new double[model.size()];
+					double val = (double)deltaDistSpinner.getSelection();
+					
+					for (int i = 0; i< deltaDistance.length; i++) deltaDistance[i] = val*i;
+					
+					job = PowderCalibrationUtils.autoFindEllipsesMultipleImages(display, plottingSystem, model, currentData, deltaDistance);
+				}
+				
 				job.addJobChangeListener(new JobChangeAdapter() {
 					@Override
 					public void done(IJobChangeEvent event) {
 						display.asyncExec(new Runnable() {
 							@Override
 							public void run() {
+								refreshTable();
 								updateIntegrated(currentData);
 							}
 						});
@@ -491,6 +505,12 @@ public class DiffractionCalibrationView extends ViewPart {
 //				}
 			}
 		});
+		
+		deltaDistSpinner = new Spinner(leftCalibComp, SWT.BORDER);
+		deltaDistSpinner.setMaximum(1000);
+		deltaDistSpinner.setMinimum(0);
+		deltaDistSpinner.setSelection(100);
+		deltaDistSpinner.setLayout(new GridLayout(1, false));
 
 		//calibrantPositioning = new CalibrantPositioningWidget(leftCalibComp, model);
 		createXRayGroup(leftCalibComp);
@@ -511,11 +531,6 @@ public class DiffractionCalibrationView extends ViewPart {
 			logger.error("Could not create controls:" + e);
 		}
 		
-		deltaDistSpinner = new Spinner(calibOptionGroup, SWT.BORDER);
-		deltaDistSpinner.setMaximum(1000);
-		deltaDistSpinner.setMinimum(0);
-		deltaDistSpinner.setSelection(100);
-		deltaDistSpinner.setLayout(new GridLayout(1, false));
 		calibrateImagesButton = new Button(calibOptionGroup, SWT.PUSH);
 		calibrateImagesButton.setText("Run Calibration Process");
 		calibrateImagesButton.setToolTipText("Calibrate detector in chosen images");
@@ -1128,7 +1143,7 @@ public class DiffractionCalibrationView extends ViewPart {
 				DetectorProperties dp = md.getDetector2DProperties();
 				if (dp == null)
 					return null;
-				return String.format("%.2f", dp.getDetectorDistance());
+				return String.format("%.2f", dp.getBeamCentreDistance());
 			} else if (columnIndex == 4) {
 				DetectorProperties dp = md.getDetector2DProperties();
 				if (dp == null)

@@ -24,6 +24,7 @@ import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationStandards;
 import uk.ac.diamond.scisoft.analysis.crystallography.HKL;
 import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
+import uk.ac.diamond.scisoft.analysis.dataset.DoubleDataset;
 import uk.ac.diamond.scisoft.analysis.diffraction.DetectorProperties;
 import uk.ac.diamond.scisoft.analysis.diffraction.DiffractionCrystalEnvironment;
 import uk.ac.diamond.scisoft.analysis.diffraction.PowderRingsUtils;
@@ -299,24 +300,6 @@ public class PowderCalibrationUtils {
 
 				final CalibrationOutput output = CalibrateEllipses.run(allEllipses, allDSpacings,delta,pixelSize);
 				
-//				display.syncExec(new Runnable() {
-//					@Override
-//					public void run() {
-//						DetectorProperties dp = currentData.md.getDetector2DProperties();
-//						
-//						dp.setDetectorDistance(output.getDistance().getDouble(0));
-//						double[] bc = new double[] {output.getBeamCentreX().getDouble(0),output.getBeamCentreY().getDouble(0) };
-//						dp.setBeamCentreCoords(bc);
-//						
-//						dp.setNormalAnglesInDegrees(output.getTilt().getDouble(0)*-1, 0, output.getTiltAngle().getDouble(0)*-1);
-//						currentData.md.getDiffractionCrystalEnvironment().setWavelength(output.getWavelength());
-//
-//						hideFoundRings(plottingSystem);
-//						drawCalibrantRings(currentData.augmenter);
-//					}
-//				});
-				
-
 				display.syncExec(new Runnable() {
 					@Override
 					public void run() {
@@ -505,7 +488,7 @@ public class PowderCalibrationUtils {
 					public void run() {
 						DetectorProperties dp = currentData.md.getDetector2DProperties();
 
-						dp.setDetectorDistance(output.getDistance().getDouble(0));
+						dp.setBeamCentreDistance(output.getDistance().getDouble(0));
 						double[] bc = new double[] {output.getBeamCentreX().getDouble(0),output.getBeamCentreY().getDouble(0) };
 						dp.setBeamCentreCoords(bc);
 
@@ -515,26 +498,7 @@ public class PowderCalibrationUtils {
 						drawCalibrantRings(currentData.augmenter);
 					}
 				});
-				//final List<EllipticalROI> ellipses = PeakFittingEllipseFinder.findEllipses(image, approxCentre);
-				
-//				display.syncExec(new Runnable() {
-//				@Override
-//				public void run() {
-//					int counter = 0;
-//					for (EllipticalROI roi : ellipses) {
-//						IRegion el;
-//						try {
-//							el = RegionUtils.replaceCreateRegion(plottingSystem, "AutoRing " + counter++, RegionType.ELLIPSE);
-//							plottingSystem.addRegion(el);
-//							el.setROI(roi);
-//							el.setMobile(false);
-//						} catch (Exception e) {
-//							// TODO Auto-generated catch block
-//							e.printStackTrace();
-//						}
-//					}
-//				}
-//			});
+
 				return Status.OK_STATUS;
 			};
 		};
@@ -542,115 +506,169 @@ public class PowderCalibrationUtils {
 		return job;
 	}
 	
-	
-//	public static IRunnableWithProgress autoCalibrate(final Display display,
-//			final IPlottingSystem plottingSystem,
-//			final DiffractionTableData currentData) {
-//		
-//		return new IRunnableWithProgress() {
-//			
-//			@Override
-//			public void run(IProgressMonitor monitor) throws InvocationTargetException,
-//					InterruptedException {
-//				
-//				final AbstractDataset image = (AbstractDataset)currentData.image;
-//				IDiffractionMetadata meta = currentData.md;
-//				int[] shape = image.getShape();
-//				monitor.beginTask("Finding approximate centre...", IProgressMonitor.UNKNOWN);
-//				double[] approxCentre = CentreGuess.guessCentre(image);
-//				
-//				double[] farCorner = new double[]{0,0};
-//				if (approxCentre[0] < shape[0]/2.0) farCorner[0] = shape[0];
-//				if (approxCentre[1] < shape[1]/2.0) farCorner[1] = shape[1];
-//				double maxDistance = Math.sqrt(Math.pow(approxCentre[0]-farCorner[0],2)+Math.pow(approxCentre[1]-farCorner[1],2));
-//				SectorROI sector = new SectorROI(approxCentre[0], approxCentre[1], 0, maxDistance, 0, 2*Math.PI);
-//				monitor.beginTask("Integrating image...", IProgressMonitor.UNKNOWN);
-//				AbstractDataset[] profile = ROIProfile.sector(image, null, sector, true, false, false, null, XAxis.PIXEL, false);
-//				
-//				final AbstractDataset y = profile[0];
-//				
-//				for (int i = 0 ; i < CENTRE_MASK_RADIUS ; i++) {
-//					y.set(0, i);
-//				}
-//				
-//				final AbstractDataset x = AbstractDataset.arange(y.getSize(), AbstractDataset.INT32);
-//				
-//				List<HKL> spacings = CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs();
-//				
-//				int max = spacings.size() > MAX_RINGS ? MAX_RINGS : spacings.size();
-//				
-//				double[] dSpace = new double[max];
-//				
-//				for (int i = 0; i < max; i++) dSpace[i] = spacings.get(i).getDNano()*10;
-//				
-//				monitor.beginTask("Matching to standard...", IProgressMonitor.UNKNOWN);
-//				final Map<Double,Double> dSpaceRadiusMap = BruteStandardMatcher.bruteForceMatchStandards(x, y, dSpace, meta.getDetector2DProperties().getHPxSize());
-//				
-//				
-//				final List<EllipticalROI> ellipses = new ArrayList<EllipticalROI>();
-//				
-//				for (int i = 0; i < dSpace.length; i++) {
-//					ellipses.add(new EllipticalROI(dSpaceRadiusMap.get(dSpace[i]), approxCentre[0],approxCentre[1]));
-//				}
-//				
-//				final List<EllipticalROI> foundEllipses = new ArrayList<EllipticalROI>();
-//				monitor.beginTask("Finding ellipses....", IProgressMonitor.UNKNOWN);
-//				IROI roi = null;
-//				double lastMajor = -1;
-//				double lastAspect = -1;
-//				List<Double> dList = new ArrayList<Double>();
-//				int i = 0;
-//				for (int i = 0; i < ellipses.size(); i++) {
-//					
-//					double major = e.getSemiAxis(0);
-//					double delta = lastMajor < 0 ? 0.1*major : 0.2*(major - lastMajor);
-//					if (delta > 50)
-//						delta = 50;
-//					lastMajor = major;
-//
-//					IImageTrace t = DiffractionCalibrationUtils.getImageTrace(plottingSystem);
-//					try {
-//						roi = DiffractionTool.runEllipsePeakFit(monitor, display, plottingSystem, t, e, delta);
-//					} catch (Exception ex) {
-//						logger.debug(ex.getMessage());
-//						roi = null;
-//					} 
-//					
-//					if (roi != null) {
-//						foundEllipses.add((EllipticalROI)roi);
-//						dList.add(dSpace[i]);
-//						lastAspect = roi instanceof EllipticalROI ? ((EllipticalROI) roi).getAspectRatio() : 1.;
-//						DiffractionCalibrationUtils.drawFoundRing(monitor, display, plottingSystem, roi, false);
-//					}
-//
-//				}
-//				
-//				List<List<EllipticalROI>> allEllipses = new ArrayList<List<EllipticalROI>>();
-//				allEllipses.add(foundEllipses);
-//				
-//				double pixelSize = currentData.md.getDetector2DProperties().getHPxSize();
-//				double wavelength = currentData.md.getDiffractionCrystalEnvironment().getWavelength();
-//				
-//				List<double[]> allDSpacings = new ArrayList<double[]>();
-//				double[] dSpaceArray = new double[dList.size()];
-//				
-//				for (int j = 0; j < dList.size();j++) {
-//					dSpaceArray[j] = dList.get(j);
-//				}
-//				
-//				allDSpacings.add(dSpaceArray);
-//				monitor.beginTask("Calibrating...", IProgressMonitor.UNKNOWN);
-//				final CalibrationOutput output = CalibrateEllipses.runKnownWavelength(allEllipses, allDSpacings, pixelSize, wavelength);
-//				
-//				DetectorProperties dp = currentData.md.getDetector2DProperties();
-//
-//				dp.setDetectorDistance(output.getDistance().getDouble(0));
-//				double[] bc = new double[] {output.getBeamCentreX().getDouble(0),output.getBeamCentreY().getDouble(0) };
-//				dp.setBeamCentreCoords(bc);
-//				dp.setNormalAnglesInDegrees(output.getTilt().getDouble(0)*-1, 0, output.getTiltAngle().getDouble(0)*-1);
-//			}
-//		};
-//		
-//	}
-//	
+	public static Job autoFindEllipsesMultipleImages(final Display display,
+			final IPlottingSystem plottingSystem,
+			final List<DiffractionTableData> model,
+			final DiffractionTableData currentData,
+			final double[] deltaDistance) {
+
+		Job job = new Job("Calibrate detector") {
+			@Override
+			protected IStatus run(final IProgressMonitor monitor) {
+				
+				AbstractDataset ddist = new DoubleDataset(deltaDistance, new int[]{deltaDistance.length});
+				
+				List<List<EllipticalROI>> allEllipses = new ArrayList<List<EllipticalROI>>();
+				List<double[]> allDSpacings = new ArrayList<double[]>();
+				
+				for (DiffractionTableData data : model) {
+					
+					plottingSystem.createPlot2D(data.image, null, monitor);
+					
+					final AbstractDataset image = (AbstractDataset)data.image;
+					IDiffractionMetadata meta = data.md;
+					int[] shape = image.getShape();
+					monitor.beginTask("Finding approximate centre...", IProgressMonitor.UNKNOWN);
+					double[] approxCentre = CentreGuess.guessCentre(image);
+					
+					double[] farCorner = new double[]{0,0};
+					if (approxCentre[0] < shape[0]/2.0) farCorner[0] = shape[0];
+					if (approxCentre[1] < shape[1]/2.0) farCorner[1] = shape[1];
+					double maxDistance = Math.sqrt(Math.pow(approxCentre[0]-farCorner[0],2)+Math.pow(approxCentre[1]-farCorner[1],2));
+					SectorROI sector = new SectorROI(approxCentre[0], approxCentre[1], 0, maxDistance, 0, 2*Math.PI);
+					monitor.beginTask("Integrating image...", IProgressMonitor.UNKNOWN);
+					AbstractDataset[] profile = ROIProfile.sector(image, null, sector, true, false, false, null, XAxis.PIXEL, false);
+					if (monitor.isCanceled()) return Status.CANCEL_STATUS;
+					final AbstractDataset y = profile[0];
+					
+					for (int i = 0 ; i < CENTRE_MASK_RADIUS ; i++) {
+						y.set(0, i);
+					}
+					
+					final AbstractDataset x = AbstractDataset.arange(y.getSize(), AbstractDataset.INT32);
+					
+					List<HKL> spacings = CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs();
+					
+					int max = spacings.size() > MAX_RINGS ? MAX_RINGS : spacings.size();
+					
+					double[] dSpace = new double[max];
+					
+					for (int i = 0; i < max; i++) dSpace[i] = spacings.get(i).getDNano()*10;
+					monitor.beginTask("Matching to standard...", IProgressMonitor.UNKNOWN);
+					final Map<Double,Double> dSpaceRadiusMap = BruteStandardMatcher.bruteForceMatchStandards(x, y, dSpace, meta.getDetector2DProperties().getHPxSize());
+					
+					if (monitor.isCanceled()) return Status.CANCEL_STATUS;
+					
+					final List<EllipticalROI> ellipses = new ArrayList<EllipticalROI>();
+					
+					double[] inner = new double[dSpace.length];
+					double[] outer = new double[dSpace.length];
+					
+					for (int i = 0; i < dSpace.length; i++) {
+						//TODO if dSpace == 1;
+						double dVal = dSpaceRadiusMap.get(dSpace[i]);
+						ellipses.add(new EllipticalROI(dVal, approxCentre[0],approxCentre[1]));
+						inner.toString();
+						if (i == 0) {
+							double out = (dSpaceRadiusMap.get(dSpace[i+1]) - dVal)/2;
+							inner[i] = out > 50 ? 50 : out;
+							outer[i] = out > 50 ? 50 : out;
+							
+						} else if (i == dSpace.length -1) {
+							double in = (dVal - dSpaceRadiusMap.get(dSpace[i-1]))/2;
+							inner[i] = in > 50 ? 50 : in;
+							outer[i] = in > 50 ? 50 : in;
+						} else {
+							double in = (dVal - dSpaceRadiusMap.get(dSpace[i-1]))/2;
+							double out = (dSpaceRadiusMap.get(dSpace[i+1]) - dVal)/2;
+							inner[i] = in > 50 ? 50 : in;;
+							outer[i] = out > 50 ? 50 : out;;
+						}
+						
+					}
+					monitor.beginTask("Finding ellipses", IProgressMonitor.UNKNOWN);
+					final List<EllipticalROI> foundEllipses = new ArrayList<EllipticalROI>();
+					if (monitor.isCanceled()) return Status.CANCEL_STATUS;
+					IROI roi = null;
+					double corFact = 0;
+					double lastAspect = 1;
+					double lastAngle = 0;
+					List<Double> dList = new ArrayList<Double>();
+					int i = 0;
+					for (EllipticalROI e : ellipses) {
+						
+						double startSemi = e.getSemiAxis(0);
+						e.setSemiAxis(0, startSemi+corFact);
+						e.setSemiAxis(1, (startSemi+corFact)/lastAspect);
+						e.setAngle(lastAngle);
+						//e.set
+						
+						IImageTrace t = DiffractionCalibrationUtils.getImageTrace(plottingSystem);
+						try {
+							roi = DiffractionTool.runEllipsePeakFit(monitor, display, plottingSystem, t, e, inner[i], outer[i]);
+						} catch (Exception ex) {
+							logger.debug(ex.getMessage());
+							roi = null;
+						} 
+						if (monitor.isCanceled()) return Status.CANCEL_STATUS;
+						if (roi != null) {
+							foundEllipses.add((EllipticalROI)roi);
+							dList.add(dSpace[i]);
+							corFact = ((EllipticalROI)roi).getSemiAxis(0) - startSemi;
+							lastAspect = ((EllipticalROI) roi).getAspectRatio();
+							lastAngle = ((EllipticalROI) roi).getAngle();
+							DiffractionCalibrationUtils.drawFoundRing(monitor, display, plottingSystem, roi, false);
+						}
+						i++;
+					}
+					double[] dSpaceArray = new double[dList.size()];
+					
+					for (int j = 0; j < dList.size();j++) {
+						dSpaceArray[j] = dList.get(j);
+					}
+					
+					allDSpacings.add(dSpaceArray);
+					allEllipses.add(foundEllipses);
+					
+					display.syncExec(new Runnable() {
+						@Override
+						public void run() {
+							hideFoundRings(plottingSystem);
+						}
+					});
+				}
+				
+				double pixelSize = model.get(0).md.getDetector2DProperties().getHPxSize();
+				
+				monitor.beginTask("Calibrating", IProgressMonitor.UNKNOWN);
+				final CalibrationOutput output = CalibrateEllipses.run(allEllipses, allDSpacings,ddist, pixelSize);
+				
+				display.syncExec(new Runnable() {
+					@Override
+					public void run() {
+						int i = 0;
+						plottingSystem.createPlot2D(currentData.image, null, monitor);
+						for (DiffractionTableData data : model) {
+							DetectorProperties dp = data.md.getDetector2DProperties();
+
+							dp.setDetectorDistance(output.getDistance().getDouble(i));
+							double[] bc = new double[] {output.getBeamCentreX().getDouble(i),output.getBeamCentreY().getDouble(i) };
+							dp.setBeamCentreCoords(bc);
+
+							dp.setNormalAnglesInDegrees(output.getTilt().getDouble(i)*-1, 0, output.getTiltAngle().getDouble(i)*-1);
+							data.md.getDiffractionCrystalEnvironment().setWavelength(output.getWavelength());
+							i++;
+						}
+
+						hideFoundRings(plottingSystem);
+						drawCalibrantRings(currentData.augmenter);
+					}
+				});
+
+				return Status.OK_STATUS;
+			};
+		};
+		job.setPriority(Job.SHORT);
+		return job;
+	}
 }
