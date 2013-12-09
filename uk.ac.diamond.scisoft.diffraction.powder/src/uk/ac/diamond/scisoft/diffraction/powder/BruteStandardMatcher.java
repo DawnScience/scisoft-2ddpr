@@ -3,6 +3,9 @@ package uk.ac.diamond.scisoft.diffraction.powder;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
 import uk.ac.diamond.scisoft.analysis.dataset.Maths;
 import uk.ac.diamond.scisoft.analysis.diffraction.DSpacing;
@@ -17,13 +20,15 @@ import uk.ac.diamond.scisoft.analysis.diffraction.DiffractionCrystalEnvironment;
  */
 public class BruteStandardMatcher {
 	
+	private static Logger logger = LoggerFactory.getLogger(BruteStandardMatcher.class);
+	
 	private static final double minDistance = 100;
 	private static final double maxDistance = 2000;
 	private static final double distanceStep = 2;
 	
-	private static final double defaultWidth = 7;
+	private static final double defaultWidth = 5;
 	
-	private static final double[] energies = new double[] {10,11, 12,13, 14, 17, 20, 25, 30, 40, 50, 70, 90, 120, 150, 170};
+	private static final double[] energies = new double[] {10,11,12,13,14,15,17,20,25,30,40,50,70,90,120,150,170};
 	
 	/**
 	 * Match a radial profile to a set of d-space values, returns a map contain the d-space values as keys and the radius as values
@@ -65,6 +70,9 @@ public class BruteStandardMatcher {
 				}
 			}
 		}
+		
+		logger.debug("Guess distance: " + bestValues[1]);
+		logger.debug("Guess energy: " + bestValues[0]);
 		
 		dp.setDetectorDistance(bestValues[1]);
 		ce.setWavelengthFromEnergykeV(bestValues[0]);
@@ -115,15 +123,37 @@ public class BruteStandardMatcher {
 	 */
 	public static AbstractDataset cleanUpData(AbstractDataset radius, AbstractDataset data) {
 		
-		AbstractDataset d = Maths.derivative(radius, data, 7);
-		d = Maths.derivative(radius, data, 7);
-		d.imultiply(-1);
+		return rollingBallBaselineCorrection(data,10);
+	}
+	
+	private static AbstractDataset rollingBallBaselineCorrection(AbstractDataset y, int width) {
 		
-		for (int i = 0; i < d.getSize(); i++) {
-			if (d.getDouble(i) < 0) {
-				d.set(0, i);
-			}
+		AbstractDataset t1 = AbstractDataset.zeros(y);
+		AbstractDataset t2 = AbstractDataset.zeros(y);
+		
+		for (int i = 0 ; i < y.getSize()-1; i++) {
+			int start = (i-width) < 0 ? 0 : (i - width);
+			int end = (i+width) > (y.getSize()-1) ? (y.getSize()-1) : (i+width);
+			double val = y.getSlice(new int[]{start}, new int[]{end}, null).min().doubleValue();
+			t1.set(val, i);
 		}
-		return d;
+		
+		for (int i = 0 ; i < y.getSize()-1; i++) {
+			int start = (i-width) < 0 ? 0 : (i - width);
+			int end = (i+width) > (y.getSize()-1) ? (y.getSize()-1) : (i+width);
+			double val = t1.getSlice(new int[]{start}, new int[]{end}, null).max().doubleValue();
+			t2.set(val, i);
+		}
+		
+		//t1 = AbstractDataset.zeros(y);
+		
+		for (int i = 0 ; i < y.getSize()-1; i++) {
+			int start = (i-width) < 0 ? 0 : (i - width);
+			int end = (i+width) > (y.getSize()-1) ? (y.getSize()-1) : (i+width);
+			double val = (double)t2.getSlice(new int[]{start}, new int[]{end}, null).mean();
+			t1.set(val, i);
+		}
+		
+		return Maths.subtract(y, t1);
 	}
 }
