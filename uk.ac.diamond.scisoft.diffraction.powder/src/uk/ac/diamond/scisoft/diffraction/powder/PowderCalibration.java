@@ -114,8 +114,14 @@ public class PowderCalibration {
 		final List<ResolutionEllipseROI> foundEllipses = new ArrayList<ResolutionEllipseROI>();
 		EllipticalROI roi = null;
 		int i = 0;
+		double corFact = 0;
+		double lastAspect = 1;
+		double lastAngle = 0;
 		for (EllipticalROI e : ellipses) {
-
+			double startSemi = e.getSemiAxis(0);
+			e.setSemiAxis(0, startSemi+corFact);
+			e.setSemiAxis(1, (startSemi+corFact)/lastAspect);
+			e.setAngle(lastAngle);
 
 			try {
 				roi = ellipsePeakFit(image, null, e, inner[i], outer[i]);
@@ -125,6 +131,9 @@ public class PowderCalibration {
 
 			if (roi != null) {
 				foundEllipses.add(new ResolutionEllipseROI(roi, dSpace[i]));
+				corFact = ((EllipticalROI)roi).getSemiAxis(0) - startSemi;
+				lastAspect = ((EllipticalROI) roi).getAspectRatio();
+				lastAngle = ((EllipticalROI) roi).getAngle();
 			}
 			i++;
 		}

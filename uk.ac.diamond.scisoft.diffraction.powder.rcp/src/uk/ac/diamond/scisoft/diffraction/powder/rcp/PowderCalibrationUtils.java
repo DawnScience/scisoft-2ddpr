@@ -451,11 +451,19 @@ public class PowderCalibrationUtils {
 				final List<EllipticalROI> foundEllipses = new ArrayList<EllipticalROI>();
 				if (monitor.isCanceled()) return Status.CANCEL_STATUS;
 				IROI roi = null;
-
+				double corFact = 0;
+				double lastAspect = 1;
+				double lastAngle = 0;
 				List<Double> dList = new ArrayList<Double>();
 				int i = 0;
 				for (EllipticalROI e : ellipses) {
-						
+					
+					double startSemi = e.getSemiAxis(0);
+					e.setSemiAxis(0, startSemi+corFact);
+					e.setSemiAxis(1, (startSemi+corFact)/lastAspect);
+					e.setAngle(lastAngle);
+					//e.set
+					
 					IImageTrace t = DiffractionCalibrationUtils.getImageTrace(plottingSystem);
 					try {
 						roi = DiffractionTool.runEllipsePeakFit(monitor, display, plottingSystem, t, e, inner[i], outer[i]);
@@ -467,7 +475,9 @@ public class PowderCalibrationUtils {
 					if (roi != null) {
 						foundEllipses.add((EllipticalROI)roi);
 						dList.add(dSpace[i]);
-						//lastAspect = roi instanceof EllipticalROI ? ((EllipticalROI) roi).getAspectRatio() : 1.;
+						corFact = ((EllipticalROI)roi).getSemiAxis(0) - startSemi;
+						lastAspect = ((EllipticalROI) roi).getAspectRatio();
+						lastAngle = ((EllipticalROI) roi).getAngle();
 						DiffractionCalibrationUtils.drawFoundRing(monitor, display, plottingSystem, roi, false);
 					}
 					i++;
