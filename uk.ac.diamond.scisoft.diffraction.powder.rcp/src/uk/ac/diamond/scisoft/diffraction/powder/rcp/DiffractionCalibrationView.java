@@ -458,7 +458,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		calibrantCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 		
 		Button goBabyGoButton = new Button(leftCalibComp, SWT.PUSH);
-		goBabyGoButton.setText("Quick Calibration");
+		goBabyGoButton.setText("Auto Calibration");
 		goBabyGoButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 		goBabyGoButton.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -492,14 +492,17 @@ public class DiffractionCalibrationView extends ViewPart {
 			}
 		});
 
-		calibrantPositioning = new CalibrantPositioningWidget(leftCalibComp, model);
+		//calibrantPositioning = new CalibrantPositioningWidget(leftCalibComp, model);
+		createXRayGroup(leftCalibComp);
+//		// Enable/disable the modifiers
+		setXRaysModifiersEnabled(false);
 
 		Composite rightCalibComp = new Composite(mainControlComp, SWT.NONE);
 		rightCalibComp.setLayout(new GridLayout(1, false));
 		rightCalibComp.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
 
 		// Radio group
-		calibOptionGroup = new Group(rightCalibComp, SWT.BORDER);
+		calibOptionGroup = new Group(leftCalibComp, SWT.BORDER);
 		calibOptionGroup.setLayout(new GridLayout(1, false));
 		calibOptionGroup.setText("Calibration options");
 		try {
@@ -552,9 +555,10 @@ public class DiffractionCalibrationView extends ViewPart {
 		});
 		setCalibrateOptionsEnabled(false);
 
-		createXRayGroup(rightCalibComp);
-		// Enable/disable the modifiers
-		setXRaysModifiersEnabled(false);
+//		createXRayGroup(rightCalibComp);
+//		// Enable/disable the modifiers
+//		setXRaysModifiersEnabled(false);
+		calibrantPositioning = new CalibrantPositioningWidget(rightCalibComp, model);
 
 		scrollHolder.layout();
 		scrollComposite.setContent(scrollHolder);
