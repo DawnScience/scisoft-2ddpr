@@ -804,15 +804,9 @@ public class DiffractionCalibrationView extends ViewPart {
 				if (model.size() == 1) {
 					job = PowderCalibrationUtils.autoFindEllipses(Display.getDefault(), plottingSystem, currentData);
 				} else {
-					double[] deltaDistance = new double[model.size()];
-					StructuredSelection selection = (StructuredSelection) tableViewer.getSelection();
-					DiffractionTableData data = (DiffractionTableData)selection.getFirstElement();
-					double val = data.distance;
-					for (int i = 0; i< deltaDistance.length; i++) deltaDistance[i] = val*i;
-					
 					job = PowderCalibrationUtils.autoFindEllipsesMultipleImages(Display.getDefault(), plottingSystem, model, currentData);
 				}
-				
+
 				job.addJobChangeListener(new JobChangeAdapter() {
 					@Override
 					public void done(IJobChangeEvent event) {
