@@ -576,33 +576,25 @@ public class DiffractionCalibrationView extends ViewPart {
 	 * Update the visibility of the Table columns
 	 */
 	private void updateTableColumns() {
-		int index = tabFolder.getSelectionIndex();
+		int tabIndex = tabFolder.getSelectionIndex();
 		TableColumn[] columns = tableViewer.getTable().getColumns();
-		switch (index) {
-		case 0:		// auto
-			for (int i = 2; i < columns.length; i++) {
-				if (model.size() <= 1) { // if less than 2 images in the table
-					tableViewer.getTable().getColumns()[i].setWidth(0);
-				} else {				// otherwise we display the distance column
-					if (i != 3)
-						tableViewer.getTable().getColumns()[i].setWidth(0);
-				}
+		for (int i = 2; i < columns.length; i++) {
+			if (tabIndex == 0) {	// auto mode
+				int width = 0;
+				// if more than one image and distance column index
+				if (model.size() > 1 && i == 3)
+					width = 80;
+				tableViewer.getTable().getColumns()[i].setWidth(width);
+			} else if (tabIndex == 1) {	// manual mode
+				int width = 80;
+				// if less than 2 images and column is distance
+				if (model.size() <= 1 && i == 3)
+					width = 0;
+				tableViewer.getTable().getColumns()[i].setWidth(width);
 			}
-			break;
-		case 1:		// manual
-			for (int i = 2; i < columns.length; i++) {
-				if (model.size() > 1) { 
-					tableViewer.getTable().getColumns()[i].setWidth(80);
-				} else {   // no need for distance if less than 2 images in table
-					if (i != 3)
-						tableViewer.getTable().getColumns()[i].setWidth(80);
-				}
-			}
-			break;
-		default:
-			break;
 		}
 	}
+
 	private Group createXRayGroup(Composite composite, int style) {
 		Group wavelengthGroup = new Group(composite, style);
 		wavelengthGroup.setText("X-Rays");
