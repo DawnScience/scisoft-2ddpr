@@ -1,7 +1,6 @@
 package uk.ac.diamond.scisoft.diffraction.powder.rcp;
 
 import java.io.File;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -16,8 +15,8 @@ import org.dawb.common.ui.widgets.ActionBarWrapper;
 import org.dawb.workbench.ui.views.DiffractionCalibrationUtils;
 import org.dawb.workbench.ui.views.CalibrantPositioningWidget;
 import org.dawb.workbench.ui.views.DiffractionTableData;
+import org.dawnsci.common.widgets.celleditor.FloatSpinnerCellEditor;
 import org.dawnsci.common.widgets.tree.NumericNode;
-import org.dawnsci.common.widgets.utils.RadioUtils;
 import org.dawnsci.plotting.api.IPlottingSystem;
 import org.dawnsci.plotting.api.PlotType;
 import org.dawnsci.plotting.api.PlottingFactory;
@@ -27,6 +26,7 @@ import org.dawnsci.plotting.tools.diffraction.DiffractionImageAugmenter;
 import org.dawnsci.plotting.tools.diffraction.DiffractionTool;
 import org.dawnsci.plotting.tools.diffraction.DiffractionTreeModel;
 import org.dawnsci.plotting.tools.powdercheck.PowderCheckTool;
+import org.dawnsci.plotting.tools.preference.diffraction.DiffractionPreferencePage;
 import org.dawnsci.plotting.util.PlottingUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -37,6 +37,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.CheckboxCellEditor;
@@ -58,6 +59,7 @@ import org.eclipse.nebula.widgets.formattedtext.NumberFormatter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DropTarget;
 import org.eclipse.swt.dnd.DropTargetAdapter;
@@ -77,13 +79,15 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Spinner;
+import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.ToolBar;
@@ -92,6 +96,7 @@ import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.part.ResourceTransfer;
 import org.eclipse.ui.part.ViewPart;
 import org.slf4j.Logger;
@@ -133,16 +138,13 @@ public class DiffractionCalibrationView extends ViewPart {
 	private TableViewer tableViewer;
 	private Button calibrateImagesButton;
 	private Combo calibrantCombo;
-	private Group wavelengthComp;
-	private Group calibOptionGroup;
 	private Action deleteAction;
-	private Spinner deltaDistSpinner;
+//	private Spinner deltaDistSpinner;
 
 	private IPlottingSystem plottingSystem;
 
 	private ISelectionChangedListener selectionChangeListener;
 	private DropTargetAdapter dropListener;
-//	private IDiffractionCrystalEnvironmentListener diffractionCrystEnvListener;
 	private IDetectorPropertyListener detectorPropertyListener;
 	private CalibrantSelectedListener calibrantChangeListener;
 
@@ -150,13 +152,9 @@ public class DiffractionCalibrationView extends ViewPart {
 
 	private FormattedText wavelengthDistanceField;
 	private FormattedText wavelengthEnergyField;
+	private CalibrantPositioningWidget calibrantPositioning;
 
 	private IToolPageSystem toolSystem;
-
-	private boolean useI12 = true; // these two flags should match the default calibration action
-	private boolean useMultiple = false;
-	
-	private CalibrantPositioningWidget calibrantPositioning;
 
 	public DiffractionCalibrationView() {
 		service = (ILoaderService) PlatformUI.getWorkbench().getService(ILoaderService.class);
@@ -166,6 +164,8 @@ public class DiffractionCalibrationView extends ViewPart {
 	private static final String CALIBRANT = "Calibrant";
 
 	private String calibrantName;
+
+	private TabFolder tabFolder;
 
 	@Override
 	public void init(IViewSite site, IMemento memento) throws PartInitException {
@@ -205,6 +205,252 @@ public class DiffractionCalibrationView extends ViewPart {
 		this.parent = parent;
 		final Display display = parent.getDisplay();
 
+		initializeListenersAndActions();
+
+		// main sash form which contains the left sash and the plotting system
+		SashForm mainSash = new SashForm(parent, SWT.HORIZONTAL);
+		mainSash.setBackground(new Color(display, 192, 192, 192));
+		mainSash.setLayout(new FillLayout());
+
+		// left sash form which contains the diffraction calibration controls
+		// and the diffraction tool
+		SashForm leftSash = new SashForm(mainSash, SWT.VERTICAL);
+		leftSash.setBackground(new Color(display, 192, 192, 192));
+		leftSash.setLayout(new GridLayout(1, false));
+		leftSash.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+
+		Composite controlComp = new Composite(leftSash, SWT.NONE);
+		controlComp.setLayout(new GridLayout(1, false));
+		GridUtils.removeMargins(controlComp);
+		createToolbarActions(controlComp);
+
+		Label instructionLabel = new Label(controlComp, SWT.WRAP);
+		instructionLabel.setText("Drag/drop a file/data to the table below, " +
+				"choose a type of calibrant, " +
+				"modify the rings using the positioning controls, " +
+				"modify the wavelength/energy with the wanted values, " +
+				"match rings to the image, " +
+				"and select the calibration type before running the calibration process.");
+		instructionLabel.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, true, false));
+		Point pt = instructionLabel.getSize(); pt.x +=4; pt.y += 4; instructionLabel.setSize(pt);
+
+		// make a scrolled composite
+		scrollComposite = new ScrolledComposite(controlComp, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
+		scrollComposite.setLayout(new GridLayout(1, false));
+		scrollComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
+		scrollHolder = new Composite(scrollComposite, SWT.NONE);
+		scrollHolder.setLayout(new GridLayout(1, false));
+		scrollHolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
+		// table of images and found rings
+		tableViewer = new TableViewer(scrollHolder, SWT.FULL_SELECTION
+				| SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
+		createColumns(tableViewer);
+		tableViewer.getTable().setHeaderVisible(true);
+		tableViewer.getTable().setLinesVisible(true);
+		tableViewer.getTable().setToolTipText("Drag/drop file(s)/data to this table");
+		tableViewer.setContentProvider(new MyContentProvider());
+		tableViewer.setLabelProvider(new MyLabelProvider());
+		tableViewer.setInput(model);
+		tableViewer.getControl().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		tableViewer.addSelectionChangedListener(selectionChangeListener);
+		tableViewer.refresh();
+		final MenuManager mgr = new MenuManager();
+		mgr.setRemoveAllWhenShown(true);
+		mgr.addMenuListener(new IMenuListener() {
+			@Override
+			public void menuAboutToShow(IMenuManager manager) {
+				IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
+				Object[] selected = selection.toArray();
+				if (selected.length > 0) {
+					if (selected.length == 1) {
+						deleteAction.setText("Delete "+ ((DiffractionTableData) selection.getFirstElement()).name);
+						mgr.add(deleteAction);
+					} else {
+						deleteAction.setText("Delete "+ selected.length +" images selected");
+						mgr.add(deleteAction);
+					}
+				}
+			}
+		});
+		tableViewer.getControl().setMenu(mgr.createContextMenu(tableViewer.getControl()));
+		// add drop support
+		DropTarget dt = new DropTarget(tableViewer.getControl(), DND.DROP_MOVE | DND.DROP_DEFAULT | DND.DROP_COPY);
+		dt.setTransfer(new Transfer[] { TextTransfer.getInstance(),
+				FileTransfer.getInstance(), ResourceTransfer.getInstance(),
+				LocalSelectionTransfer.getTransfer() });
+		dt.addDropListener(dropListener);
+		Label infoEditableLabel = new Label(scrollHolder, SWT.NONE);
+		infoEditableLabel.setText("* Click to change");
+
+		Composite mainHolder = new Composite(scrollHolder, SWT.NONE);
+		mainHolder.setLayout(new GridLayout(2, false));
+		mainHolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
+		tabFolder = new TabFolder(mainHolder, SWT.BORDER | SWT.FILL);
+		TabItem autoTabItem = new TabItem(tabFolder, SWT.FILL);
+		autoTabItem.setText("Auto");
+		autoTabItem.setToolTipText("Automatic calibration");
+		autoTabItem.setControl(getAutoTabControl(tabFolder));
+		tabFolder.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent event) {
+				updateTableColumns();
+			}
+		});
+
+		TabItem manualTabItem = new TabItem(tabFolder, SWT.FILL);
+		manualTabItem.setText("Manual");
+		manualTabItem.setToolTipText("Manual calibration");
+		manualTabItem.setControl(getManualTabControl(tabFolder));
+
+		// create calibrant combo
+		Composite rightComp = new Composite(mainHolder, SWT.NONE);
+		rightComp.setLayout(new GridLayout(1, false));
+		rightComp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
+		Group selectCalibComp = new Group(rightComp, SWT.NONE);
+		selectCalibComp.setText("Calibrant");
+		selectCalibComp.setLayout(new GridLayout(1, false));
+		selectCalibComp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+
+		calibrantCombo = new Combo(selectCalibComp, SWT.READ_ONLY);
+		calibrantCombo.setToolTipText("Select a type of calibrant");
+		final CalibrationStandards standards = CalibrationFactory.getCalibrationStandards();
+		calibrantCombo.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				if (currentData == null)
+					return;
+				String calibrantName = calibrantCombo.getItem(calibrantCombo
+						.getSelectionIndex());
+				// update the calibrant in diffraction tool
+				standards.setSelectedCalibrant(calibrantName, true);
+				DiffractionCalibrationUtils.drawCalibrantRings(currentData.augmenter);
+			}
+		});
+		for (String c : standards.getCalibrantList()) {
+			calibrantCombo.add(c);
+		}
+		String s = standards.getSelectedCalibrant();
+		if (s != null) {
+			calibrantCombo.setText(s);
+		}
+
+		Button configCalibrantButton = new Button(selectCalibComp, SWT.NONE);
+		configCalibrantButton.setText("Configuration");
+		configCalibrantButton.setToolTipText("Open Calibrant configuration page");
+		configCalibrantButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				PreferenceDialog pref = PreferencesUtil.createPreferenceDialogOn(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), DiffractionPreferencePage.ID, null, null);
+				if (pref != null)
+					pref.open();
+			}
+		});
+//		deltaDistSpinner = new Spinner(selectCalibComp, SWT.BORDER);
+//		deltaDistSpinner.setMaximum(1000);
+//		deltaDistSpinner.setMinimum(0);
+//		deltaDistSpinner.setSelection(100);
+//		deltaDistSpinner.setLayout(new GridLayout(1, false));
+
+		createXRayGroup(rightComp, SWT.FILL);
+//		// Enable/disable the modifiers
+		setXRaysModifiersEnabled(false);
+
+		scrollHolder.layout();
+		scrollComposite.setContent(scrollHolder);
+		scrollComposite.setExpandHorizontal(true);
+		scrollComposite.setExpandVertical(true);
+		Rectangle r = scrollHolder.getClientArea();
+		scrollComposite.setMinSize(scrollHolder.computeSize(r.width, SWT.DEFAULT));
+		scrollComposite.layout();
+		// end of Diffraction Calibration controls
+
+		SashForm right = new SashForm(mainSash, SWT.VERTICAL);
+		right.setBackground(new Color(display, 192, 192, 192));
+		right.setLayout(new GridLayout(1, false));
+		right.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		
+		// start plotting system
+		Composite plotComp = new Composite(right, SWT.NONE);
+		plotComp.setLayout(new GridLayout(1, false));
+		plotComp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		GridUtils.removeMargins(plotComp);
+		
+		try {
+			ActionBarWrapper actionBarWrapper = ActionBarWrapper.createActionBars(plotComp, null);
+			plottingSystem = PlottingFactory.createPlottingSystem();
+			plottingSystem.createPlotPart(plotComp, "", actionBarWrapper, PlotType.IMAGE, this);
+			plottingSystem.setTitle("");
+			plottingSystem.getPlotComposite().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		} catch (Exception e1) {
+			logger.error("Could not create plotting system:" + e1);
+		}
+		
+		// try to load the previous data saved in the memento
+		DiffractionTableData good = null;
+		for (String p : pathsList) {
+			if (!p.endsWith(".nxs")) {
+				DiffractionTableData d = createData(p, null);
+				if (good == null && d != null) {
+					good = d;
+					setWavelength(d);
+					setCalibrant();
+				}
+			}
+		}
+		tableViewer.refresh();
+		if (good != null) {
+			final DiffractionTableData g = good;
+			display.asyncExec(new Runnable() { // this is necessary to give the plotting system time to lay out itself
+				@Override
+				public void run() {
+					tableViewer.setSelection(new StructuredSelection(g));
+				}
+			});
+		}
+		if (model.size() > 0)
+			setXRaysModifiersEnabled(true);
+
+		// start diffraction tool
+		Composite diffractionToolComp = new Composite(leftSash, SWT.BORDER);
+		//diffractionToolComp.setLayout(new FillLayout());
+		try {
+			toolSystem = (IToolPageSystem) plottingSystem.getAdapter(IToolPageSystem.class);
+			// Show tools here, not on a page.
+			toolSystem.setToolComposite(diffractionToolComp);
+			toolSystem.setToolVisible(DIFFRACTION_ID, ToolPageRole.ROLE_2D, null);
+		} catch (Exception e2) {
+			logger.error("Could not open diffraction tool:" + e2);
+		}
+
+		CalibrationFactory.addCalibrantSelectionListener(calibrantChangeListener);
+		// mainSash.setWeights(new int[] { 1, 2});
+		
+		// start plotting system
+		Composite resultComp = new Composite(right, SWT.NONE);
+		//resultComp.setLayout(new GridLayout(1, false));
+		resultComp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		GridUtils.removeMargins(resultComp);
+		
+		resultComp.setLayout(new StackLayout());
+		try {
+			toolSystem.setToolComposite(resultComp);
+			toolSystem.setToolVisible(POWDERCHECK_ID, ToolPageRole.ROLE_2D, null);
+		} catch (Exception e2) {
+			logger.error("Could not open powder check tool:" + e2);
+		}
+		
+		calibrantPositioning.setPlottingSystem(plottingSystem);
+		calibrantPositioning.setToolSystem(toolSystem);
+		calibrantPositioning.setControlsToUpdate(calibrateImagesButton);
+		calibrantPositioning.setTableViewerToUpdate(tableViewer);
+
+	}
+
+	private void initializeListenersAndActions(){
 		// selection change listener for table viewer
 		selectionChangeListener = new ISelectionChangedListener() {
 			@Override
@@ -220,36 +466,10 @@ public class DiffractionCalibrationView extends ViewPart {
 			}
 		};
 
-//		diffractionCrystEnvListener = new IDiffractionCrystalEnvironmentListener() {
-//			@Override
-//			public void diffractionCrystalEnvironmentChanged(
-//					final DiffractionCrystalEnvironmentEvent evt) {
-//				display.asyncExec(new Runnable() {
-//					@Override
-//					public void run() {
-//						// if the change is triggered by the text field update and not the diffraction tool
-//						// update spinner value with data from diff tool
-//						NumericNode<Length> node = getDiffractionTreeNode(WAVELENGTH_NODE_PATH);
-//						if (node.getUnit().equals(NonSI.ANGSTROM)) {
-//							wavelengthDistanceField.setValue(node.getDoubleValue());
-//							wavelengthEnergyField.setValue(getWavelengthEnergy(node.getDoubleValue()));
-//						} else if (node.getUnit().equals(NonSI.ELECTRON_VOLT)) {
-//							wavelengthDistanceField.setValue(getWavelengthEnergy(node.getDoubleValue() / 1000));
-//							wavelengthEnergyField.setValue(node.getDoubleValue() / 1000);
-//						} else if (node.getUnit().equals(SI.KILO(NonSI.ELECTRON_VOLT))) {
-//							wavelengthDistanceField.setValue(getWavelengthEnergy(node.getDoubleValue()));
-//							wavelengthEnergyField.setValue(node.getDoubleValue());
-//						}
-//						tableViewer.refresh();
-//					}
-//				});
-//			}
-//		};
-
 		detectorPropertyListener = new IDetectorPropertyListener() {
 			@Override
 			public void detectorPropertiesChanged(DetectorPropertyEvent evt) {
-				display.asyncExec(new Runnable() {
+				Display.getDefault().asyncExec(new Runnable() {
 					@Override
 					public void run() {
 						tableViewer.refresh();
@@ -309,7 +529,8 @@ public class DiffractionCalibrationView extends ViewPart {
 					}
 				}
 
-				tableViewer.refresh();
+				refreshTable();
+				updateTableColumns();
 				if (currentData == null && good != null) {
 					tableViewer.getTable().deselectAll();
 					tableViewer.setSelection(new StructuredSelection(good));
@@ -323,393 +544,76 @@ public class DiffractionCalibrationView extends ViewPart {
 			@Override
 			public void run() {
 				StructuredSelection selection = (StructuredSelection) tableViewer.getSelection();
-				DiffractionTableData selectedData = (DiffractionTableData) selection.getFirstElement();
-				if (model.size() > 0) {
-					if (model.remove(selectedData)) {
-						selectedData.augmenter.deactivate(service.getLockedDiffractionMetaData()!=null);
-						selectedData.md.getDetector2DProperties().removeDetectorPropertyListener(detectorPropertyListener);
-//						selectedData.md.getDiffractionCrystalEnvironment().removeDiffractionCrystalEnvironmentListener(diffractionCrystEnvListener);
-						tableViewer.refresh();
+				Object[] selected = selection.toArray();
+				for (int i = 0; i < selected.length; i++) {
+					DiffractionTableData selectedData = (DiffractionTableData) selected[i];
+					if (model.size() > 0) {
+						if (model.remove(selectedData)) {
+							if (selectedData.augmenter != null)
+								selectedData.augmenter.deactivate(service.getLockedDiffractionMetaData()!=null);
+							if (selectedData.md != null)
+								selectedData.md.getDetector2DProperties().removeDetectorPropertyListener(detectorPropertyListener);
+//							selectedData.md.getDiffractionCrystalEnvironment().removeDiffractionCrystalEnvironmentListener(diffractionCrystEnvListener);
+						}
 					}
 				}
+				refreshTable();
 				if (!model.isEmpty()) {
 					drawSelectedData((DiffractionTableData) tableViewer.getElementAt(0));
 				} else {
 					currentData = null; // need to reset this
 					plottingSystem.clear();
 					setXRaysModifiersEnabled(false);
-					setCalibrateOptionsEnabled(false);
+					calibrateImagesButton.setEnabled(false);
 				}
+
+				updateTableColumns();
 			}
 		};
-
-		// main sash form which contains the left sash and the plotting system
-		SashForm mainSash = new SashForm(parent, SWT.HORIZONTAL);
-		mainSash.setBackground(new Color(display, 192, 192, 192));
-		mainSash.setLayout(new FillLayout());
-
-		// left sash form which contains the diffraction calibration controls
-		// and the diffraction tool
-		SashForm leftSash = new SashForm(mainSash, SWT.VERTICAL);
-		leftSash.setBackground(new Color(display, 192, 192, 192));
-		leftSash.setLayout(new GridLayout(1, false));
-		leftSash.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-
-		Composite controlComp = new Composite(leftSash, SWT.NONE);
-		controlComp.setLayout(new GridLayout(1, false));
-		GridUtils.removeMargins(controlComp);
-		createToolbarActions(controlComp);
-
-		Label instructionLabel = new Label(controlComp, SWT.WRAP);
-		instructionLabel.setText("Drag/drop a file/data to the table below, " +
-				"choose a type of calibrant, " +
-				"modify the rings using the positioning controls, " +
-				"modify the wavelength/energy with the wanted values, " +
-				"match rings to the image, " +
-				"and select the calibration type before running the calibration process.");
-		instructionLabel.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, true, false));
-		Point pt = instructionLabel.getSize(); pt.x +=4; pt.y += 4; instructionLabel.setSize(pt);
-
-		// make a scrolled composite
-		scrollComposite = new ScrolledComposite(controlComp, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
-		scrollComposite.setLayout(new GridLayout(1, false));
-		scrollComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		scrollHolder = new Composite(scrollComposite, SWT.NONE);
-
-		GridLayout gl = new GridLayout(1, false);
-		scrollHolder.setLayout(gl);
-		scrollHolder.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, true));
-
-		// table of images and found rings
-		tableViewer = new TableViewer(scrollHolder, SWT.FULL_SELECTION
-				| SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
-		createColumns(tableViewer);
-		tableViewer.getTable().setHeaderVisible(true);
-		tableViewer.getTable().setLinesVisible(true);
-		tableViewer.getTable().setToolTipText("Drag/drop file(s)/data to this table");
-		tableViewer.setContentProvider(new MyContentProvider());
-		tableViewer.setLabelProvider(new MyLabelProvider());
-		tableViewer.setInput(model);
-		tableViewer.getControl().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		tableViewer.addSelectionChangedListener(selectionChangeListener);
-		tableViewer.refresh();
-		final MenuManager mgr = new MenuManager();
-		mgr.setRemoveAllWhenShown(true);
-		mgr.addMenuListener(new IMenuListener() {
-			@Override
-			public void menuAboutToShow(IMenuManager manager) {
-				IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
-				if (!selection.isEmpty()) {
-					deleteAction.setText("Delete "+ ((DiffractionTableData) selection.getFirstElement()).name);
-					mgr.add(deleteAction);
-				}
-			}
-		});
-		tableViewer.getControl().setMenu(mgr.createContextMenu(tableViewer.getControl()));
-		// add drop support
-		DropTarget dt = new DropTarget(tableViewer.getControl(), DND.DROP_MOVE | DND.DROP_DEFAULT | DND.DROP_COPY);
-		dt.setTransfer(new Transfer[] { TextTransfer.getInstance(),
-				FileTransfer.getInstance(), ResourceTransfer.getInstance(),
-				LocalSelectionTransfer.getTransfer() });
-		dt.addDropListener(dropListener);
-
-		Composite calibrantHolder = new Composite(scrollHolder, SWT.NONE);
-		calibrantHolder.setLayout(new GridLayout(1, false));
-		calibrantHolder.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
-
-		Composite mainControlComp = new Composite(calibrantHolder, SWT.NONE);
-		mainControlComp.setLayout(new GridLayout(2, false));
-		mainControlComp.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
-
-		Composite leftCalibComp = new Composite(mainControlComp, SWT.NONE);
-		leftCalibComp.setLayout(new GridLayout(1, false));
-		leftCalibComp.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, true));
-		
-		// create calibrant combo
-		Composite selectCalibComp = new Composite(leftCalibComp, SWT.FILL);
-		selectCalibComp.setLayout(new GridLayout(2, false));
-		selectCalibComp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		Label l = new Label(selectCalibComp, SWT.NONE);
-		l.setText("Calibrant:");
-		l.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
-		calibrantCombo = new Combo(selectCalibComp, SWT.READ_ONLY);
-		final CalibrationStandards standards = CalibrationFactory
-				.getCalibrationStandards();
-		calibrantCombo.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				if (currentData == null)
-					return;
-				String calibrantName = calibrantCombo.getItem(calibrantCombo
-						.getSelectionIndex());
-				// update the calibrant in diffraction tool
-				standards.setSelectedCalibrant(calibrantName, true);
-				DiffractionCalibrationUtils
-				.drawCalibrantRings(currentData.augmenter);
-			}
-		});
-		for (String c : standards.getCalibrantList()) {
-			calibrantCombo.add(c);
-		}
-		String s = standards.getSelectedCalibrant();
-		if (s != null) {
-			calibrantCombo.setText(s);
-		}
-		calibrantCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
-		
-		Button goBabyGoButton = new Button(leftCalibComp, SWT.PUSH);
-		goBabyGoButton.setText("Auto Calibration");
-		goBabyGoButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
-		goBabyGoButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				Job job = null;
-				
-				if (model.size() == 1) {
-					job = PowderCalibrationUtils.autoFindEllipses(display, plottingSystem, currentData);
-				} else {
-					
-					double[] deltaDistance = new double[model.size()];
-					double val = (double)deltaDistSpinner.getSelection();
-					
-					for (int i = 0; i< deltaDistance.length; i++) deltaDistance[i] = val*i;
-					
-					job = PowderCalibrationUtils.autoFindEllipsesMultipleImages(display, plottingSystem, model, currentData, deltaDistance);
-				}
-				
-				job.addJobChangeListener(new JobChangeAdapter() {
-					@Override
-					public void done(IJobChangeEvent event) {
-						display.asyncExec(new Runnable() {
-							@Override
-							public void run() {
-								refreshTable();
-								updateIntegrated(currentData);
-							}
-						});
-					}
-				});
-				job.setUser(true);
-				job.schedule();
-				
-//				IRunnableWithProgress runnable = PowderCalibrationUtils.autoCalibrate(display, plottingSystem, currentData);
-//				
-//				try {
-//					new ProgressMonitorDialog(display.getActiveShell()).run(true, true, runnable);
-//				} catch (InvocationTargetException e1) {
-//					// TODO Auto-generated catch block
-//					e1.printStackTrace();
-//				} catch (InterruptedException e1) {
-//					// TODO Auto-generated catch block
-//					e1.printStackTrace();
-//				}
-			}
-		});
-		
-		deltaDistSpinner = new Spinner(leftCalibComp, SWT.BORDER);
-		deltaDistSpinner.setMaximum(1000);
-		deltaDistSpinner.setMinimum(0);
-		deltaDistSpinner.setSelection(100);
-		deltaDistSpinner.setLayout(new GridLayout(1, false));
-
-		//calibrantPositioning = new CalibrantPositioningWidget(leftCalibComp, model);
-		createXRayGroup(leftCalibComp);
-//		// Enable/disable the modifiers
-		setXRaysModifiersEnabled(false);
-
-		Composite rightCalibComp = new Composite(mainControlComp, SWT.NONE);
-		rightCalibComp.setLayout(new GridLayout(1, false));
-		rightCalibComp.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
-
-		// Radio group
-		calibOptionGroup = new Group(leftCalibComp, SWT.BORDER);
-		calibOptionGroup.setLayout(new GridLayout(1, false));
-		calibOptionGroup.setText("Calibration options");
-		try {
-			RadioUtils.createRadioControls(calibOptionGroup, createWavelengthRadioActions());
-		} catch (Exception e) {
-			logger.error("Could not create controls:" + e);
-		}
-		
-		calibrateImagesButton = new Button(calibOptionGroup, SWT.PUSH);
-		calibrateImagesButton.setText("Run Calibration Process");
-		calibrateImagesButton.setToolTipText("Calibrate detector in chosen images");
-		calibrateImagesButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
-		calibrateImagesButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				if (model.size() <= 0)
-					return;
-				//TODO make new job
-				Job calibrateJob;
-				if (useI12) calibrateJob = PowderCalibrationUtils.calibrateImagesMajorAxisMethod(display, plottingSystem, currentData);
-				else if (useMultiple) calibrateJob = PowderCalibrationUtils.calibrateMultipleImages(display, plottingSystem, model, currentData, (double)deltaDistSpinner.getSelection());
-				else calibrateJob = PowderCalibrationUtils.calibrateImages(display, plottingSystem, model, currentData,
-						true, false);
-				if (calibrateJob == null)
-					return;
-				calibrateJob.addJobChangeListener(new JobChangeAdapter() {
-					@Override
-					public void done(IJobChangeEvent event) {
-						display.asyncExec(new Runnable() {
-							public void run() {
-								refreshTable();
-								double wavelength = currentData.md.getDiffractionCrystalEnvironment().getWavelength();
-								int previousPrecision = BigDecimal.valueOf((Double)wavelengthDistanceField.getValue()).precision();
-								wavelength = DiffractionCalibrationUtils.setPrecision(wavelength, previousPrecision);
-								wavelengthDistanceField.setValue(wavelength);
-								wavelengthEnergyField.setValue(DiffractionCalibrationUtils.getWavelengthEnergy(wavelength));
-								setCalibrateButtons();
-								updateIntegrated(currentData);
-							}
-						});
-					}
-				});
-				calibrateJob.schedule();
-			}
-		});
-		setCalibrateOptionsEnabled(false);
-
-//		createXRayGroup(rightCalibComp);
-//		// Enable/disable the modifiers
-//		setXRaysModifiersEnabled(false);
-		calibrantPositioning = new CalibrantPositioningWidget(rightCalibComp, model);
-
-		scrollHolder.layout();
-		scrollComposite.setContent(scrollHolder);
-		scrollComposite.setExpandHorizontal(true);
-		scrollComposite.setExpandVertical(true);
-		scrollComposite.setMinSize(scrollHolder.computeSize(SWT.DEFAULT, SWT.DEFAULT));
-		scrollComposite.layout();
-		// end of Diffraction Calibration controls
-
-		// start plotting system
-//		Composite plotComp = new Composite(mainSash, SWT.NONE);
-//		plotComp.setLayout(new GridLayout(1, false));
-//		plotComp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-//		try {
-//			ActionBarWrapper actionBarWrapper = ActionBarWrapper.createActionBars(plotComp, null);
-//			plottingSystem = PlottingFactory.createPlottingSystem();
-//			plottingSystem.createPlotPart(plotComp, "", actionBarWrapper, PlotType.IMAGE, this);
-//			plottingSystem.setTitle("");
-//			plottingSystem.getPlotComposite().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-//		} catch (Exception e1) {
-//			logger.error("Could not create plotting system:" + e1);
-//		}
-		
-		SashForm right = new SashForm(mainSash, SWT.VERTICAL);
-		right.setBackground(new Color(display, 192, 192, 192));
-		right.setLayout(new GridLayout(1, false));
-		right.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-		
-		// start plotting system
-		Composite plotComp = new Composite(right, SWT.NONE);
-		plotComp.setLayout(new GridLayout(1, false));
-		plotComp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		GridUtils.removeMargins(plotComp);
-		
-		
-		try {
-			ActionBarWrapper actionBarWrapper = ActionBarWrapper.createActionBars(plotComp, null);
-			plottingSystem = PlottingFactory.createPlottingSystem();
-			plottingSystem.createPlotPart(plotComp, "", actionBarWrapper, PlotType.IMAGE, this);
-			plottingSystem.setTitle("");
-			plottingSystem.getPlotComposite().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		} catch (Exception e1) {
-			logger.error("Could not create plotting system:" + e1);
-		}
-		
-		
-//		try {
-//			ActionBarWrapper actionBarWrapper2 = ActionBarWrapper.createActionBars(resultComp, null);
-//			resultSystem = PlottingFactory.createPlottingSystem();
-//			resultSystem.createPlotPart(resultComp, "", actionBarWrapper2, PlotType.XY, this);
-//			resultSystem.setTitle("");
-//			resultSystem.getPlotComposite().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-//		} catch (Exception e1) {
-//			logger.error("Could not create plotting system:" + e1);
-//		}
-
-		
-		// try to load the previous data saved in the memento
-		DiffractionTableData good = null;
-		for (String p : pathsList) {
-			if (!p.endsWith(".nxs")) {
-				DiffractionTableData d = createData(p, null);
-				if (good == null && d != null) {
-					good = d;
-					setWavelength(d);
-					setCalibrant();
-				}
-			}
-		}
-		tableViewer.refresh();
-		if (good != null) {
-			final DiffractionTableData g = good;
-			display.asyncExec(new Runnable() { // this is necessary to give the plotting system time to lay out itself
-				@Override
-				public void run() {
-					tableViewer.setSelection(new StructuredSelection(g));
-				}
-			});
-		}
-		if (model.size() > 0)
-			setXRaysModifiersEnabled(true);
-
-		// start diffraction tool
-		Composite diffractionToolComp = new Composite(leftSash, SWT.BORDER);
-		//diffractionToolComp.setLayout(new FillLayout());
-		try {
-			toolSystem = (IToolPageSystem) plottingSystem.getAdapter(IToolPageSystem.class);
-			// Show tools here, not on a page.
-			toolSystem.setToolComposite(diffractionToolComp);
-			toolSystem.setToolVisible(DIFFRACTION_ID, ToolPageRole.ROLE_2D, null);
-		} catch (Exception e2) {
-			logger.error("Could not open diffraction tool:" + e2);
-		}
-
-		CalibrationFactory.addCalibrantSelectionListener(calibrantChangeListener);
-		// mainSash.setWeights(new int[] { 1, 2});
-		
-		// start plotting system
-		Composite resultComp = new Composite(right, SWT.NONE);
-		//resultComp.setLayout(new GridLayout(1, false));
-		resultComp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		GridUtils.removeMargins(resultComp);
-		
-		
-		resultComp.setLayout(new FillLayout());
-		try {
-			toolSystem.setToolComposite(resultComp);
-			toolSystem.setToolVisible(POWDERCHECK_ID, ToolPageRole.ROLE_2D, null);
-		} catch (Exception e2) {
-			logger.error("Could not open powder check tool:" + e2);
-		}
-		
-		calibrantPositioning.setPlottingSystem(plottingSystem);
-		calibrantPositioning.setToolSystem(toolSystem);
-		calibrantPositioning.setControlsToUpdate(calibOptionGroup, calibrateImagesButton);
-		calibrantPositioning.setTableViewerToUpdate(tableViewer);
-		
-		
 	}
 
-	private void setCalibrateOptionsEnabled(boolean b) {
-		calibOptionGroup.setEnabled(b);
-		calibrateImagesButton.setEnabled(b);
+	/**
+	 * Update the visibility of the Table columns
+	 */
+	private void updateTableColumns() {
+		int index = tabFolder.getSelectionIndex();
+		TableColumn[] columns = tableViewer.getTable().getColumns();
+		switch (index) {
+		case 0:		// auto
+			for (int i = 2; i < columns.length; i++) {
+				if (model.size() <= 1) { // if less than 2 images in the table
+					tableViewer.getTable().getColumns()[i].setWidth(0);
+				} else {				// otherwise we display the distance column
+					if (i != 3)
+						tableViewer.getTable().getColumns()[i].setWidth(0);
+				}
+			}
+			break;
+		case 1:		// manual
+			for (int i = 2; i < columns.length; i++) {
+				if (model.size() > 1) { 
+					tableViewer.getTable().getColumns()[i].setWidth(80);
+				} else {   // no need for distance if less than 2 images in table
+					if (i != 3)
+						tableViewer.getTable().getColumns()[i].setWidth(80);
+				}
+			}
+			break;
+		default:
+			break;
+		}
 	}
-	
-	private void createXRayGroup(Composite composite) {
-		wavelengthComp = new Group(composite, SWT.NONE);
-		wavelengthComp.setText("X-Rays");
-		wavelengthComp.setToolTipText("Set the wavelength / energy");
-		wavelengthComp.setLayout(new GridLayout(3, false));
-		wavelengthComp.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+	private Group createXRayGroup(Composite composite, int style) {
+		Group wavelengthGroup = new Group(composite, style);
+		wavelengthGroup.setText("X-Rays");
+		wavelengthGroup.setToolTipText("Set the wavelength / energy");
+		wavelengthGroup.setLayout(new GridLayout(3, false));
+		wavelengthGroup.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, true));
 
-		Label wavelengthLabel = new Label(wavelengthComp, SWT.NONE);
+		Label wavelengthLabel = new Label(wavelengthGroup, SWT.NONE);
 		wavelengthLabel.setText("Wavelength");
 
-		wavelengthDistanceField = new FormattedText(wavelengthComp, SWT.SINGLE | SWT.BORDER);
+		wavelengthDistanceField = new FormattedText(wavelengthGroup, SWT.SINGLE | SWT.BORDER);
 		wavelengthDistanceField.setFormatter(new NumberFormatter(FORMAT_MASK, FORMAT_MASK, Locale.UK));
 		wavelengthDistanceField.getControl().setToolTipText("Set the wavelength in Angstrom");
 		wavelengthDistanceField.getControl().addListener(SWT.KeyUp, new Listener() {
@@ -744,13 +648,13 @@ public class DiffractionCalibrationView extends ViewPart {
 			}
 		});
 		wavelengthDistanceField.getControl().setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true));
-		Label unitDistanceLabel = new Label(wavelengthComp, SWT.NONE);
+		Label unitDistanceLabel = new Label(wavelengthGroup, SWT.NONE);
 		unitDistanceLabel.setText(NonSI.ANGSTROM.toString());
 
-		Label energyLabel = new Label(wavelengthComp, SWT.NONE);
+		Label energyLabel = new Label(wavelengthGroup, SWT.NONE);
 		energyLabel.setText("Energy");
 
-		wavelengthEnergyField = new FormattedText(wavelengthComp, SWT.SINGLE | SWT.BORDER);
+		wavelengthEnergyField = new FormattedText(wavelengthGroup, SWT.SINGLE | SWT.BORDER);
 		wavelengthEnergyField.setFormatter(new NumberFormatter(FORMAT_MASK, FORMAT_MASK, Locale.UK));
 		wavelengthEnergyField.getControl().setToolTipText("Set the wavelength in keV");
 		wavelengthEnergyField.getControl().addListener(SWT.KeyUp, new Listener() {
@@ -785,12 +689,12 @@ public class DiffractionCalibrationView extends ViewPart {
 			}
 		});
 		wavelengthEnergyField.getControl().setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true));
-		Label unitEnergyLabel = new Label(wavelengthComp, SWT.NONE);
+		Label unitEnergyLabel = new Label(wavelengthGroup, SWT.NONE);
 		unitEnergyLabel.setText(SI.KILO(NonSI.ELECTRON_VOLT).toString());
+		return wavelengthGroup;
 	}
 
 	private void setXRaysModifiersEnabled(boolean b) {
-		wavelengthComp.setEnabled(b);
 		wavelengthDistanceField.getControl().setEnabled(b);
 		wavelengthEnergyField.getControl().setEnabled(b);
 	}
@@ -882,46 +786,85 @@ public class DiffractionCalibrationView extends ViewPart {
 		});
 	}
 
-	private List<Action> createWavelengthRadioActions() {
-		List<Action> radioActions = new ArrayList<Action>();
 
-		Action usedFixedWavelengthAction = new Action() {
+	/**
+	 * Gets the control for the automatic tab
+	 * 
+	 * @param tabFolder
+	 *            the parent tab folder
+	 * @return Control
+	 */
+	private Control getAutoTabControl(TabFolder tabFolder) {
+		Composite composite = new Composite(tabFolder, SWT.FILL);
+		composite.setLayout(new GridLayout(1, false));
+//		composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		Button goBabyGoButton = new Button(composite, SWT.PUSH);
+		goBabyGoButton.setText("Auto Calibration Process");
+		goBabyGoButton.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
+		goBabyGoButton.addSelectionListener(new SelectionAdapter() {
 			@Override
-			public void run() {
-				useI12 = true;
-				useMultiple = false;
+			public void widgetSelected(SelectionEvent e) {
+				Job job = null;
+				
+				if (model.size() == 1) {
+					job = PowderCalibrationUtils.autoFindEllipses(Display.getDefault(), plottingSystem, currentData);
+				} else {
+					double[] deltaDistance = new double[model.size()];
+					StructuredSelection selection = (StructuredSelection) tableViewer.getSelection();
+					DiffractionTableData data = (DiffractionTableData)selection.getFirstElement();
+					double val = data.distance;
+					for (int i = 0; i< deltaDistance.length; i++) deltaDistance[i] = val*i;
+					
+					job = PowderCalibrationUtils.autoFindEllipsesMultipleImages(Display.getDefault(), plottingSystem, model, currentData, deltaDistance);
+				}
+				
+				job.addJobChangeListener(new JobChangeAdapter() {
+					@Override
+					public void done(IJobChangeEvent event) {
+						Display.getDefault().asyncExec(new Runnable() {
+							@Override
+							public void run() {
+								refreshTable();
+								updateIntegrated(currentData);
+							}
+						});
+					}
+				});
+				job.setUser(true);
+				job.schedule();
 			}
-		};
-		usedFixedWavelengthAction.setText("Per Image Fit with fixed wavelength (I12)");
-		usedFixedWavelengthAction.setToolTipText("Individual fit with fixed wavelength"); // TODO write a more detailed tool tip
+		});
+		return composite;
+	}
 
-		Action simultaneousFitAction = new Action() {
+	/**
+	 * Gets the control for the manual tab
+	 * 
+	 * @param tabFolder
+	 *            the parent tab folder
+	 * @return Control
+	 */
+	private Control getManualTabControl(TabFolder tabFolder) {
+		Composite composite = new Composite(tabFolder, SWT.FILL);
+		composite.setLayout(new GridLayout(1, false));
+//		GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
+//		gridData.widthHint = 1000;
+//		composite.setLayoutData(gridData);
+		calibrantPositioning = new CalibrantPositioningWidget(composite, model);
+
+		calibrateImagesButton = new Button(composite, SWT.PUSH);
+		calibrateImagesButton.setText("Run Calibration Process");
+		calibrateImagesButton.setToolTipText("Calibrate detector in chosen images");
+		calibrateImagesButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
+		calibrateImagesButton.addSelectionListener(new SelectionAdapter() {
 			@Override
-			public void run() {
-				useI12 = false;
-				useMultiple = false;
+			public void widgetSelected(SelectionEvent e) {
+				// TODO add the manual calibration process
+
 			}
-		};
-		simultaneousFitAction.setText("Per Image Fit with fixed wavelength (Pete)");
-		simultaneousFitAction.setToolTipText("Fits all the parameters at once"); // TODO write a more detailed tool tip
-
-		Action postWavelengthAction = new Action() {
-			@Override
-			public void run() {
-				useI12 = false;
-				useMultiple = true;
-			}
-		};
-		postWavelengthAction.setText("Multiple image fit");
-		postWavelengthAction.setToolTipText("Fit for wavelength and distances"); // TODO write a more detailed tool tip
-
-//		simultaneousFitAction.setEnabled(false);
-//		postWavelengthAction.setEnabled(false);
-		radioActions.add(usedFixedWavelengthAction);
-		radioActions.add(simultaneousFitAction);
-		radioActions.add(postWavelengthAction);
-
-		return radioActions;
+		});
+		calibrateImagesButton.setEnabled(false);
+		return composite;
 	}
 
 	private void updateDiffTool(String nodePath, double value) {
@@ -1139,11 +1082,8 @@ public class DiffractionCalibrationView extends ViewPart {
 			if (md == null)
 				return null;
 
-			if (columnIndex == 3) {
-				DetectorProperties dp = md.getDetector2DProperties();
-				if (dp == null)
-					return null;
-				return String.format("%.2f", dp.getBeamCentreDistance());
+			if (columnIndex == 3) { // distance
+				return String.format("%.2f", data.distance) + "*";
 			} else if (columnIndex == 4) {
 				DetectorProperties dp = md.getDetector2DProperties();
 				if (dp == null)
@@ -1175,12 +1115,21 @@ public class DiffractionCalibrationView extends ViewPart {
 
 		@Override
 		protected CellEditor getCellEditor(Object element) {
-			return new CheckboxCellEditor(null, SWT.CHECK);
+			if (column == 0) {
+				return new CheckboxCellEditor(((TableViewer)getViewer()).getTable(), SWT.CHECK);
+			} else if (column == 3) {
+				final FloatSpinnerCellEditor fse = new FloatSpinnerCellEditor((Composite)getViewer().getControl(), SWT.RIGHT);
+				fse.setFormat(100, 2);
+				fse.setMaximum(Double.MAX_VALUE);
+				fse.setMinimum(-Double.MAX_VALUE);
+				return fse;
+			}
+			return null;
 		}
 
 		@Override
 		protected boolean canEdit(Object element) {
-			if (column == 0)
+			if (column == 0 || column == 3)
 				return true;
 			else
 				return false;
@@ -1189,17 +1138,27 @@ public class DiffractionCalibrationView extends ViewPart {
 		@Override
 		protected Object getValue(Object element) {
 			DiffractionTableData data = (DiffractionTableData) element;
-			return data.use;
+			if (column == 0) {
+				return data.use;
+			} else if (column == 3) {
+				return data.distance;
+			}
+			return null;
 		}
 
 		@Override
 		protected void setValue(Object element, Object value) {
+			DiffractionTableData data = (DiffractionTableData) element;
+
 			if (column == 0) {
-				DiffractionTableData data = (DiffractionTableData) element;
 				data.use = (Boolean) value;
 				tv.refresh();
 
 				setCalibrateButtons();
+			}
+			if (column == 3) {
+				data.distance = (Double) value;
+				tv.refresh();
 			}
 		}
 	}
@@ -1220,36 +1179,40 @@ public class DiffractionCalibrationView extends ViewPart {
 		tvc = new TableViewerColumn(tv, SWT.NONE);
 		tc = tvc.getColumn();
 		tc.setText("# of rings");
-		tc.setWidth(75);
+		tc.setWidth(0);
 		tvc.setEditingSupport(new MyEditingSupport(tv, 2));
 
 		tvc = new TableViewerColumn(tv, SWT.NONE);
 		tc = tvc.getColumn();
 		tc.setText("Distance");
 		tc.setToolTipText("in mm");
-		tc.setWidth(70);
+		if (pathsList != null && pathsList.size() <= 1) // if more than one image then we show the column
+			tc.setWidth(0);
+		else
+			tc.setWidth(80);
 		tvc.setEditingSupport(new MyEditingSupport(tv, 3));
 
 		tvc = new TableViewerColumn(tv, SWT.NONE);
 		tc = tvc.getColumn();
 		tc.setText("X Position");
 		tc.setToolTipText("in Pixel");
-		tc.setWidth(80);
+		tc.setWidth(0);
 		tvc.setEditingSupport(new MyEditingSupport(tv, 4));
 
 		tvc = new TableViewerColumn(tv, SWT.NONE);
 		tc = tvc.getColumn();
 		tc.setText("Y Position");
 		tc.setToolTipText("in Pixel");
-		tc.setWidth(80);
+		tc.setWidth(0);
 		tvc.setEditingSupport(new MyEditingSupport(tv, 5));
 
 		tvc = new TableViewerColumn(tv, SWT.NONE);
 		tc = tvc.getColumn();
 		tc.setText("Residuals");
 		tc.setToolTipText("Root mean of squared residuals from fit");
-		tc.setWidth(80);
+		tc.setWidth(0);
 		tvc.setEditingSupport(new MyEditingSupport(tv, 5));
+
 	}
 
 	private void refreshTable() {
@@ -1270,7 +1233,7 @@ public class DiffractionCalibrationView extends ViewPart {
 				used++;
 			}
 		}
-		setCalibrateOptionsEnabled(used > 0);
+		calibrateImagesButton.setEnabled(used > 0);
 	}
 
 	private void removeListeners() {
