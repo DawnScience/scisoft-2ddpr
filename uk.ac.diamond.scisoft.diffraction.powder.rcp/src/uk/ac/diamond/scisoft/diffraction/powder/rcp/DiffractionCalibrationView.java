@@ -808,9 +808,9 @@ public class DiffractionCalibrationView extends ViewPart {
 				Job job = null;
 				
 				if (model.size() == 1) {
-					job = PowderCalibrationUtils.autoFindEllipses(Display.getDefault(), plottingSystem, currentData);
+					job = PowderCalibrationUtils.autoFindEllipses(Display.getDefault(), plottingSystem, currentData,ringNumberSpinner.getSelection());
 				} else {
-					job = PowderCalibrationUtils.autoFindEllipsesMultipleImages(Display.getDefault(), plottingSystem, model, currentData);
+					job = PowderCalibrationUtils.autoFindEllipsesMultipleImages(Display.getDefault(), plottingSystem, model, currentData,ringNumberSpinner.getSelection());
 				}
 
 				job.addJobChangeListener(new JobChangeAdapter() {
@@ -874,7 +874,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		composite.setLayout(new GridLayout(2, false));
 
 		Label ringNumberLabel = new Label(composite, SWT.NONE);
-		ringNumberLabel.setText("Ring number:");
+		ringNumberLabel.setText("No. of Rings to Use:");
 		ringNumberSpinner = new Spinner(composite, SWT.BORDER);
 		ringNumberSpinner.setMaximum(standards.getCalibrant().getHKLs().size());
 		ringNumberSpinner.setMinimum(2);

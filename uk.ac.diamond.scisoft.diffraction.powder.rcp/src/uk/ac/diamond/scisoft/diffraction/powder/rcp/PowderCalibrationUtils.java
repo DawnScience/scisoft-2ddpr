@@ -363,7 +363,8 @@ public class PowderCalibrationUtils {
 	
 	public static Job autoFindEllipses(final Display display,
 			final IPlottingSystem plottingSystem,
-			final DiffractionTableData currentData) {
+			final DiffractionTableData currentData,
+			final int maxRings) {
 
 		Job job = new Job("Calibrate detector") {
 			@Override
@@ -393,7 +394,7 @@ public class PowderCalibrationUtils {
 				
 				List<HKL> spacings = CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs();
 				
-				int max = spacings.size() > MAX_RINGS ? MAX_RINGS : spacings.size();
+				int max = spacings.size() > maxRings ? maxRings : spacings.size();
 				
 				double[] dSpace = new double[max];
 				
@@ -509,7 +510,8 @@ public class PowderCalibrationUtils {
 	public static Job autoFindEllipsesMultipleImages(final Display display,
 			final IPlottingSystem plottingSystem,
 			final List<DiffractionTableData> model,
-			final DiffractionTableData currentData) {
+			final DiffractionTableData currentData,
+			final int maxRings) {
 
 		Job job = new Job("Calibrate detector") {
 			@Override
@@ -552,7 +554,7 @@ public class PowderCalibrationUtils {
 					
 					List<HKL> spacings = CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs();
 					
-					int max = spacings.size() > MAX_RINGS ? MAX_RINGS : spacings.size();
+					int max = spacings.size() > maxRings ? maxRings : spacings.size();
 					
 					double[] dSpace = new double[max];
 					

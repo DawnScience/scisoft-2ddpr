@@ -54,7 +54,7 @@ public class DiffractionToolAutoCalHandler extends AbstractHandler {
 		
 		final Display display = Display.getDefault();
 		
-		Job job = PowderCalibrationUtils.autoFindEllipses(display, system, dtd);
+		Job job = PowderCalibrationUtils.autoFindEllipses(display, system, dtd, 10);
 		
 		job.addJobChangeListener(new JobChangeAdapter() {
 			@Override
