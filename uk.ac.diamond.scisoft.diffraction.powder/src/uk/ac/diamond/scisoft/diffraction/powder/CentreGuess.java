@@ -17,7 +17,7 @@ public class CentreGuess {
 		
 		int downSample = 5;
 		int samFW = 18;
-		int samW = (samFW-1)/2;
+		int samW = (samFW)/2;
 		
 		Downsample ds = new Downsample(DownsampleMode.MEAN, new int[]{downSample, downSample});
 		
@@ -31,7 +31,7 @@ public class CentreGuess {
 		
 		int[] maxPos = conv.maxPos();
 
-		AbstractDataset patch = conv.getSlice(new int[] {maxPos[0] - samW-1, maxPos[1] - samW-1}, new int[] {maxPos[0] + samW, maxPos[1] + samW}, null);
+		AbstractDataset patch = conv.getSlice(new int[] {maxPos[0] - samW, maxPos[1] - samW}, new int[] {maxPos[0] + samW, maxPos[1] + samW}, null);
 		
 		AbstractDataset my = patch.sum(1);
 		AbstractDataset mx = patch.sum(0);
@@ -57,12 +57,12 @@ public class CentreGuess {
 			CompositeFunction out = Fitter.fit(axis, mx, new ApacheNelderMead(), g);
 			xfound = out.getFunction(0).getParameterValue(0);
 		} catch (Exception e) {
-			xfound = maxPos[1];
+			xfound = maxPos[0];
 			e.printStackTrace();
 		}
 		
-		double convCenX = maxPos[1] - samW -1 + xfound;
-		double convCenY = maxPos[0] - samW -1 + yfound;
+		double convCenX = maxPos[1] - samW + xfound;
+		double convCenY = maxPos[0] - samW + yfound;
 		
 		double[] coOrds = new double[2];
 		

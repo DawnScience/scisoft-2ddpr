@@ -147,7 +147,7 @@ public class PowderCalibration {
 		PolylineROI points;
 		EllipticalFitROI efroi;
 		
-		points = PeakFittingEllipseFinder.findPointsOnEllipse(image, mask, (EllipticalROI) roi, innerDelta, outerDelta);
+		points = PeakFittingEllipseFinder.findPointsOnEllipse(image, mask, (EllipticalROI) roi, innerDelta, outerDelta,386,null);
 		
 		if (points.getNumberOfPoints() < 3) {
 			throw new IllegalArgumentException("Could not find enough points to trim");
