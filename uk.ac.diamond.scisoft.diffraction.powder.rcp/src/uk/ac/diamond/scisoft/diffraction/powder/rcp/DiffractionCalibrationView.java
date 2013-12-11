@@ -305,6 +305,11 @@ public class DiffractionCalibrationView extends ViewPart {
 		manualTabItem.setToolTipText("Manual calibration");
 		manualTabItem.setControl(getManualTabControl(tabFolder));
 
+		TabItem settingTabItem = new TabItem(tabFolder, SWT.FILL);
+		settingTabItem.setText("Settings");
+		settingTabItem.setToolTipText("Manual calibration");
+//		settingTabItem.setControl(getSettingTabControl(tabFolder));
+
 		// create calibrant combo
 		Composite rightComp = new Composite(mainHolder, SWT.NONE);
 		rightComp.setLayout(new GridLayout(1, false));
@@ -349,11 +354,6 @@ public class DiffractionCalibrationView extends ViewPart {
 					pref.open();
 			}
 		});
-//		deltaDistSpinner = new Spinner(selectCalibComp, SWT.BORDER);
-//		deltaDistSpinner.setMaximum(1000);
-//		deltaDistSpinner.setMinimum(0);
-//		deltaDistSpinner.setSelection(100);
-//		deltaDistSpinner.setLayout(new GridLayout(1, false));
 
 		createXRayGroup(rightComp, SWT.FILL);
 //		// Enable/disable the modifiers
