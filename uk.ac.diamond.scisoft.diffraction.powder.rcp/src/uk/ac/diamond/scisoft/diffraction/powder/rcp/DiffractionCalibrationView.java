@@ -86,6 +86,7 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.TableColumn;
@@ -166,6 +167,8 @@ public class DiffractionCalibrationView extends ViewPart {
 	private String calibrantName;
 
 	private TabFolder tabFolder;
+
+	private Spinner ringNumberSpinner;
 
 	@Override
 	public void init(IViewSite site, IMemento memento) throws PartInitException {
@@ -300,6 +303,8 @@ public class DiffractionCalibrationView extends ViewPart {
 			}
 		});
 
+		final CalibrationStandards standards = CalibrationFactory.getCalibrationStandards();
+
 		TabItem manualTabItem = new TabItem(tabFolder, SWT.FILL);
 		manualTabItem.setText("Manual");
 		manualTabItem.setToolTipText("Manual calibration");
@@ -307,8 +312,8 @@ public class DiffractionCalibrationView extends ViewPart {
 
 		TabItem settingTabItem = new TabItem(tabFolder, SWT.FILL);
 		settingTabItem.setText("Settings");
-		settingTabItem.setToolTipText("Manual calibration");
-//		settingTabItem.setControl(getSettingTabControl(tabFolder));
+		settingTabItem.setToolTipText("Calibration settings");
+		settingTabItem.setControl(getSettingTabControl(tabFolder, standards));
 
 		// create calibrant combo
 		Composite rightComp = new Composite(mainHolder, SWT.NONE);
@@ -322,7 +327,6 @@ public class DiffractionCalibrationView extends ViewPart {
 
 		calibrantCombo = new Combo(selectCalibComp, SWT.READ_ONLY);
 		calibrantCombo.setToolTipText("Select a type of calibrant");
-		final CalibrationStandards standards = CalibrationFactory.getCalibrationStandards();
 		calibrantCombo.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -333,6 +337,8 @@ public class DiffractionCalibrationView extends ViewPart {
 				// update the calibrant in diffraction tool
 				standards.setSelectedCalibrant(calibrantName, true);
 				DiffractionCalibrationUtils.drawCalibrantRings(currentData.augmenter);
+				// set the maximum number of rings
+				ringNumberSpinner.setMaximum(standards.getCalibrant().getHKLs().size());
 			}
 		});
 		for (String c : standards.getCalibrantList()) {
@@ -853,6 +859,27 @@ public class DiffractionCalibrationView extends ViewPart {
 			}
 		});
 		calibrateImagesButton.setEnabled(false);
+		return composite;
+	}
+
+	/**
+	 * Gets the control for the setting tab
+	 * 
+	 * @param tabFolder
+	 *            the parent tab folder
+	 * @return Control
+	 */
+	private Control getSettingTabControl(TabFolder tabFolder, CalibrationStandards standards) {
+		Composite composite = new Composite(tabFolder, SWT.FILL);
+		composite.setLayout(new GridLayout(2, false));
+
+		Label ringNumberLabel = new Label(composite, SWT.NONE);
+		ringNumberLabel.setText("Ring number:");
+		ringNumberSpinner = new Spinner(composite, SWT.BORDER);
+		ringNumberSpinner.setMaximum(standards.getCalibrant().getHKLs().size());
+		ringNumberSpinner.setMinimum(2);
+		ringNumberSpinner.setSelection(100);
+
 		return composite;
 	}
 
