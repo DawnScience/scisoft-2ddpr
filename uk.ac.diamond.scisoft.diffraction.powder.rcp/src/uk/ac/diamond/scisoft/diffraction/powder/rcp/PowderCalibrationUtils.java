@@ -449,7 +449,7 @@ public class PowderCalibrationUtils {
 					
 					IImageTrace t = DiffractionCalibrationUtils.getImageTrace(plottingSystem);
 					try {
-						roi = DiffractionTool.runEllipsePeakFit(monitor, display, plottingSystem, t, e, inner[i], outer[i]);
+						roi = DiffractionTool.runEllipsePeakFit(monitor, display, plottingSystem, t, e, inner[i], outer[i],256);
 					} catch (Exception ex) {
 						logger.debug(ex.getMessage());
 						roi = null;
@@ -509,12 +509,15 @@ public class PowderCalibrationUtils {
 	public static Job autoFindEllipsesMultipleImages(final Display display,
 			final IPlottingSystem plottingSystem,
 			final List<DiffractionTableData> model,
-			final DiffractionTableData currentData,
-			final double[] deltaDistance) {
+			final DiffractionTableData currentData) {
 
 		Job job = new Job("Calibrate detector") {
 			@Override
 			protected IStatus run(final IProgressMonitor monitor) {
+				
+				double[] deltaDistance = new double[model.size()];
+				
+				for (int i = 0; i <model.size(); i++) deltaDistance[i] = model.get(i).distance;
 				
 				AbstractDataset ddist = new DoubleDataset(deltaDistance, new int[]{deltaDistance.length});
 				
@@ -605,7 +608,7 @@ public class PowderCalibrationUtils {
 						
 						IImageTrace t = DiffractionCalibrationUtils.getImageTrace(plottingSystem);
 						try {
-							roi = DiffractionTool.runEllipsePeakFit(monitor, display, plottingSystem, t, e, inner[i], outer[i]);
+							roi = DiffractionTool.runEllipsePeakFit(monitor, display, plottingSystem, t, e, inner[i], outer[i],384);
 						} catch (Exception ex) {
 							logger.debug(ex.getMessage());
 							roi = null;

@@ -414,11 +414,27 @@ public class DiffractionCalibrationView extends ViewPart {
 		if (model.size() > 0)
 			setXRaysModifiersEnabled(true);
 
-		// start diffraction tool
-		Composite diffractionToolComp = new Composite(leftSash, SWT.BORDER);
-		//diffractionToolComp.setLayout(new FillLayout());
+		
+		// start plotting system
+		Composite resultComp = new Composite(right, SWT.NONE);
+		//resultComp.setLayout(new GridLayout(1, false));
+		resultComp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		GridUtils.removeMargins(resultComp);
+
+		resultComp.setLayout(new StackLayout());
 		try {
 			toolSystem = (IToolPageSystem) plottingSystem.getAdapter(IToolPageSystem.class);
+			toolSystem.setToolComposite(resultComp);
+			toolSystem.setToolVisible(POWDERCHECK_ID, ToolPageRole.ROLE_2D, null);
+		} catch (Exception e2) {
+			logger.error("Could not open powder check tool:" + e2);
+		}
+		
+		// start diffraction tool
+		Composite diffractionToolComp = new Composite(leftSash, SWT.BORDER);
+		diffractionToolComp.setLayout(new StackLayout());
+		//diffractionToolComp.setLayout(new FillLayout());
+		try {
 			// Show tools here, not on a page.
 			toolSystem.setToolComposite(diffractionToolComp);
 			toolSystem.setToolVisible(DIFFRACTION_ID, ToolPageRole.ROLE_2D, null);
@@ -428,20 +444,6 @@ public class DiffractionCalibrationView extends ViewPart {
 
 		CalibrationFactory.addCalibrantSelectionListener(calibrantChangeListener);
 		// mainSash.setWeights(new int[] { 1, 2});
-		
-		// start plotting system
-		Composite resultComp = new Composite(right, SWT.NONE);
-		//resultComp.setLayout(new GridLayout(1, false));
-		resultComp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		GridUtils.removeMargins(resultComp);
-		
-		resultComp.setLayout(new StackLayout());
-		try {
-			toolSystem.setToolComposite(resultComp);
-			toolSystem.setToolVisible(POWDERCHECK_ID, ToolPageRole.ROLE_2D, null);
-		} catch (Exception e2) {
-			logger.error("Could not open powder check tool:" + e2);
-		}
 		
 		calibrantPositioning.setPlottingSystem(plottingSystem);
 		calibrantPositioning.setToolSystem(toolSystem);
@@ -807,7 +809,7 @@ public class DiffractionCalibrationView extends ViewPart {
 					double val = data.distance;
 					for (int i = 0; i< deltaDistance.length; i++) deltaDistance[i] = val*i;
 					
-					job = PowderCalibrationUtils.autoFindEllipsesMultipleImages(Display.getDefault(), plottingSystem, model, currentData, deltaDistance);
+					job = PowderCalibrationUtils.autoFindEllipsesMultipleImages(Display.getDefault(), plottingSystem, model, currentData);
 				}
 				
 				job.addJobChangeListener(new JobChangeAdapter() {
