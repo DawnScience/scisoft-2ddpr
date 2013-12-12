@@ -242,8 +242,7 @@ public class PowderCalibrationUtils {
 	public static Job calibrateMultipleImages(final Display display,
 			final IPlottingSystem plottingSystem,
 			final List<DiffractionTableData> model,
-			final DiffractionTableData currentData,
-			final double deltaD) {
+			final DiffractionTableData currentData) {
 
 		Job job = new Job("Calibrate detector") {
 			@Override
@@ -292,13 +291,15 @@ public class PowderCalibrationUtils {
 					allEllipses.add(erois);
 					allDSpacings.add(ds);
 				}
+				
+				double[] deltaDistance = new double[model.size()];
+				for (int i = 0; i <model.size(); i++) deltaDistance[i] = model.get(i).distance;
 
-				AbstractDataset delta = AbstractDataset.arange(allEllipses.size(), AbstractDataset.FLOAT64);
-				delta.imultiply(deltaD);
-
+				AbstractDataset ddist = new DoubleDataset(deltaDistance, new int[]{deltaDistance.length});
+				
 				double pixelSize = currentData.md.getDetector2DProperties().getHPxSize();
 
-				final CalibrationOutput output = CalibrateEllipses.run(allEllipses, allDSpacings,delta,pixelSize);
+				final CalibrationOutput output = CalibrateEllipses.run(allEllipses, allDSpacings,ddist,pixelSize);
 				
 				display.syncExec(new Runnable() {
 					@Override
@@ -656,7 +657,7 @@ public class PowderCalibrationUtils {
 						for (DiffractionTableData data : model) {
 							DetectorProperties dp = data.md.getDetector2DProperties();
 
-							dp.setDetectorDistance(output.getDistance().getDouble(i));
+							dp.setBeamCentreDistance(output.getDistance().getDouble(i));
 							double[] bc = new double[] {output.getBeamCentreX().getDouble(i),output.getBeamCentreY().getDouble(i) };
 							dp.setBeamCentreCoords(bc);
 

@@ -854,8 +854,28 @@ public class DiffractionCalibrationView extends ViewPart {
 		calibrateImagesButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				// TODO add the manual calibration process
+				Job job = null;
 
+				if (model.size() == 1) {
+					job = PowderCalibrationUtils.calibrateImagesMajorAxisMethod(Display.getDefault(), plottingSystem, currentData);
+				} else {
+					job = PowderCalibrationUtils.calibrateMultipleImages(Display.getDefault(), plottingSystem, model, currentData);
+				}
+
+				job.addJobChangeListener(new JobChangeAdapter() {
+					@Override
+					public void done(IJobChangeEvent event) {
+						Display.getDefault().asyncExec(new Runnable() {
+							@Override
+							public void run() {
+								refreshTable();
+								updateIntegrated(currentData);
+							}
+						});
+					}
+				});
+				job.setUser(true);
+				job.schedule();
 			}
 		});
 		calibrateImagesButton.setEnabled(false);
