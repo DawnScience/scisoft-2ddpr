@@ -15,6 +15,8 @@ import org.dawb.workbench.ui.diffraction.DiffractionCalibrationUtils;
 import org.dawb.workbench.ui.diffraction.CalibrantPositioningWidget;
 import org.dawb.workbench.ui.diffraction.table.DiffCalTableViewer;
 import org.dawb.workbench.ui.diffraction.table.DiffractionTableData;
+import org.dawb.workbench.ui.diffraction.table.ImageDroppedEvent;
+import org.dawb.workbench.ui.diffraction.table.ImageDroppedListener;
 import org.dawnsci.common.widgets.tree.NumericNode;
 import org.dawnsci.plotting.api.IPlottingSystem;
 import org.dawnsci.plotting.api.PlotType;
@@ -113,8 +115,8 @@ public class DiffractionCalibrationView extends ViewPart {
 
 	private List<String> pathsList = new ArrayList<String>();
 
-	private FormattedText wavelengthDistanceField;
-	private FormattedText wavelengthEnergyField;
+	private FormattedText wavelengthFormattedText;
+	private FormattedText energyFormattedText;
 	private CalibrantPositioningWidget calibrantPositioning;
 
 	private IToolPageSystem toolSystem;
@@ -131,6 +133,8 @@ public class DiffractionCalibrationView extends ViewPart {
 	private TabFolder tabFolder;
 
 	private Spinner ringNumberSpinner;
+
+	private ImageDroppedListener imageDroppedListener;
 
 	@Override
 	public void init(IViewSite site, IMemento memento) throws PartInitException {
@@ -211,6 +215,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		// table of images and found rings
 		diffractionTableViewer = new DiffCalTableViewer(scrollHolder, pathsList, service);
 		diffractionTableViewer.addSelectionChangedListener(selectionChangeListener);
+		diffractionTableViewer.addImageDroppedListener(imageDroppedListener);
 		model = diffractionTableViewer.getModel();
 
 		Composite mainHolder = new Composite(scrollHolder, SWT.NONE);
@@ -401,6 +406,15 @@ public class DiffractionCalibrationView extends ViewPart {
 			}
 		};
 
+		imageDroppedListener = new ImageDroppedListener() {
+			@Override
+			public void imageDropped(ImageDroppedEvent event) {
+				setWavelength(currentData);
+				if (model.size() > 0)
+					setXRaysModifiersEnabled(true);
+			}
+		};
+
 		calibrantChangeListener = new CalibrantSelectedListener() {
 			@Override
 			public void calibrantSelectionChanged(CalibrantSelectionEvent evt) {
@@ -431,15 +445,15 @@ public class DiffractionCalibrationView extends ViewPart {
 		Label wavelengthLabel = new Label(wavelengthGroup, SWT.NONE);
 		wavelengthLabel.setText("Wavelength");
 
-		wavelengthDistanceField = new FormattedText(wavelengthGroup, SWT.SINGLE | SWT.BORDER);
-		wavelengthDistanceField.setFormatter(new NumberFormatter(FORMAT_MASK, FORMAT_MASK, Locale.UK));
-		wavelengthDistanceField.getControl().setToolTipText("Set the wavelength in Angstrom");
-		wavelengthDistanceField.getControl().addListener(SWT.KeyUp, new Listener() {
+		wavelengthFormattedText = new FormattedText(wavelengthGroup, SWT.SINGLE | SWT.BORDER);
+		wavelengthFormattedText.setFormatter(new NumberFormatter(FORMAT_MASK, FORMAT_MASK, Locale.UK));
+		wavelengthFormattedText.getControl().setToolTipText("Set the wavelength in Angstrom");
+		wavelengthFormattedText.getControl().addListener(SWT.KeyUp, new Listener() {
 			@Override
 			public void handleEvent(Event event) {
 				// update wavelength of each image
 				double distance = 0;
-				Object obj = wavelengthDistanceField.getValue();
+				Object obj = wavelengthFormattedText.getValue();
 				if (obj instanceof Long)
 					distance = ((Long) obj).doubleValue();
 				else if (obj instanceof Double)
@@ -451,9 +465,9 @@ public class DiffractionCalibrationView extends ViewPart {
 				double energy = DiffractionCalibrationUtils.getWavelengthEnergy(distance);
 				if (energy != Double.POSITIVE_INFINITY) {
 					String newFormat = DiffractionCalibrationUtils.getFormatMask(distance, energy);
-					wavelengthEnergyField.setFormatter(new NumberFormatter(FORMAT_MASK, newFormat, Locale.UK));
+					energyFormattedText.setFormatter(new NumberFormatter(FORMAT_MASK, newFormat, Locale.UK));
 				}
-				wavelengthEnergyField.setValue(energy);
+				energyFormattedText.setValue(energy);
 				// update wavelength in diffraction tool tree viewer
 				NumericNode<Length> node = getDiffractionTreeNode(WAVELENGTH_NODE_PATH);
 				if (node.getUnit().equals(NonSI.ANGSTROM)) {
@@ -465,22 +479,22 @@ public class DiffractionCalibrationView extends ViewPart {
 				}
 			}
 		});
-		wavelengthDistanceField.getControl().setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true));
+		wavelengthFormattedText.getControl().setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true));
 		Label unitDistanceLabel = new Label(wavelengthGroup, SWT.NONE);
 		unitDistanceLabel.setText(NonSI.ANGSTROM.toString());
 
 		Label energyLabel = new Label(wavelengthGroup, SWT.NONE);
 		energyLabel.setText("Energy");
 
-		wavelengthEnergyField = new FormattedText(wavelengthGroup, SWT.SINGLE | SWT.BORDER);
-		wavelengthEnergyField.setFormatter(new NumberFormatter(FORMAT_MASK, FORMAT_MASK, Locale.UK));
-		wavelengthEnergyField.getControl().setToolTipText("Set the wavelength in keV");
-		wavelengthEnergyField.getControl().addListener(SWT.KeyUp, new Listener() {
+		energyFormattedText = new FormattedText(wavelengthGroup, SWT.SINGLE | SWT.BORDER);
+		energyFormattedText.setFormatter(new NumberFormatter(FORMAT_MASK, FORMAT_MASK, Locale.UK));
+		energyFormattedText.getControl().setToolTipText("Set the wavelength in keV");
+		energyFormattedText.getControl().addListener(SWT.KeyUp, new Listener() {
 			@Override
 			public void handleEvent(Event event) {
 				// update wavelength of each image
 				double energy = 0;
-				Object obj = wavelengthEnergyField.getValue();
+				Object obj = energyFormattedText.getValue();
 				if (obj instanceof Long)
 					energy = ((Long) obj).doubleValue();
 				else if (obj instanceof Double)
@@ -492,9 +506,9 @@ public class DiffractionCalibrationView extends ViewPart {
 				double distance = DiffractionCalibrationUtils.getWavelengthEnergy(energy);
 				if (distance != Double.POSITIVE_INFINITY) {
 					String newFormat = DiffractionCalibrationUtils.getFormatMask(energy, distance);
-					wavelengthDistanceField.setFormatter(new NumberFormatter(FORMAT_MASK, newFormat, Locale.UK));
+					wavelengthFormattedText.setFormatter(new NumberFormatter(FORMAT_MASK, newFormat, Locale.UK));
 				}
-				wavelengthDistanceField.setValue(distance);
+				wavelengthFormattedText.setValue(distance);
 				// update wavelength in Diffraction tool tree viewer
 				NumericNode<Length> node = getDiffractionTreeNode(WAVELENGTH_NODE_PATH);
 				if (node.getUnit().equals(NonSI.ANGSTROM)) {
@@ -506,15 +520,15 @@ public class DiffractionCalibrationView extends ViewPart {
 				}
 			}
 		});
-		wavelengthEnergyField.getControl().setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true));
+		energyFormattedText.getControl().setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true));
 		Label unitEnergyLabel = new Label(wavelengthGroup, SWT.NONE);
 		unitEnergyLabel.setText(SI.KILO(NonSI.ELECTRON_VOLT).toString());
 		return wavelengthGroup;
 	}
 
 	private void setXRaysModifiersEnabled(boolean b) {
-		wavelengthDistanceField.getControl().setEnabled(b);
-		wavelengthEnergyField.getControl().setEnabled(b);
+		wavelengthFormattedText.getControl().setEnabled(b);
+		energyFormattedText.getControl().setEnabled(b);
 	}
 
 	private void createToolbarActions(Composite parent) {
@@ -587,8 +601,8 @@ public class DiffractionCalibrationView extends ViewPart {
 
 					// update wavelength
 					double wavelength = currentData.md.getDiffractionCrystalEnvironment().getWavelength();
-					wavelengthEnergyField.setValue(DiffractionCalibrationUtils.getWavelengthEnergy(wavelength));
-					wavelengthDistanceField.setValue(wavelength);
+					energyFormattedText.setValue(DiffractionCalibrationUtils.getWavelengthEnergy(wavelength));
+					wavelengthFormattedText.setValue(wavelength);
 					// update wavelength in diffraction tool tree viewer
 					NumericNode<Length> node = getDiffractionTreeNode(WAVELENGTH_NODE_PATH);
 					if (node.getUnit().equals(NonSI.ANGSTROM)) {
@@ -746,13 +760,13 @@ public class DiffractionCalibrationView extends ViewPart {
 		// set the wavelength
 		if (data != null) {
 			double wavelength = data.md.getOriginalDiffractionCrystalEnvironment().getWavelength();
-			wavelengthDistanceField.setValue(wavelength);
+			wavelengthFormattedText.setValue(wavelength);
 			double energy = DiffractionCalibrationUtils.getWavelengthEnergy(wavelength);
 			if (energy != Double.POSITIVE_INFINITY) {
-				wavelengthEnergyField.setFormatter(new NumberFormatter(FORMAT_MASK, 
+				energyFormattedText.setFormatter(new NumberFormatter(FORMAT_MASK, 
 						DiffractionCalibrationUtils.getFormatMask(wavelength, energy), Locale.UK));
 			}
-			wavelengthEnergyField.setValue(energy);
+			energyFormattedText.setValue(energy);
 		}
 	}
 
@@ -839,8 +853,10 @@ public class DiffractionCalibrationView extends ViewPart {
 	}
 
 	private void removeListeners() {
-		if(diffractionTableViewer != null)
+		if(diffractionTableViewer != null) {
 			diffractionTableViewer.removeSelectionChangedListener(selectionChangeListener);
+			diffractionTableViewer.removeImageDroppedListener(imageDroppedListener);
+		}
 		CalibrationFactory.removeCalibrantSelectionListener(calibrantChangeListener);
 		// deactivate the diffraction tool
 		if (toolSystem != null) {
