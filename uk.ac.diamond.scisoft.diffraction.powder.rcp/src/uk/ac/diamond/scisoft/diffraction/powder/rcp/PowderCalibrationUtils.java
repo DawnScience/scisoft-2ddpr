@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.dawb.common.ui.monitor.ProgressMonitorWrapper;
-import org.dawb.workbench.ui.views.DiffractionCalibrationUtils;
-import org.dawb.workbench.ui.views.DiffractionTableData;
+import org.dawb.workbench.ui.diffraction.DiffractionCalibrationUtils;
+import org.dawb.workbench.ui.diffraction.DiffractionTableData;
 import org.dawnsci.plotting.api.IPlottingSystem;
 import org.dawnsci.plotting.api.region.IRegion;
 import org.dawnsci.plotting.api.trace.IImageTrace;

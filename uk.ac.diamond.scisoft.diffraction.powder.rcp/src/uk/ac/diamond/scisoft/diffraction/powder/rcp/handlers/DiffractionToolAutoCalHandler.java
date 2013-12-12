@@ -2,7 +2,7 @@ package uk.ac.diamond.scisoft.diffraction.powder.rcp.handlers;
 
 import java.util.Collection;
 
-import org.dawb.workbench.ui.views.DiffractionTableData;
+import org.dawb.workbench.ui.diffraction.DiffractionTableData;
 import org.dawnsci.plotting.api.IPlottingSystem;
 import org.dawnsci.plotting.api.trace.IImageTrace;
 import org.dawnsci.plotting.api.trace.ITrace;
