@@ -1,5 +1,6 @@
 package uk.ac.diamond.scisoft.diffraction.powder.rcp;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -434,6 +435,18 @@ public class DiffractionCalibrationView extends ViewPart {
 			scrollHolder.layout();
 		}
 	}
+	
+	private void updateWavelengthAfterCalibration(){
+		double wavelength = currentData.md.getDiffractionCrystalEnvironment().getWavelength();
+		wavelength = DiffractionCalibrationUtils.setPrecision(wavelength, 5);
+		String newFormat = DiffractionCalibrationUtils.getFormatMask(wavelength, wavelength);
+		wavelengthFormattedText.setFormatter(new NumberFormatter(FORMAT_MASK, newFormat, Locale.UK));
+		wavelengthFormattedText.setValue(wavelength);
+		double energy = DiffractionCalibrationUtils.getWavelengthEnergy(wavelength);
+		newFormat = DiffractionCalibrationUtils.getFormatMask(energy, energy);
+		energyFormattedText.setFormatter(new NumberFormatter(FORMAT_MASK, newFormat, Locale.UK));
+		energyFormattedText.setValue(energy);
+	}
 
 	private Group createXRayGroup(Composite composite, int style) {
 		Group wavelengthGroup = new Group(composite, style);
@@ -651,6 +664,7 @@ public class DiffractionCalibrationView extends ViewPart {
 							@Override
 							public void run() {
 								updateScrolledComposite();
+								updateWavelengthAfterCalibration();
 								updateIntegrated(currentData);
 							}
 						});

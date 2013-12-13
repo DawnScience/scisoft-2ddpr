@@ -213,7 +213,7 @@ public class PowderCalibrationUtils {
 					public void run() {
 						DetectorProperties dp = currentData.md.getDetector2DProperties();
 						
-						dp.setDetectorDistance(output.getDistance().getDouble(0));
+						dp.setBeamCentreDistance(output.getDistance().getDouble(0));
 						double[] bc = new double[] {output.getBeamCentreX().getDouble(0),output.getBeamCentreY().getDouble(0) };
 						dp.setBeamCentreCoords(bc);
 						
@@ -310,7 +310,7 @@ public class PowderCalibrationUtils {
 						for (DiffractionTableData data : model) {
 							DetectorProperties dp = data.md.getDetector2DProperties();
 
-							dp.setDetectorDistance(output.getDistance().getDouble(i));
+							dp.setBeamCentreDistance(output.getDistance().getDouble(i));
 							double[] bc = new double[] {output.getBeamCentreX().getDouble(i),output.getBeamCentreY().getDouble(i) };
 							dp.setBeamCentreCoords(bc);
 
