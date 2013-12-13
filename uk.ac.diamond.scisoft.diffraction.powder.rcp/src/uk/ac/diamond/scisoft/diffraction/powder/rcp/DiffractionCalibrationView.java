@@ -283,7 +283,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		}
 
 		Button configCalibrantButton = new Button(selectCalibComp, SWT.NONE);
-		configCalibrantButton.setText("Configuration");
+		configCalibrantButton.setText("Configure...");
 		configCalibrantButton.setToolTipText("Open Calibrant configuration page");
 		configCalibrantButton.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -388,6 +388,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		calibrantPositioning.setToolSystem(toolSystem);
 		calibrantPositioning.setControlsToUpdate(calibrateImagesButton);
 		calibrantPositioning.setTableViewerToUpdate(diffractionTableViewer);
+		calibrantPositioning.setNumberOfRingsSpinner(ringNumberSpinner);
 
 	}
 
@@ -644,7 +645,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		composite.setLayout(new GridLayout(1, false));
 		Button goBabyGoButton = new Button(composite, SWT.PUSH);
 		goBabyGoButton.setImage(Activator.getImage("icons/CalibrationRun.png"));
-		goBabyGoButton.setText("Auto Calibration Process");
+		goBabyGoButton.setText("Run Auto Calibration");
 		goBabyGoButton.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
 		goBabyGoButton.addSelectionListener(new SelectionAdapter() {
 			@Override
