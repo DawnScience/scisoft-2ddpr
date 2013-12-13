@@ -10,8 +10,12 @@ import javax.measure.unit.NonSI;
 import javax.measure.unit.SI;
 
 import uk.ac.diamond.scisoft.analysis.io.ILoaderService;
+
+import org.dawb.common.ui.util.EclipseUtils;
 import org.dawb.common.ui.util.GridUtils;
 import org.dawb.common.ui.widgets.ActionBarWrapper;
+import org.dawb.common.ui.wizard.persistence.PersistenceExportWizard;
+import org.dawb.common.ui.wizard.persistence.PersistenceImportWizard;
 import org.dawb.workbench.ui.diffraction.DiffractionCalibrationUtils;
 import org.dawb.workbench.ui.diffraction.CalibrantPositioningWidget;
 import org.dawb.workbench.ui.diffraction.table.DiffCalTableViewer;
@@ -37,6 +41,8 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.wizard.IWizard;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.nebula.widgets.formattedtext.FormattedText;
 import org.eclipse.nebula.widgets.formattedtext.NumberFormatter;
 import org.eclipse.swt.SWT;
@@ -258,7 +264,10 @@ public class DiffractionCalibrationView extends ViewPart {
 		selectCalibComp.setLayout(new GridLayout(1, false));
 		selectCalibComp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
-		calibrantCombo = new Combo(selectCalibComp, SWT.READ_ONLY);
+		Composite comp = new Composite(selectCalibComp, SWT.NONE);
+		comp.setLayout(new GridLayout(2, false));
+		comp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		calibrantCombo = new Combo(comp, SWT.READ_ONLY);
 		calibrantCombo.setToolTipText("Select a type of calibrant");
 		calibrantCombo.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -282,7 +291,7 @@ public class DiffractionCalibrationView extends ViewPart {
 			calibrantCombo.setText(s);
 		}
 
-		Button configCalibrantButton = new Button(selectCalibComp, SWT.NONE);
+		Button configCalibrantButton = new Button(comp, SWT.NONE);
 		configCalibrantButton.setText("Configure...");
 		configCalibrantButton.setToolTipText("Open Calibrant configuration page");
 		configCalibrantButton.addSelectionListener(new SelectionAdapter() {
@@ -293,6 +302,18 @@ public class DiffractionCalibrationView extends ViewPart {
 					pref.open();
 			}
 		});
+
+		final Button showCalibAndBeamCtrCheckBox = new Button(selectCalibComp, SWT.CHECK);
+		showCalibAndBeamCtrCheckBox.setText("Show Calibrant and Beam Centre");
+		showCalibAndBeamCtrCheckBox.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				boolean checked = showCalibAndBeamCtrCheckBox.getSelection();
+				currentData.augmenter.drawCalibrantRings(checked, standards.getCalibrant());
+				currentData.augmenter.drawBeamCentre(checked);
+			}
+		});
+		showCalibAndBeamCtrCheckBox.setSelection(true);
 
 		createXRayGroup(rightComp, SWT.FILL);
 //		// Enable/disable the modifiers
@@ -372,10 +393,11 @@ public class DiffractionCalibrationView extends ViewPart {
 		// start diffraction tool
 		Composite diffractionToolComp = new Composite(leftSash, SWT.BORDER);
 		diffractionToolComp.setLayout(new StackLayout());
-		//diffractionToolComp.setLayout(new FillLayout());
 		try {
 			// Show tools here, not on a page.
 			toolSystem.setToolComposite(diffractionToolComp);
+			DiffractionTool diffTool = (DiffractionTool)toolSystem.getToolPage(DIFFRACTION_ID);
+			diffTool.hideToolBar(true);
 			toolSystem.setToolVisible(DIFFRACTION_ID, ToolPageRole.ROLE_2D, null);
 		} catch (Exception e2) {
 			logger.error("Could not open diffraction tool:" + e2);
@@ -436,7 +458,7 @@ public class DiffractionCalibrationView extends ViewPart {
 			scrollHolder.layout();
 		}
 	}
-	
+
 	private void updateWavelengthAfterCalibration(){
 		double wavelength = currentData.md.getDiffractionCrystalEnvironment().getWavelength();
 		wavelength = DiffractionCalibrationUtils.setPrecision(wavelength, 5);
@@ -549,17 +571,31 @@ public class DiffractionCalibrationView extends ViewPart {
 		ToolBar tb = new ToolBar(parent, SWT.NONE);
 		tb.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false));
 
-		Image exportImage = new Image(Display.getDefault(), Activator.getImageDescriptor("icons/page_white_excel.png").getImageData());
+		Image importImage = new Image(Display.getDefault(), Activator.getImageDescriptor("icons/mask-import-wiz.png").getImageData());
+		Image exportImage = new Image(Display.getDefault(), Activator.getImageDescriptor("icons/mask-export-wiz.png").getImageData());
+		Image exportToXLSImage = new Image(Display.getDefault(), Activator.getImageDescriptor("icons/page_white_excel.png").getImageData());
 		Image resetRingsImage = new Image(Display.getDefault(), Activator.getImageDescriptor("icons/reset_rings.png").getImageData());
 		Image resetImage = new Image(Display.getDefault(), Activator.getImageDescriptor("icons/table_delete.png").getImageData());
+		ToolItem importItem = new ToolItem(tb, SWT.PUSH);
 		ToolItem exportItem = new ToolItem(tb, SWT.PUSH);
+		ToolItem exportToXLSItem = new ToolItem(tb, SWT.PUSH);
 		ToolItem resetRingsItem = new ToolItem(tb, SWT.PUSH);
 		ToolItem resetItem = new ToolItem(tb, SWT.PUSH);
 
+		Button importButton = new Button(tb, SWT.PUSH);
+		importItem.setToolTipText("Import metadata from file");
+		importItem.setControl(importButton);
+		importItem.setImage(importImage);
+
 		Button exportButton = new Button(tb, SWT.PUSH);
-		exportItem.setToolTipText("Export metadata to XLS");
+		exportItem.setToolTipText("Export metadata to file");
 		exportItem.setControl(exportButton);
 		exportItem.setImage(exportImage);
+
+		Button exportToXLSButton = new Button(tb, SWT.PUSH);
+		exportToXLSItem.setToolTipText("Export metadata to XLS");
+		exportToXLSItem.setControl(exportToXLSButton);
+		exportToXLSItem.setImage(exportToXLSImage);
 
 		Button resetRingsButton = new Button(tb, SWT.PUSH);
 		resetRingsItem.setToolTipText("Remove found rings");
@@ -571,7 +607,35 @@ public class DiffractionCalibrationView extends ViewPart {
 		resetItem.setControl(resetButton);
 		resetItem.setImage(resetImage);
 
+		importItem.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent event) {
+				try {
+					IWizard wiz = EclipseUtils.openWizard(PersistenceImportWizard.ID, false);
+					WizardDialog wd = new  WizardDialog(Display.getCurrent().getActiveShell(), wiz);
+					wd.setTitle(wiz.getWindowTitle());
+					wd.open();
+				} catch (Exception e) {
+					logger.error("Problem opening import!", e);
+				}
+			}
+		});
+
 		exportItem.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent event) {
+				try {
+					IWizard wiz = EclipseUtils.openWizard(PersistenceExportWizard.ID, false);
+					WizardDialog wd = new  WizardDialog(Display.getCurrent().getActiveShell(), wiz);
+					wd.setTitle(wiz.getWindowTitle());
+					wd.open();
+				} catch (Exception e) {
+					logger.error("Problem opening export!", e);
+				}
+			}
+		});
+
+		exportToXLSItem.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent event) {
 				FileDialog dialog = new FileDialog(Display.getDefault().getActiveShell(), SWT.SAVE);
