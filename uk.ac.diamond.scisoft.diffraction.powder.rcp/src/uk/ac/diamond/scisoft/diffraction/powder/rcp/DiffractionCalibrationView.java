@@ -91,6 +91,7 @@ import uk.ac.diamond.scisoft.analysis.diffraction.DiffractionCrystalEnvironment;
 
 public class DiffractionCalibrationView extends ViewPart {
 
+	public static final String ID = "uk.ac.diamond.scisoft.diffraction.powder.rcp.calibrationview";
 	private static Logger logger = LoggerFactory.getLogger(DiffractionCalibrationView.class);
 
 	private static final String POWDERCHECK_ID = "org.dawnsci.plotting.tools.powdercheck";
