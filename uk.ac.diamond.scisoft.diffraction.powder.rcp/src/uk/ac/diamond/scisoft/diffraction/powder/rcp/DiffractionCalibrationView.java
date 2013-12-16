@@ -1,6 +1,5 @@
 package uk.ac.diamond.scisoft.diffraction.powder.rcp;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -94,19 +93,22 @@ public class DiffractionCalibrationView extends ViewPart {
 
 	private static Logger logger = LoggerFactory.getLogger(DiffractionCalibrationView.class);
 
-	private DiffractionTableData currentData;
-
 	private static final String POWDERCHECK_ID = "org.dawnsci.plotting.tools.powdercheck";
 	private static final String DIFFRACTION_ID = "org.dawb.workbench.plotting.tools.diffraction.Diffraction";
 	private static final String WAVELENGTH_NODE_PATH = "/Experimental Information/Wavelength";
 	private static final String BEAM_CENTRE_XPATH = "/Detector/Beam Centre/X";
 	private static final String BEAM_CENTRE_YPATH = "/Detector/Beam Centre/Y";
 	private static final String DISTANCE_NODE_PATH = "/Experimental Information/Distance";
-
 	public static final String FORMAT_MASK = "##,##0.##########";
 
+	private static final String DATA_PATH = "DataPath";
+	private static final String CALIBRANT = "Calibrant";
+
+	private DiffractionTableData currentData;
 	private List<DiffractionTableData> model;
+	private List<String> pathsList = new ArrayList<String>();
 	private ILoaderService service;
+	private CalibrationStandards standards;
 
 	private Composite parent;
 	private ScrolledComposite scrollComposite;
@@ -114,34 +116,25 @@ public class DiffractionCalibrationView extends ViewPart {
 	private DiffCalTableViewer diffractionTableViewer;
 	private Button calibrateImagesButton;
 	private Combo calibrantCombo;
-
-	private IPlottingSystem plottingSystem;
-
-	private ISelectionChangedListener selectionChangeListener;
-	private CalibrantSelectedListener calibrantChangeListener;
-
-	private List<String> pathsList = new ArrayList<String>();
-
+	private TabFolder tabFolder;
+	private Spinner ringNumberSpinner;
 	private FormattedText wavelengthFormattedText;
 	private FormattedText energyFormattedText;
 	private CalibrantPositioningWidget calibrantPositioning;
 
+	private IPlottingSystem plottingSystem;
 	private IToolPageSystem toolSystem;
+
+	private ISelectionChangedListener selectionChangeListener;
+	private CalibrantSelectedListener calibrantChangeListener;
+	private ImageDroppedListener imageDroppedListener;
+
+	private boolean checked = true;
+	private String calibrantName;
 
 	public DiffractionCalibrationView() {
 		service = (ILoaderService) PlatformUI.getWorkbench().getService(ILoaderService.class);
 	}
-
-	private static final String DATA_PATH = "DataPath";
-	private static final String CALIBRANT = "Calibrant";
-
-	private String calibrantName;
-
-	private TabFolder tabFolder;
-
-	private Spinner ringNumberSpinner;
-
-	private ImageDroppedListener imageDroppedListener;
 
 	@Override
 	public void init(IViewSite site, IMemento memento) throws PartInitException {
@@ -242,7 +235,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		});
 		diffractionTableViewer.setTabFolder(tabFolder);
 
-		final CalibrationStandards standards = CalibrationFactory.getCalibrationStandards();
+		standards = CalibrationFactory.getCalibrationStandards();
 
 		TabItem manualTabItem = new TabItem(tabFolder, SWT.FILL);
 		manualTabItem.setText("Manual");
@@ -283,6 +276,7 @@ public class DiffractionCalibrationView extends ViewPart {
 				ringNumberSpinner.setMaximum(standards.getCalibrant().getHKLs().size());
 				PowderCheckTool powderTool = (PowderCheckTool)toolSystem.getToolPage(POWDERCHECK_ID);
 				if (powderTool != null) powderTool.updateCalibrantLines();
+				showCalibrantAndBeamCentre(checked, currentData);
 			}
 		});
 		for (String c : standards.getCalibrantList()) {
@@ -310,9 +304,8 @@ public class DiffractionCalibrationView extends ViewPart {
 		showCalibAndBeamCtrCheckBox.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				boolean checked = showCalibAndBeamCtrCheckBox.getSelection();
-				currentData.augmenter.drawCalibrantRings(checked, standards.getCalibrant());
-				currentData.augmenter.drawBeamCentre(checked);
+				checked = showCalibAndBeamCtrCheckBox.getSelection();
+				showCalibrantAndBeamCentre(checked, currentData);
 			}
 		});
 		showCalibAndBeamCtrCheckBox.setSelection(true);
@@ -428,6 +421,7 @@ public class DiffractionCalibrationView extends ViewPart {
 					if (selectedData == null || selectedData == currentData)
 						return;
 					drawSelectedData(selectedData);
+					showCalibrantAndBeamCentre(checked, currentData);
 				}
 			}
 		};
@@ -445,9 +439,20 @@ public class DiffractionCalibrationView extends ViewPart {
 			@Override
 			public void calibrantSelectionChanged(CalibrantSelectionEvent evt) {
 				calibrantCombo.select(calibrantCombo.indexOf(evt.getCalibrant()));
+				showCalibrantAndBeamCentre(checked, currentData);
 			}
 		};
 
+	}
+
+	/**
+	 * Shows/Hides the calibrant and beam centre
+	 * @param show
+	 * @param currentData
+	 */
+	private void showCalibrantAndBeamCentre(boolean show, DiffractionTableData currentData) {
+		currentData.augmenter.drawCalibrantRings(show, standards.getCalibrant());
+		currentData.augmenter.drawBeamCentre(show);
 	}
 
 	private void updateScrolledComposite() {
