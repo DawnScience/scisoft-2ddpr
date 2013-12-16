@@ -281,6 +281,8 @@ public class DiffractionCalibrationView extends ViewPart {
 				DiffractionCalibrationUtils.drawCalibrantRings(currentData.augmenter);
 				// set the maximum number of rings
 				ringNumberSpinner.setMaximum(standards.getCalibrant().getHKLs().size());
+				PowderCheckTool powderTool = (PowderCheckTool)toolSystem.getToolPage(POWDERCHECK_ID);
+				if (powderTool != null) powderTool.updateCalibrantLines();
 			}
 		});
 		for (String c : standards.getCalibrantList()) {
