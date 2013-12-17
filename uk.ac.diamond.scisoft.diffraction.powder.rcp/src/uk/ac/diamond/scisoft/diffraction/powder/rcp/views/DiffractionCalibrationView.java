@@ -189,10 +189,8 @@ public class DiffractionCalibrationView extends ViewPart {
 		Label instructionLabel = new Label(controlComp, SWT.WRAP);
 		instructionLabel.setText("Drag/drop a file/data to the table below, " +
 				"choose a type of calibrant, " +
-				"modify the rings using the positioning controls, " +
-				"modify the wavelength/energy with the wanted values, " +
-				"match rings to the image, " +
-				"and select the calibration type before running the calibration process.");
+				"select the auto mode and the number of rings through the settings tab " +
+				"and finally run the auto calibration.");
 		instructionLabel.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, true, false));
 		Point pt = instructionLabel.getSize(); pt.x +=4; pt.y += 4; instructionLabel.setSize(pt);
 
