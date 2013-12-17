@@ -95,19 +95,19 @@ import uk.ac.diamond.scisoft.diffraction.powder.rcp.PowderCalibrationUtils;
 public class DiffractionCalibrationView extends ViewPart {
 
 	public static final String ID = "uk.ac.diamond.scisoft.diffraction.powder.rcp.diffractionCalibrationView";
-	private static Logger logger = LoggerFactory.getLogger(DiffractionCalibrationView.class);
+	private final Logger logger = LoggerFactory.getLogger(DiffractionCalibrationView.class);
 
 	public static final String DIFFRACTION_ID = "org.dawb.workbench.plotting.tools.diffraction.Diffraction";
 	public static final String POWDERCHECK_ID = "org.dawnsci.plotting.tools.powdercheck";
 
-	private static final String WAVELENGTH_NODE_PATH = "/Experimental Information/Wavelength";
-	private static final String BEAM_CENTRE_XPATH = "/Detector/Beam Centre/X";
-	private static final String BEAM_CENTRE_YPATH = "/Detector/Beam Centre/Y";
-	private static final String DISTANCE_NODE_PATH = "/Experimental Information/Distance";
+	private final String WAVELENGTH_NODE_PATH = "/Experimental Information/Wavelength";
+	private final String BEAM_CENTRE_XPATH = "/Detector/Beam Centre/X";
+	private final String BEAM_CENTRE_YPATH = "/Detector/Beam Centre/Y";
+	private final String DISTANCE_NODE_PATH = "/Experimental Information/Distance";
 	public static final String FORMAT_MASK = "##,##0.##########";
 
-	private static final String DATA_PATH = "DataPath";
-	private static final String CALIBRANT = "Calibrant";
+	private final String DATA_PATH = "DataPath";
+	private final String CALIBRANT = "Calibrant";
 
 	private DiffractionTableData currentData;
 	private List<DiffractionTableData> model;
