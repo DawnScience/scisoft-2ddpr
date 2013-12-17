@@ -15,6 +15,34 @@
             name="Calibration Plot"
             restorable="true">
       </view>
+      <view
+            category="org.dawb.workbench.ui.beta.views.category"
+            class="uk.ac.diamond.scisoft.diffraction.powder.rcp.views.DiffractionPlotView"
+            id="uk.ac.diamond.scisoft.diffraction.powder.rcp.plottingView"
+            name="Diffraction Plotting"
+            restorable="false">
+      </view>
+      <view
+            category="org.dawb.workbench.ui.beta.views.category"
+            class="uk.ac.diamond.scisoft.diffraction.powder.rcp.views.DiffractionCalibrationView"
+            id="uk.ac.diamond.scisoft.diffraction.powder.rcp.diffractionCalibrationView"
+            name="Diffraction Calibration Controls"
+            restorable="true">
+      </view>
+      <view
+            category="org.dawb.workbench.ui.beta.views.category"
+            class="uk.ac.diamond.scisoft.diffraction.powder.rcp.views.DiffractionToolView"
+            id="uk.ac.diamond.scisoft.diffraction.powder.rcp.diffractionToolView"
+            name="Diffraction Tool"
+            restorable="true">
+      </view>
+      <view
+            category="org.dawb.workbench.ui.beta.views.category"
+            class="uk.ac.diamond.scisoft.diffraction.powder.rcp.views.DiffractionPowderToolView"
+            id="uk.ac.diamond.scisoft.diffraction.powder.rcp.diffractionPowderToolView"
+            name="Diffraction Powder Tool"
+            restorable="true">
+      </view>
    </extension>
    <extension
          point="org.eclipse.ui.perspectives">
@@ -22,6 +50,11 @@
             class="uk.ac.diamond.scisoft.diffraction.powder.rcp.DiffractionCalibrationPerspective"
             id="uk.ac.diamond.scisoft.diffraction.powder.rcp.calibrationperspective"
             name="Powder Calibration">
+      </perspective>
+      <perspective
+            class="uk.ac.diamond.scisoft.diffraction.powder.rcp.DiffractionCalibrationMultipleViewsPerspective"
+            id="uk.ac.diamond.scisoft.diffraction.powder.rcp.calibrationMultipleViewsPerspective"
+            name="Powder Calibration Views">
       </perspective>
    </extension>
    <extension
