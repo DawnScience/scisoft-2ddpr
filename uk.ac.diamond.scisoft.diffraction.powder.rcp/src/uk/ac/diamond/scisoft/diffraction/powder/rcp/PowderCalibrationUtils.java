@@ -571,7 +571,7 @@ public class PowderCalibrationUtils {
 					double[] outer = new double[dSpace.length];
 					
 					for (int i = 0; i < dSpace.length; i++) {
-						//TODO if dSpace == 1;
+						//TODO out might be known if max less than spacings.size();
 						double dVal = dSpaceRadiusMap.get(dSpace[i]);
 						ellipses.add(new EllipticalROI(dVal, approxCentre[0],approxCentre[1]));
 						inner.toString();
