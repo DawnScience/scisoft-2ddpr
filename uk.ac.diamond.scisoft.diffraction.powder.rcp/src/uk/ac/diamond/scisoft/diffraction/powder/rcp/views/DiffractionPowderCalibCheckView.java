@@ -4,13 +4,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.ViewPart;
 
 /**
- * View to hold the powder diffraction tool
- * @author wqk87977
+ * View to hold the powder calibration check plot
  *
  */
-public class DiffractionPowderToolView extends ViewPart {
+public class DiffractionPowderCalibCheckView extends ViewPart {
 
-	public static final String ID = "uk.ac.diamond.scisoft.diffraction.powder.rcp.diffractionPowderToolView";
+	public static final String ID = "uk.ac.diamond.scisoft.diffraction.powder.rcp.diffractionPowderCalibCheckView";
 	private Composite parent;
 
 	@Override

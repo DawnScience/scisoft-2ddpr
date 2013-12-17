@@ -5,7 +5,6 @@ import org.eclipse.ui.part.ViewPart;
 
 /**
  * View to hold the diffraction tool
- * @author wqk87977
  *
  */
 public class DiffractionToolView extends ViewPart {

@@ -32,15 +32,17 @@
       <view
             category="org.dawb.workbench.ui.beta.views.category"
             class="uk.ac.diamond.scisoft.diffraction.powder.rcp.views.DiffractionToolView"
+            icon="icons/plot-tool-diffraction.png"
             id="uk.ac.diamond.scisoft.diffraction.powder.rcp.diffractionToolView"
             name="Diffraction Tool"
             restorable="true">
       </view>
       <view
             category="org.dawb.workbench.ui.beta.views.category"
-            class="uk.ac.diamond.scisoft.diffraction.powder.rcp.views.DiffractionPowderToolView"
-            id="uk.ac.diamond.scisoft.diffraction.powder.rcp.diffractionPowderToolView"
-            name="Diffraction Powder Tool"
+            class="uk.ac.diamond.scisoft.diffraction.powder.rcp.views.DiffractionPowderCalibCheckView"
+            icon="icons/CalibrationCheck.png"
+            id="uk.ac.diamond.scisoft.diffraction.powder.rcp.diffractionPowderCalibCheckView"
+            name="Powder Calibration Check"
             restorable="true">
       </view>
    </extension>

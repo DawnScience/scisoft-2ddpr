@@ -387,7 +387,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		// create the diffraction tool view
 		toolSystem = (IToolPageSystem) plottingSystem.getAdapter(IToolPageSystem.class);
 		try {
-			DiffractionPowderToolView diffPowderToolView = (DiffractionPowderToolView)EclipseUtils.getPage().findView(DiffractionPowderToolView.ID);
+			DiffractionPowderCalibCheckView diffPowderToolView = (DiffractionPowderCalibCheckView)EclipseUtils.getPage().findView(DiffractionPowderCalibCheckView.ID);
 			Composite diffPowderToolComp = diffPowderToolView.getComposite();
 			diffPowderToolComp.setLayout(new StackLayout());
 			toolSystem.setToolComposite(diffPowderToolComp);

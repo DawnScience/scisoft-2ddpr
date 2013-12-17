@@ -6,7 +6,7 @@ import org.eclipse.ui.IPerspectiveFactory;
 
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.views.DiffractionCalibrationView;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.views.DiffractionPlotView;
-import uk.ac.diamond.scisoft.diffraction.powder.rcp.views.DiffractionPowderToolView;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.views.DiffractionPowderCalibCheckView;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.views.DiffractionToolView;
 
 public class DiffractionCalibrationMultipleViewsPerspective implements IPerspectiveFactory {
@@ -34,12 +34,12 @@ public class DiffractionCalibrationMultipleViewsPerspective implements IPerspect
 
 		// Bottom Right: Powder diffraction tool
 		IFolderLayout bottomRight = layout.createFolder("bottomRight", IPageLayout.BOTTOM, 0.50f, "topRight");
-		bottomRight.addView(DiffractionPowderToolView.ID);
+		bottomRight.addView(DiffractionPowderCalibCheckView.ID);
 
 		layout.getViewLayout(DiffractionPlotView.ID).setCloseable(false);
 		layout.getViewLayout(DiffractionCalibrationView.ID).setCloseable(false);
 		layout.getViewLayout(DiffractionToolView.ID).setCloseable(false);
-		layout.getViewLayout(DiffractionPowderToolView.ID).setCloseable(false);
+		layout.getViewLayout(DiffractionPowderCalibCheckView.ID).setCloseable(false);
 
 	}
 
