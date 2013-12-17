@@ -34,6 +34,9 @@ import org.dawnsci.plotting.tools.preference.diffraction.DiffractionPreferencePa
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -48,7 +51,6 @@ import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
@@ -68,8 +70,6 @@ import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.TableItem;
-import org.eclipse.swt.widgets.ToolBar;
-import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IViewSite;
@@ -179,7 +179,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		this.parent = parent;
 		final Display display = parent.getDisplay();
 
-		initializeListenersAndActions();
+		initializeListeners();
 
 		Composite controlComp = new Composite(parent, SWT.NONE);
 		controlComp.setLayout(new GridLayout(1, false));
@@ -347,7 +347,6 @@ public class DiffractionCalibrationView extends ViewPart {
 				initializeSystems();
 			}
 		});
-		
 
 		CalibrationFactory.addCalibrantSelectionListener(calibrantChangeListener);
 
@@ -411,7 +410,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		calibrantPositioning.setToolSystem(toolSystem);
 	}
 
-	private void initializeListenersAndActions(){
+	private void initializeListeners(){
 		// selection change listener for table viewer
 		selectionChangeListener = new ISelectionChangedListener() {
 			@Override
@@ -578,48 +577,11 @@ public class DiffractionCalibrationView extends ViewPart {
 	}
 
 	private void createToolbarActions(Composite parent) {
-		ToolBar tb = new ToolBar(parent, SWT.NONE);
-		tb.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false));
+		IToolBarManager toolBarMan = this.getViewSite().getActionBars().getToolBarManager();
 
-		Image importImage = new Image(Display.getDefault(), Activator.getImageDescriptor("icons/mask-import-wiz.png").getImageData());
-		Image exportImage = new Image(Display.getDefault(), Activator.getImageDescriptor("icons/mask-export-wiz.png").getImageData());
-		Image exportToXLSImage = new Image(Display.getDefault(), Activator.getImageDescriptor("icons/page_white_excel.png").getImageData());
-		Image resetRingsImage = new Image(Display.getDefault(), Activator.getImageDescriptor("icons/reset_rings.png").getImageData());
-		Image resetImage = new Image(Display.getDefault(), Activator.getImageDescriptor("icons/table_delete.png").getImageData());
-		ToolItem importItem = new ToolItem(tb, SWT.PUSH);
-		ToolItem exportItem = new ToolItem(tb, SWT.PUSH);
-		ToolItem exportToXLSItem = new ToolItem(tb, SWT.PUSH);
-		ToolItem resetRingsItem = new ToolItem(tb, SWT.PUSH);
-		ToolItem resetItem = new ToolItem(tb, SWT.PUSH);
-
-		Button importButton = new Button(tb, SWT.PUSH);
-		importItem.setToolTipText("Import metadata from file");
-		importItem.setControl(importButton);
-		importItem.setImage(importImage);
-
-		Button exportButton = new Button(tb, SWT.PUSH);
-		exportItem.setToolTipText("Export metadata to file");
-		exportItem.setControl(exportButton);
-		exportItem.setImage(exportImage);
-
-		Button exportToXLSButton = new Button(tb, SWT.PUSH);
-		exportToXLSItem.setToolTipText("Export metadata to XLS");
-		exportToXLSItem.setControl(exportToXLSButton);
-		exportToXLSItem.setImage(exportToXLSImage);
-
-		Button resetRingsButton = new Button(tb, SWT.PUSH);
-		resetRingsItem.setToolTipText("Remove found rings");
-		resetRingsItem.setControl(resetRingsButton);
-		resetRingsItem.setImage(resetRingsImage);
-
-		Button resetButton = new Button(tb, SWT.PUSH);
-		resetItem.setToolTipText("Reset metadata");
-		resetItem.setControl(resetButton);
-		resetItem.setImage(resetImage);
-
-		importItem.addSelectionListener(new SelectionAdapter() {
+		IAction importAction = new Action("Import metadata from file") {
 			@Override
-			public void widgetSelected(SelectionEvent event) {
+			public void run() {
 				try {
 					IWizard wiz = EclipseUtils.openWizard(PersistenceImportWizard.ID, false);
 					WizardDialog wd = new  WizardDialog(Display.getCurrent().getActiveShell(), wiz);
@@ -629,11 +591,12 @@ public class DiffractionCalibrationView extends ViewPart {
 					logger.error("Problem opening import!", e);
 				}
 			}
-		});
+		};
+		importAction.setImageDescriptor(Activator.getImageDescriptor("icons/mask-import-wiz.png"));
 
-		exportItem.addSelectionListener(new SelectionAdapter() {
+		IAction exportAction = new Action("Export metadata to file") {
 			@Override
-			public void widgetSelected(SelectionEvent event) {
+			public void run() {
 				try {
 					IWizard wiz = EclipseUtils.openWizard(PersistenceExportWizard.ID, false);
 					WizardDialog wd = new  WizardDialog(Display.getCurrent().getActiveShell(), wiz);
@@ -643,11 +606,12 @@ public class DiffractionCalibrationView extends ViewPart {
 					logger.error("Problem opening export!", e);
 				}
 			}
-		});
+		};
+		exportAction.setImageDescriptor(Activator.getImageDescriptor("icons/mask-export-wiz.png"));
 
-		exportToXLSItem.addSelectionListener(new SelectionAdapter() {
+		IAction exportToXLSAction = new Action("Export metadata to XLS") {
 			@Override
-			public void widgetSelected(SelectionEvent event) {
+			public void run() {
 				FileDialog dialog = new FileDialog(Display.getDefault().getActiveShell(), SWT.SAVE);
 				dialog.setText("Save metadata to Comma Separated Value file");
 				dialog.setFilterNames(new String[] { "CSV Files", "All Files (*.*)" });
@@ -660,18 +624,21 @@ public class DiffractionCalibrationView extends ViewPart {
 					DiffractionCalibrationUtils.saveModelToCSVFile(model, savedFilePath);
 				}
 			}
-		});
+		};
+		exportToXLSAction.setImageDescriptor(Activator.getImageDescriptor("icons/page_white_excel.png"));
 
-		resetRingsItem.addSelectionListener(new SelectionAdapter() {
+
+		IAction resetRingsAction = new Action("Remove found rings") {
 			@Override
-			public void widgetSelected(SelectionEvent event) {
+			public void run() {
 				DiffractionCalibrationUtils.hideFoundRings(plottingSystem);
 			}
-		});
+		};
+		resetRingsAction.setImageDescriptor(Activator.getImageDescriptor("icons/reset_rings.png"));
 
-		resetItem.addSelectionListener(new SelectionAdapter() {
+		IAction resetTableAction = new Action("Reset metadata") {
 			@Override
-			public void widgetSelected(SelectionEvent event) {
+			public void run() {
 				// select last item in table
 				if (model != null && model.size() > 0) {
 					diffractionTableViewer.setSelection(new StructuredSelection(model.get(model.size() - 1)));
@@ -703,7 +670,14 @@ public class DiffractionCalibrationView extends ViewPart {
 					diffractionTableViewer.refresh();
 				}
 			}
-		});
+		};
+		resetTableAction.setImageDescriptor(Activator.getImageDescriptor("icons/table_delete.png"));
+
+		toolBarMan.add(importAction);
+		toolBarMan.add(exportAction);
+		toolBarMan.add(exportToXLSAction);
+		toolBarMan.add(resetRingsAction);
+		toolBarMan.add(resetTableAction);
 	}
 
 
