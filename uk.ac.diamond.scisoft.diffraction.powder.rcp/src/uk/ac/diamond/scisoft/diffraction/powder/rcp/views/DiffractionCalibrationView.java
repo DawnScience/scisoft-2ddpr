@@ -18,8 +18,7 @@ import org.dawb.workbench.ui.diffraction.DiffractionCalibrationUtils;
 import org.dawb.workbench.ui.diffraction.CalibrantPositioningWidget;
 import org.dawb.workbench.ui.diffraction.table.DiffCalTableViewer;
 import org.dawb.workbench.ui.diffraction.table.DiffractionTableData;
-import org.dawb.workbench.ui.diffraction.table.ImageDroppedEvent;
-import org.dawb.workbench.ui.diffraction.table.ImageDroppedListener;
+import org.dawb.workbench.ui.diffraction.table.TableChangedListener;
 import org.dawnsci.common.widgets.tree.NumericNode;
 import org.dawnsci.plotting.api.IPlottingSystem;
 import org.dawnsci.plotting.api.PlotType;
@@ -132,7 +131,7 @@ public class DiffractionCalibrationView extends ViewPart {
 
 	private ISelectionChangedListener selectionChangeListener;
 	private CalibrantSelectedListener calibrantChangeListener;
-	private ImageDroppedListener imageDroppedListener;
+	private TableChangedListener tableChangedListener;
 
 	private boolean checked = true;
 	private String calibrantName;
@@ -206,7 +205,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		// table of images and found rings
 		diffractionTableViewer = new DiffCalTableViewer(scrollHolder, pathsList, service);
 		diffractionTableViewer.addSelectionChangedListener(selectionChangeListener);
-		diffractionTableViewer.addImageDroppedListener(imageDroppedListener);
+		diffractionTableViewer.addImageDroppedListener(tableChangedListener);
 		model = diffractionTableViewer.getModel();
 
 		Composite mainHolder = new Composite(scrollHolder, SWT.NONE);
@@ -425,12 +424,20 @@ public class DiffractionCalibrationView extends ViewPart {
 			}
 		};
 
-		imageDroppedListener = new ImageDroppedListener() {
+		tableChangedListener = new TableChangedListener() {
 			@Override
-			public void imageDropped(ImageDroppedEvent event) {
+			public void tableChanged() {
 				setWavelength(currentData);
-				if (model.size() > 0)
+				if (!model.isEmpty()) {
 					setXRaysModifiersEnabled(true);
+					drawSelectedData((DiffractionTableData) diffractionTableViewer
+							.getElementAt(0));
+				} else {
+					currentData = null; // need to reset this
+					plottingSystem.clear();
+					setXRaysModifiersEnabled(false);
+					calibrateImagesButton.setEnabled(false);
+				}
 			}
 		};
 
@@ -921,7 +928,7 @@ public class DiffractionCalibrationView extends ViewPart {
 	private void removeListeners() {
 		if(diffractionTableViewer != null) {
 			diffractionTableViewer.removeSelectionChangedListener(selectionChangeListener);
-			diffractionTableViewer.removeImageDroppedListener(imageDroppedListener);
+			diffractionTableViewer.removeImageDroppedListener(tableChangedListener);
 		}
 		CalibrationFactory.removeCalibrantSelectionListener(calibrantChangeListener);
 		// deactivate the diffraction tool
