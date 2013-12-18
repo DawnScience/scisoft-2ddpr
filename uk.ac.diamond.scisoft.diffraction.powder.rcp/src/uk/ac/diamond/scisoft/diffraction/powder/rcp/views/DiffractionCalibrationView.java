@@ -22,7 +22,6 @@ import org.dawb.workbench.ui.diffraction.table.TableChangedEvent;
 import org.dawb.workbench.ui.diffraction.table.TableChangedListener;
 import org.dawnsci.common.widgets.tree.NumericNode;
 import org.dawnsci.plotting.api.IPlottingSystem;
-import org.dawnsci.plotting.api.PlotType;
 import org.dawnsci.plotting.api.PlottingFactory;
 import org.dawnsci.plotting.api.tool.IToolPage.ToolPageRole;
 import org.dawnsci.plotting.api.tool.IToolPageSystem;
@@ -70,8 +69,8 @@ import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.TableItem;
-import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IMemento;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
@@ -97,6 +96,7 @@ public class DiffractionCalibrationView extends ViewPart {
 	public static final String ID = "uk.ac.diamond.scisoft.diffraction.powder.rcp.diffractionCalibrationView";
 	private final Logger logger = LoggerFactory.getLogger(DiffractionCalibrationView.class);
 
+	public static final String FIXED = "org.dawb.workbench.plotting.views.toolPageView.fixed:";
 	public static final String DIFFRACTION_ID = "org.dawb.workbench.plotting.tools.diffraction.Diffraction";
 	public static final String POWDERCHECK_ID = "org.dawnsci.plotting.tools.powdercheck";
 
@@ -353,50 +353,30 @@ public class DiffractionCalibrationView extends ViewPart {
 		calibrantPositioning.setNumberOfRingsSpinner(ringNumberSpinner);
 	}
 
+	private IViewPart getView(String viewID) {
+		IWorkbench workbench = PlatformUI.getWorkbench();
+		IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+		IWorkbenchPage page = window.getActivePage();
+		return page.findView(viewID);
+	}
+
 	/**
 	 * Initialise the plottingSystem and the tools (diffraction and powder)
 	 */
 	private void initializeSystems() {
-		DiffractionPlotView plotView = null;
-		try {
-			IWorkbench workbench = PlatformUI.getWorkbench();
-			IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-			IWorkbenchPage page = window.getActivePage();
-			plotView = (DiffractionPlotView)page.showView(DiffractionPlotView.ID, null, IWorkbenchPage.VIEW_CREATE);
-		} catch (PartInitException e) {
-			logger.error("Could not retrieve the Diffraction Plot View:"+e);
-			e.printStackTrace();
-		}
-		Composite plotComp = plotView.getComposite();
-		plotComp.setLayout(new FillLayout());
-		try {
-			IActionBars wrapper = plotView.getViewSite().getActionBars();
+
+		IViewPart plotView = getView(DiffractionPlotView.ID);
+		plottingSystem = (IPlottingSystem)plotView.getAdapter(IPlottingSystem.class);
+		if (plottingSystem != null && plottingSystem.isDisposed()) { // if we close the perspective then reopen it
 			plottingSystem = PlottingFactory.getPlottingSystem(DiffractionPlotView.DIFFRACTION_PLOT_TITLE);
-			if (plottingSystem == null) {
-				plottingSystem = PlottingFactory.createPlottingSystem();
-				plottingSystem.createPlotPart(plotComp, DiffractionPlotView.DIFFRACTION_PLOT_TITLE, wrapper, PlotType.IMAGE, plotView);
-				plottingSystem.setTitle("");
-			}
-		} catch (Exception e1) {
-			logger.error("Could not create plotting system:" + e1);
 		}
-
-		// create the diffraction tool view
 		toolSystem = (IToolPageSystem) plottingSystem.getAdapter(IToolPageSystem.class);
-		try {
-			DiffractionPowderCalibCheckView diffPowderToolView = (DiffractionPowderCalibCheckView)EclipseUtils.getPage().findView(DiffractionPowderCalibCheckView.ID);
-			Composite diffPowderToolComp = diffPowderToolView.getComposite();
-			diffPowderToolComp.setLayout(new StackLayout());
-			toolSystem.setToolComposite(diffPowderToolComp);
-			toolSystem.setToolVisible(POWDERCHECK_ID, ToolPageRole.ROLE_2D, null);
-		} catch (Exception e2) {
-			logger.error("Could not open powder check tool:" + e2);
-		}
 
+		// Open the diffraction tool programmatically inside of a viewpart so we can set the hideToolBar boolean
 		try {
 			DiffractionTool diffTool = (DiffractionTool)toolSystem.getToolPage(DIFFRACTION_ID);
 			diffTool.hideToolBar(true);
-			DiffractionToolView diffToolView = (DiffractionToolView)EclipseUtils.getPage().findView(DiffractionToolView.ID);
+			DiffractionToolView diffToolView = (DiffractionToolView)getView(DiffractionToolView.ID);
 			Composite diffToolComp = diffToolView.getComposite();
 			diffToolComp.setLayout(new StackLayout());
 			toolSystem.setToolComposite(diffToolComp);
@@ -404,6 +384,8 @@ public class DiffractionCalibrationView extends ViewPart {
 		} catch (Exception e2) {
 			logger.error("Could not open diffraction tool:" + e2);
 		}
+		// set the focus on the plotting system to trigger the tools (powder tool)
+		plottingSystem.setFocus();
 		calibrantPositioning.setPlottingSystem(plottingSystem);
 		calibrantPositioning.setToolSystem(toolSystem);
 	}
@@ -434,6 +416,8 @@ public class DiffractionCalibrationView extends ViewPart {
 					if (event == TableChangedEvent.REMOVED)
 						drawSelectedData((DiffractionTableData) diffractionTableViewer
 							.getElementAt(0));
+					else if (event == TableChangedEvent.ADDED)
+						getView(DiffractionPlotView.ID).setFocus();
 				} else {
 					currentData = null; // need to reset this
 					plottingSystem.clear();
@@ -488,16 +472,16 @@ public class DiffractionCalibrationView extends ViewPart {
 	}
 
 	private Group createXRayGroup(Composite composite, int style) {
-		Group wavelengthGroup = new Group(composite, style);
-		wavelengthGroup.setText("X-Rays");
-		wavelengthGroup.setToolTipText("Set the wavelength / energy");
-		wavelengthGroup.setLayout(new GridLayout(3, false));
-		wavelengthGroup.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, true));
+		Group xRayGroup = new Group(composite, style);
+		xRayGroup.setText("X-Rays");
+		xRayGroup.setToolTipText("Set the wavelength / energy");
+		xRayGroup.setLayout(new GridLayout(3, false));
+		xRayGroup.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, true));
 
-		Label wavelengthLabel = new Label(wavelengthGroup, SWT.NONE);
+		Label wavelengthLabel = new Label(xRayGroup, SWT.NONE);
 		wavelengthLabel.setText("Wavelength");
 
-		wavelengthFormattedText = new FormattedText(wavelengthGroup, SWT.SINGLE | SWT.BORDER);
+		wavelengthFormattedText = new FormattedText(xRayGroup, SWT.SINGLE | SWT.BORDER);
 		wavelengthFormattedText.setFormatter(new NumberFormatter(FORMAT_MASK, FORMAT_MASK, Locale.UK));
 		wavelengthFormattedText.getControl().setToolTipText("Set the wavelength in Angstrom");
 		wavelengthFormattedText.getControl().addListener(SWT.KeyUp, new Listener() {
@@ -532,13 +516,13 @@ public class DiffractionCalibrationView extends ViewPart {
 			}
 		});
 		wavelengthFormattedText.getControl().setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true));
-		Label unitDistanceLabel = new Label(wavelengthGroup, SWT.NONE);
+		Label unitDistanceLabel = new Label(xRayGroup, SWT.NONE);
 		unitDistanceLabel.setText(NonSI.ANGSTROM.toString());
 
-		Label energyLabel = new Label(wavelengthGroup, SWT.NONE);
+		Label energyLabel = new Label(xRayGroup, SWT.NONE);
 		energyLabel.setText("Energy");
 
-		energyFormattedText = new FormattedText(wavelengthGroup, SWT.SINGLE | SWT.BORDER);
+		energyFormattedText = new FormattedText(xRayGroup, SWT.SINGLE | SWT.BORDER);
 		energyFormattedText.setFormatter(new NumberFormatter(FORMAT_MASK, FORMAT_MASK, Locale.UK));
 		energyFormattedText.getControl().setToolTipText("Set the wavelength in keV");
 		energyFormattedText.getControl().addListener(SWT.KeyUp, new Listener() {
@@ -573,9 +557,9 @@ public class DiffractionCalibrationView extends ViewPart {
 			}
 		});
 		energyFormattedText.getControl().setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true));
-		Label unitEnergyLabel = new Label(wavelengthGroup, SWT.NONE);
+		Label unitEnergyLabel = new Label(xRayGroup, SWT.NONE);
 		unitEnergyLabel.setText(SI.KILO(NonSI.ELECTRON_VOLT).toString());
-		return wavelengthGroup;
+		return xRayGroup;
 	}
 
 	private void setXRaysModifiersEnabled(boolean b) {
@@ -872,7 +856,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		plottingSystem.getAxes().get(1).setTitle("");
 		plottingSystem.setKeepAspect(true);
 		plottingSystem.setShowIntensity(false);
-
+		
 		currentData = data;
 		
 		calibrantPositioning.setDiffractionData(currentData);
@@ -892,6 +876,7 @@ public class DiffractionCalibrationView extends ViewPart {
 			// Add listeners to monitor metadata changes in diffraction tool
 			diffractionTableViewer.addDetectorPropertyListener(data);
 		}
+
 		aug.activate();
 		DiffractionCalibrationUtils.hideFoundRings(plottingSystem);
 		DiffractionCalibrationUtils.drawCalibrantRings(aug);

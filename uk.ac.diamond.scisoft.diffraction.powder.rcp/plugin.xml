@@ -37,14 +37,6 @@
             name="Diffraction Tool"
             restorable="true">
       </view>
-      <view
-            category="org.dawb.workbench.ui.beta.views.category"
-            class="uk.ac.diamond.scisoft.diffraction.powder.rcp.views.DiffractionPowderCalibCheckView"
-            icon="icons/CalibrationCheck.png"
-            id="uk.ac.diamond.scisoft.diffraction.powder.rcp.diffractionPowderCalibCheckView"
-            name="Powder Calibration Check"
-            restorable="true">
-      </view>
    </extension>
    <extension
          point="org.eclipse.ui.perspectives">
