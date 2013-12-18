@@ -205,7 +205,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		// table of images and found rings
 		diffractionTableViewer = new DiffCalTableViewer(scrollHolder, pathsList, service);
 		diffractionTableViewer.addSelectionChangedListener(selectionChangeListener);
-		diffractionTableViewer.addImageDroppedListener(tableChangedListener);
+		diffractionTableViewer.addTableChangedListener(tableChangedListener);
 		model = diffractionTableViewer.getModel();
 
 		Composite mainHolder = new Composite(scrollHolder, SWT.NONE);
@@ -928,7 +928,7 @@ public class DiffractionCalibrationView extends ViewPart {
 	private void removeListeners() {
 		if(diffractionTableViewer != null) {
 			diffractionTableViewer.removeSelectionChangedListener(selectionChangeListener);
-			diffractionTableViewer.removeImageDroppedListener(tableChangedListener);
+			diffractionTableViewer.removeTableChangedListener(tableChangedListener);
 		}
 		CalibrationFactory.removeCalibrantSelectionListener(calibrantChangeListener);
 		// deactivate the diffraction tool
