@@ -89,6 +89,12 @@ import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationStandards;
 import uk.ac.diamond.scisoft.analysis.diffraction.DetectorProperties;
 import uk.ac.diamond.scisoft.analysis.diffraction.DiffractionCrystalEnvironment;
 
+/**
+ * Replaced by {@link uk.ac.diamond.scisoft.diffraction.powder.rcp.views.DiffractionCalibrationView}
+ * @author wqk87977
+ *
+ */
+@Deprecated
 public class DiffractionCalibrationView extends ViewPart {
 
 	public static final String ID = "uk.ac.diamond.scisoft.diffraction.powder.rcp.calibrationview";
@@ -928,6 +934,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		return super.getAdapter(key);
 	}
 
+	@SuppressWarnings("unused")
 	private void setCalibrateButtons() {
 		// enable/disable calibrate button according to use column
 		int used = 0;
