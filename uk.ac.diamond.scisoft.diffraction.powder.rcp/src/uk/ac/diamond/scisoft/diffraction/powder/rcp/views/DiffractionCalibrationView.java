@@ -8,7 +8,7 @@ import javax.measure.quantity.Length;
 import javax.measure.unit.NonSI;
 import javax.measure.unit.SI;
 
-import uk.ac.diamond.scisoft.analysis.io.ILoaderService;
+import org.mihalis.opal.checkBoxGroup.CheckBoxGroup;
 
 import org.dawb.common.ui.util.EclipseUtils;
 import org.dawb.common.ui.util.GridUtils;
@@ -88,6 +88,7 @@ import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationStandards;
 import uk.ac.diamond.scisoft.analysis.diffraction.DetectorProperties;
 import uk.ac.diamond.scisoft.analysis.diffraction.DiffractionCrystalEnvironment;
+import uk.ac.diamond.scisoft.analysis.io.ILoaderService;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.Activator;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.PowderCalibrationUtils;
 
@@ -126,6 +127,7 @@ public class DiffractionCalibrationView extends ViewPart {
 	private FormattedText wavelengthFormattedText;
 	private FormattedText energyFormattedText;
 	private CalibrantPositioningWidget calibrantPositioning;
+	private CheckBoxGroup xRayGroup;
 
 	private IPlottingSystem plottingSystem;
 	private IToolPageSystem toolSystem;
@@ -301,7 +303,8 @@ public class DiffractionCalibrationView extends ViewPart {
 		});
 		showCalibAndBeamCtrCheckBox.setSelection(true);
 
-		createXRayGroup(rightComp, SWT.FILL);
+		xRayGroup = createXRayGroup(rightComp, SWT.FILL);
+		xRayGroup.deactivate(); //deactivate by default
 //		// Enable/disable the modifiers
 		setXRaysModifiersEnabled(false);
 
@@ -357,7 +360,19 @@ public class DiffractionCalibrationView extends ViewPart {
 		IWorkbench workbench = PlatformUI.getWorkbench();
 		IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
 		IWorkbenchPage page = window.getActivePage();
-		return page.findView(viewID);
+		IViewPart view = page.findView(viewID);
+		if (view != null) {
+			return view;
+		} else {
+			try {
+				view = page.showView(DiffractionPlotView.ID, null, IWorkbenchPage.VIEW_CREATE);
+				return view;
+			} catch (PartInitException e) {
+				logger.error("Could not retrieve the Diffraction Plot View:"+e);
+				e.printStackTrace();
+				return null;
+			}
+		}
 	}
 
 	/**
@@ -471,8 +486,8 @@ public class DiffractionCalibrationView extends ViewPart {
 		energyFormattedText.setValue(energy);
 	}
 
-	private Group createXRayGroup(Composite composite, int style) {
-		Group xRayGroup = new Group(composite, style);
+	private CheckBoxGroup createXRayGroup(Composite composite, int style) {
+		CheckBoxGroup xRayGroup = new CheckBoxGroup(composite, style);
 		xRayGroup.setText("X-Rays");
 		xRayGroup.setToolTipText("Set the wavelength / energy");
 		xRayGroup.setLayout(new GridLayout(3, false));
@@ -484,6 +499,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		wavelengthFormattedText = new FormattedText(xRayGroup, SWT.SINGLE | SWT.BORDER);
 		wavelengthFormattedText.setFormatter(new NumberFormatter(FORMAT_MASK, FORMAT_MASK, Locale.UK));
 		wavelengthFormattedText.getControl().setToolTipText("Set the wavelength in Angstrom");
+		wavelengthFormattedText.getControl().setSize(200, 20);
 		wavelengthFormattedText.getControl().addListener(SWT.KeyUp, new Listener() {
 			@Override
 			public void handleEvent(Event event) {
@@ -525,6 +541,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		energyFormattedText = new FormattedText(xRayGroup, SWT.SINGLE | SWT.BORDER);
 		energyFormattedText.setFormatter(new NumberFormatter(FORMAT_MASK, FORMAT_MASK, Locale.UK));
 		energyFormattedText.getControl().setToolTipText("Set the wavelength in keV");
+		energyFormattedText.getControl().setSize(200, 20);
 		energyFormattedText.getControl().addListener(SWT.KeyUp, new Listener() {
 			@Override
 			public void handleEvent(Event event) {
@@ -895,7 +912,10 @@ public class DiffractionCalibrationView extends ViewPart {
 		if (key == IPlottingSystem.class) {
 			return plottingSystem;
 		} else if (key == IToolPageSystem.class) {
-			return plottingSystem.getAdapter(IToolPageSystem.class);
+			if (plottingSystem != null)
+				return plottingSystem.getAdapter(IToolPageSystem.class);
+			else
+				return PlottingFactory.getPlottingSystem(DiffractionPlotView.DIFFRACTION_PLOT_TITLE);
 		}
 		return super.getAdapter(key);
 	}
