@@ -19,6 +19,7 @@ import org.dawb.workbench.ui.diffraction.DiffractionCalibrationUtils;
 import org.dawb.workbench.ui.diffraction.CalibrantPositioningWidget;
 import org.dawb.workbench.ui.diffraction.table.DiffCalTableViewer;
 import org.dawb.workbench.ui.diffraction.table.DiffractionTableData;
+import org.dawb.workbench.ui.diffraction.table.TableChangedEvent;
 import org.dawb.workbench.ui.diffraction.table.TableChangedListener;
 import org.dawnsci.common.widgets.tree.NumericNode;
 import org.dawnsci.plotting.api.IPlottingSystem;
@@ -434,7 +435,7 @@ public class DiffractionCalibrationView extends ViewPart {
 
 		imageDroppedListener = new TableChangedListener() {
 			@Override
-			public void tableChanged() {
+			public void tableChanged(TableChangedEvent event) {
 				setWavelength(currentData);
 				if (model.size() > 0)
 					setXRaysModifiersEnabled(true);
