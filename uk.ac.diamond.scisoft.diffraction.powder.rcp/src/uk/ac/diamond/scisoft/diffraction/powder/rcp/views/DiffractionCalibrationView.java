@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import javax.measure.quantity.Length;
 import javax.measure.unit.NonSI;
 import javax.measure.unit.SI;
 
@@ -18,14 +17,10 @@ import org.dawb.workbench.ui.diffraction.table.DiffCalTableViewer;
 import org.dawb.workbench.ui.diffraction.table.DiffractionTableData;
 import org.dawb.workbench.ui.diffraction.table.TableChangedEvent;
 import org.dawb.workbench.ui.diffraction.table.TableChangedListener;
-import org.dawnsci.common.widgets.tree.NumericNode;
 import org.dawnsci.plotting.api.IPlottingSystem;
 import org.dawnsci.plotting.api.PlottingFactory;
-import org.dawnsci.plotting.api.tool.IToolPage.ToolPageRole;
 import org.dawnsci.plotting.api.tool.IToolPageSystem;
 import org.dawnsci.plotting.tools.diffraction.DiffractionImageAugmenter;
-import org.dawnsci.plotting.tools.diffraction.DiffractionTool;
-import org.dawnsci.plotting.tools.diffraction.DiffractionTreeModel;
 import org.dawnsci.plotting.tools.preference.diffraction.DiffractionPreferencePage;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
@@ -45,7 +40,6 @@ import org.eclipse.nebula.widgets.formattedtext.FormattedText;
 import org.eclipse.nebula.widgets.formattedtext.NumberFormatter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
@@ -93,18 +87,9 @@ import uk.ac.diamond.scisoft.diffraction.powder.rcp.PowderCalibrationUtils;
 
 public class DiffractionCalibrationView extends ViewPart {
 
-	//TODO make more variables more local.. (too many class wide variables)
 	public static final String ID = "uk.ac.diamond.scisoft.diffraction.powder.rcp.diffractionCalibrationView";
 	private final Logger logger = LoggerFactory.getLogger(DiffractionCalibrationView.class);
 
-	public static final String FIXED = "org.dawb.workbench.plotting.views.toolPageView.fixed:";
-	public static final String DIFFRACTION_ID = "org.dawb.workbench.plotting.tools.diffraction.Diffraction";
-	public static final String POWDERCHECK_ID = "org.dawnsci.plotting.tools.powdercheck";
-
-	private final String WAVELENGTH_NODE_PATH = "/Experimental Information/Wavelength";
-	private final String BEAM_CENTRE_XPATH = "/Detector/Beam Centre/X";
-	private final String BEAM_CENTRE_YPATH = "/Detector/Beam Centre/Y";
-	private final String DISTANCE_NODE_PATH = "/Experimental Information/Distance";
 	public static final String FORMAT_MASK = "##,##0.##########";
 
 	private final String DATA_PATH = "DataPath";
@@ -117,12 +102,9 @@ public class DiffractionCalibrationView extends ViewPart {
 	private CalibrationStandards standards;
 
 	private Composite parent;
-	private ScrolledComposite scrollComposite;
-	private Composite scrollHolder;
 	private DiffCalTableViewer diffractionTableViewer;
 	private Button calibrateImagesButton;
 	private Combo calibrantCombo;
-	private TabFolder tabFolder;
 	private Spinner ringNumberSpinner;
 	private FormattedText wavelengthFormattedText;
 	private FormattedText energyFormattedText;
@@ -201,11 +183,11 @@ public class DiffractionCalibrationView extends ViewPart {
 		Point pt = instructionLabel.getSize(); pt.x +=4; pt.y += 4; instructionLabel.setSize(pt);
 
 		// make a scrolled composite
-		scrollComposite = new ScrolledComposite(controlComp, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
+		ScrolledComposite scrollComposite = new ScrolledComposite(controlComp, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
 		scrollComposite.setLayout(new GridLayout(1, false));
 		scrollComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-		scrollHolder = new Composite(scrollComposite, SWT.NONE);
+		Composite scrollHolder = new Composite(scrollComposite, SWT.NONE);
 		scrollHolder.setLayout(new GridLayout(1, false));
 
 		// table of images and found rings
@@ -230,7 +212,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		setXRaysModifiersEnabled(false);
 
 		//TabFolder
-		tabFolder = new TabFolder(mainHolder, SWT.BORDER | SWT.FILL);
+		TabFolder tabFolder = new TabFolder(mainHolder, SWT.BORDER | SWT.FILL);
 		tabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		TabItem autoTabItem = new TabItem(tabFolder, SWT.FILL);
 		autoTabItem.setText("Auto");
@@ -253,8 +235,6 @@ public class DiffractionCalibrationView extends ViewPart {
 		settingTabItem.setText("Settings");
 		settingTabItem.setToolTipText("Calibration settings");
 		settingTabItem.setControl(getSettingTabControl(tabFolder, standards));
-
-		
 
 		scrollHolder.layout();
 		scrollComposite.setContent(scrollHolder);
@@ -335,19 +315,6 @@ public class DiffractionCalibrationView extends ViewPart {
 		}
 		toolSystem = (IToolPageSystem) plottingSystem.getAdapter(IToolPageSystem.class);
 
-		//TODO make a Powdertool extends the diffraction tool and set the corresponding boolean to true...
-		// Open the diffraction tool programmatically inside of a viewpart so we can set the hideToolBar boolean
-		try {
-			DiffractionTool diffTool = (DiffractionTool)toolSystem.getToolPage(DIFFRACTION_ID);
-			diffTool.hideToolBar(true);
-			DiffractionToolView diffToolView = (DiffractionToolView)getView(DiffractionToolView.ID);
-			Composite diffToolComp = diffToolView.getComposite();
-			diffToolComp.setLayout(new StackLayout());
-			toolSystem.setToolComposite(diffToolComp);
-			toolSystem.setToolVisible(DIFFRACTION_ID, ToolPageRole.ROLE_2D, null);
-		} catch (Exception e2) {
-			logger.error("Could not open diffraction tool:" + e2);
-		}
 		// set the focus on the plotting system to trigger the tools (powder tool)
 		plottingSystem.setFocus();
 		calibrantPositioning.setPlottingSystem(plottingSystem);
@@ -537,16 +504,6 @@ public class DiffractionCalibrationView extends ViewPart {
 					energyFormattedText.setFormatter(new NumberFormatter(FORMAT_MASK, newFormat, Locale.UK));
 				}
 				energyFormattedText.setValue(energy);
-				// update wavelength in diffraction tool tree viewer
-				//TODO no need for updating the Diffraction tool tree model
-				NumericNode<Length> node = getDiffractionTreeNode(WAVELENGTH_NODE_PATH);
-				if (node.getUnit().equals(NonSI.ANGSTROM)) {
-					updateDiffTool(WAVELENGTH_NODE_PATH, distance);
-				} else if (node.getUnit().equals(NonSI.ELECTRON_VOLT)) {
-					updateDiffTool(WAVELENGTH_NODE_PATH, energy * 1000);
-				} else if (node.getUnit().equals(SI.KILO(NonSI.ELECTRON_VOLT))) {
-					updateDiffTool(WAVELENGTH_NODE_PATH, energy);
-				}
 			}
 		});
 		GridData data = new GridData(SWT.FILL, SWT.FILL, true, false);
@@ -581,15 +538,6 @@ public class DiffractionCalibrationView extends ViewPart {
 					wavelengthFormattedText.setFormatter(new NumberFormatter(FORMAT_MASK, newFormat, Locale.UK));
 				}
 				wavelengthFormattedText.setValue(distance);
-				// update wavelength in Diffraction tool tree viewer
-				NumericNode<Length> node = getDiffractionTreeNode(WAVELENGTH_NODE_PATH);
-				if (node.getUnit().equals(NonSI.ANGSTROM)) {
-					updateDiffTool(WAVELENGTH_NODE_PATH, distance);
-				} else if (node.getUnit().equals(NonSI.ELECTRON_VOLT)) {
-					updateDiffTool(WAVELENGTH_NODE_PATH, energy * 1000);
-				} else if (node.getUnit().equals(SI.KILO(NonSI.ELECTRON_VOLT))) {
-					updateDiffTool(WAVELENGTH_NODE_PATH, energy);
-				}
 			}
 		});
 		energyFormattedText.getControl().setLayoutData(data);
@@ -654,7 +602,6 @@ public class DiffractionCalibrationView extends ViewPart {
 		};
 		exportToXLSAction.setImageDescriptor(Activator.getImageDescriptor("icons/page_white_excel.png"));
 
-
 		IAction resetRingsAction = new Action("Remove found rings") {
 			@Override
 			public void run() {
@@ -676,24 +623,10 @@ public class DiffractionCalibrationView extends ViewPart {
 						model.get(i).md.getDetector2DProperties().restore(originalProps);
 						model.get(i).md.getDiffractionCrystalEnvironment().restore(originalEnvironment);
 					}
-					// update diffraction tool viewer
-					updateDiffTool(BEAM_CENTRE_XPATH, currentData.md.getDetector2DProperties().getBeamCentreCoords()[0]);
-					updateDiffTool(BEAM_CENTRE_YPATH, currentData.md.getDetector2DProperties().getBeamCentreCoords()[1]);
-					updateDiffTool(DISTANCE_NODE_PATH, currentData.md.getDetector2DProperties().getBeamCentreDistance());
-
 					// update wavelength
 					double wavelength = currentData.md.getDiffractionCrystalEnvironment().getWavelength();
 					energyFormattedText.setValue(DiffractionCalibrationUtils.getWavelengthEnergy(wavelength));
 					wavelengthFormattedText.setValue(wavelength);
-					// update wavelength in diffraction tool tree viewer
-					NumericNode<Length> node = getDiffractionTreeNode(WAVELENGTH_NODE_PATH);
-					if (node.getUnit().equals(NonSI.ANGSTROM)) {
-						updateDiffTool(WAVELENGTH_NODE_PATH, wavelength);
-					} else if (node.getUnit().equals(NonSI.ELECTRON_VOLT)) {
-						updateDiffTool(WAVELENGTH_NODE_PATH, DiffractionCalibrationUtils.getWavelengthEnergy(wavelength) * 1000);
-					} else if (node.getUnit().equals(SI.KILO(NonSI.ELECTRON_VOLT))) {
-						updateDiffTool(WAVELENGTH_NODE_PATH, DiffractionCalibrationUtils.getWavelengthEnergy(wavelength));
-					}
 					diffractionTableViewer.refresh();
 				}
 			}
@@ -706,7 +639,6 @@ public class DiffractionCalibrationView extends ViewPart {
 		toolBarMan.add(resetRingsAction);
 		toolBarMan.add(resetTableAction);
 	}
-
 
 	/**
 	 * Gets the control for the automatic tab
@@ -821,31 +753,6 @@ public class DiffractionCalibrationView extends ViewPart {
 		return composite;
 	}
 
-	//TODO no need for updating the Diffraction tool tree model
-	private void updateDiffTool(String nodePath, double value) {
-		DiffractionTool diffTool = (DiffractionTool) toolSystem.getToolPage(DIFFRACTION_ID);
-		DiffractionTreeModel treeModel = diffTool.getModel();
-
-		NumericNode<Length> distanceNode = getDiffractionTreeNode(nodePath);
-		distanceNode.setDoubleValue(value);
-		treeModel.setNode(distanceNode, nodePath);
-
-		diffTool.refresh();
-	}
-
-	@SuppressWarnings("unchecked")
-	private NumericNode<Length> getDiffractionTreeNode(String nodePath) {
-		NumericNode<Length> node = null;
-		if (toolSystem == null)
-			return node;
-		DiffractionTool diffTool = (DiffractionTool) toolSystem.getToolPage(DIFFRACTION_ID);
-		DiffractionTreeModel treeModel = diffTool.getModel();
-		if (treeModel == null)
-			return node;
-		node = (NumericNode<Length>) treeModel.getNode(nodePath);
-		return node;
-	}
-
 	private void setWavelength(DiffractionTableData data) {
 		// set the wavelength
 		if (data != null) {
@@ -880,7 +787,7 @@ public class DiffractionCalibrationView extends ViewPart {
 
 		if (data.image == null)
 			return;
-		
+
 		if (plottingSystem == null || toolSystem == null) {
 			// initialize plotting systems and tools
 			initializeSystems();
@@ -892,16 +799,11 @@ public class DiffractionCalibrationView extends ViewPart {
 		plottingSystem.getAxes().get(1).setTitle("");
 		plottingSystem.setKeepAspect(true);
 		plottingSystem.setShowIntensity(false);
-		
+
 		currentData = data;
-		
+
 		calibrantPositioning.setDiffractionData(currentData);
-		
-		//Data has its own augmenters so disable the tool augmenter
-		DiffractionTool diffTool = (DiffractionTool) toolSystem.getToolPage(DIFFRACTION_ID);
-		DiffractionImageAugmenter toolAug = diffTool.getAugmenter();
-		if (toolAug != null) toolAug.deactivate(service.getLockedDiffractionMetaData()!=null);
-		
+
 		DiffractionImageAugmenter aug = data.augmenter;
 		if (aug == null) {
 			aug = new DiffractionImageAugmenter(plottingSystem);
@@ -918,23 +820,8 @@ public class DiffractionCalibrationView extends ViewPart {
 		DiffractionCalibrationUtils.drawCalibrantRings(aug);
 		
 	}
-	
 
-//	@SuppressWarnings("rawtypes")
-//	@Override
-//	public Object getAdapter(Class key) {
-//		if (key == IPlottingSystem.class) {
-//			return plottingSystem;
-//		} else if (key == IToolPageSystem.class) {
-//			if (plottingSystem != null)
-//				return plottingSystem.getAdapter(IToolPageSystem.class);
-//			else
-//				return PlottingFactory.getPlottingSystem(DiffractionPlotView.DIFFRACTION_PLOT_TITLE);
-//		}
-//		return super.getAdapter(key);
-//	}
-
-//	@SuppressWarnings("unused")
+	@SuppressWarnings("unused")
 	private void setCalibrateButtons() {
 		// enable/disable calibrate button according to use column
 		int used = 0;
@@ -952,13 +839,7 @@ public class DiffractionCalibrationView extends ViewPart {
 			diffractionTableViewer.removeTableChangedListener(tableChangedListener);
 		}
 		CalibrationFactory.removeCalibrantSelectionListener(calibrantChangeListener);
-		// deactivate the diffraction tool
-		if (toolSystem != null) {
-			DiffractionTool diffTool = (DiffractionTool) toolSystem.getToolPage(DIFFRACTION_ID);
-			if (diffTool != null)
-				diffTool.deactivate();
-		}
-		
+
 		// deactivate each augmenter in loaded data
 		if (model != null) {
 			for (DiffractionTableData d : model) {

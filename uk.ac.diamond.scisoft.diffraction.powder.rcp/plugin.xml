@@ -70,5 +70,17 @@
             tool_id="org.dawb.workbench.plotting.tools.diffraction.Diffraction">
       </tool_page_action>
    </extension>
+   <extension
+         point="org.dawnsci.plotting.api.toolPage">
+      <plotting_tool_page
+            category="org.dawnsci.plotting.tools.category.Science"
+            class="uk.ac.diamond.scisoft.diffraction.powder.rcp.tool.PowderDiffractionTool"
+            icon="icons/plot-tool-diffraction.png"
+            id="uk.ac.diamond.scisoft.diffraction.powder.rcp.powderDiffractionTool"
+            label="Powder Diffraction"
+            tooltip="Diffraction tool in Powder mode"
+            visible="false">
+      </plotting_tool_page>
+   </extension>
 
 </plugin>
