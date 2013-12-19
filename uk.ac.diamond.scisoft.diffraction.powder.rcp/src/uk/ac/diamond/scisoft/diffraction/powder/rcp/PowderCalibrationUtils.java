@@ -158,7 +158,8 @@ public class PowderCalibrationUtils {
 	
 	public static Job calibrateImagesMajorAxisMethod(final Display display,
 			   final IPlottingSystem plottingSystem,
-			   final DiffractionTableData currentData) {
+			   final DiffractionTableData currentData,
+			   final boolean fixedWavelength) {
 		
 		return new Job("Calibrate detector - Major Axis") {
 			@Override
@@ -208,11 +209,24 @@ public class PowderCalibrationUtils {
 				double pixelSize = currentData.md.getDetector2DProperties().getHPxSize();
 				double wavelength = currentData.md.getDiffractionCrystalEnvironment().getWavelength();
 				
-				final CalibrationOutput output = CalibrateEllipses.runKnownWavelength(allEllipses, allDSpacings, pixelSize, wavelength);
+				CalibrationOutput o = null;
+				
+				if (!fixedWavelength) {
+					double[] dDist = new double[]{0};
+					AbstractDataset deltaDistance = new DoubleDataset(dDist, dDist.length);
+					o = CalibrateEllipses.run(allEllipses, allDSpacings,deltaDistance, pixelSize);
+				} else {
+					o = CalibrateEllipses.runKnownWavelength(allEllipses, allDSpacings, pixelSize, wavelength);
+				}
+				
+				final CalibrationOutput output = o;
 				
 				display.syncExec(new Runnable() {
 					@Override
 					public void run() {
+						
+						if (!fixedWavelength) currentData.md.getDiffractionCrystalEnvironment().setWavelength(output.getWavelength());
+						
 						DetectorProperties dp = currentData.md.getDetector2DProperties();
 						
 						dp.setBeamCentreDistance(output.getDistance().getDouble(0));

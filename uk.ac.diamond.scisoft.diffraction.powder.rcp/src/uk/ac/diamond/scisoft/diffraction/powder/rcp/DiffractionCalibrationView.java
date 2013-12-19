@@ -779,7 +779,7 @@ public class DiffractionCalibrationView extends ViewPart {
 				Job job = null;
 
 				if (model.size() == 1) {
-					job = PowderCalibrationUtils.calibrateImagesMajorAxisMethod(Display.getDefault(), plottingSystem, currentData);
+					job = PowderCalibrationUtils.calibrateImagesMajorAxisMethod(Display.getDefault(), plottingSystem, currentData, false);
 				} else {
 					job = PowderCalibrationUtils.calibrateMultipleImages(Display.getDefault(), plottingSystem, model, currentData);
 				}

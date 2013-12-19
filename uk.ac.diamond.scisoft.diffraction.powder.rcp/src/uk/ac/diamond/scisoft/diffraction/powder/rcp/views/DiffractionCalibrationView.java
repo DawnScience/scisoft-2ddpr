@@ -488,7 +488,7 @@ public class DiffractionCalibrationView extends ViewPart {
 
 	private CheckBoxGroup createXRayGroup(Composite composite, int style) {
 		CheckBoxGroup xRayGroup = new CheckBoxGroup(composite, style);
-		xRayGroup.setText("X-Rays");
+		xRayGroup.setText("Fix X-Ray Wavelength");
 		xRayGroup.setToolTipText("Set the wavelength / energy");
 		xRayGroup.setLayout(new GridLayout(3, false));
 		xRayGroup.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, true));
@@ -709,7 +709,12 @@ public class DiffractionCalibrationView extends ViewPart {
 				Job job = null;
 				
 				if (model.size() == 1) {
-					job = PowderCalibrationUtils.autoFindEllipses(Display.getDefault(), plottingSystem, currentData,ringNumberSpinner.getSelection());
+					
+					if (xRayGroup.isActivated()) {
+						job = PowderCalibrationUtils.autoFindEllipses(Display.getDefault(), plottingSystem, currentData,ringNumberSpinner.getSelection());
+					} else {
+						job = PowderCalibrationUtils.autoFindEllipsesAllSingleImage(Display.getDefault(), plottingSystem, currentData,ringNumberSpinner.getSelection());
+					}
 				} else {
 					job = PowderCalibrationUtils.autoFindEllipsesMultipleImages(Display.getDefault(), plottingSystem, model, currentData,ringNumberSpinner.getSelection());
 				}
@@ -757,7 +762,7 @@ public class DiffractionCalibrationView extends ViewPart {
 				Job job = null;
 
 				if (model.size() == 1) {
-					job = PowderCalibrationUtils.calibrateImagesMajorAxisMethod(Display.getDefault(), plottingSystem, currentData);
+					job = PowderCalibrationUtils.calibrateImagesMajorAxisMethod(Display.getDefault(), plottingSystem, currentData, xRayGroup.isActivated());
 				} else {
 					job = PowderCalibrationUtils.calibrateMultipleImages(Display.getDefault(), plottingSystem, model, currentData);
 				}
@@ -770,6 +775,7 @@ public class DiffractionCalibrationView extends ViewPart {
 							public void run() {
 								updateScrolledComposite();
 								updateIntegrated(currentData);
+								updateWavelengthAfterCalibration();
 							}
 						});
 					}
