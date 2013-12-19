@@ -490,13 +490,14 @@ public class DiffractionCalibrationView extends ViewPart {
 		CheckBoxGroup xRayGroup = new CheckBoxGroup(composite, style);
 		xRayGroup.setText("Fix X-Ray Wavelength");
 		xRayGroup.setToolTipText("Set the wavelength / energy");
-		xRayGroup.setLayout(new GridLayout(3, false));
-		xRayGroup.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, true));
+		Composite checkComp = xRayGroup.getContent();
+		checkComp.setLayout(new GridLayout(3, false));
+		checkComp.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, true));
 
-		Label wavelengthLabel = new Label(xRayGroup, SWT.NONE);
+		Label wavelengthLabel = new Label(checkComp, SWT.NONE);
 		wavelengthLabel.setText("Wavelength");
 
-		wavelengthFormattedText = new FormattedText(xRayGroup, SWT.SINGLE | SWT.BORDER);
+		wavelengthFormattedText = new FormattedText(checkComp, SWT.SINGLE | SWT.BORDER);
 		wavelengthFormattedText.setFormatter(new NumberFormatter(FORMAT_MASK, FORMAT_MASK, Locale.UK));
 		wavelengthFormattedText.getControl().setToolTipText("Set the wavelength in Angstrom");
 		wavelengthFormattedText.getControl().setSize(200, 20);
@@ -531,14 +532,14 @@ public class DiffractionCalibrationView extends ViewPart {
 				}
 			}
 		});
-		wavelengthFormattedText.getControl().setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true));
-		Label unitDistanceLabel = new Label(xRayGroup, SWT.NONE);
+		wavelengthFormattedText.getControl().setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, true));
+		Label unitDistanceLabel = new Label(checkComp, SWT.NONE);
 		unitDistanceLabel.setText(NonSI.ANGSTROM.toString());
 
-		Label energyLabel = new Label(xRayGroup, SWT.NONE);
+		Label energyLabel = new Label(checkComp, SWT.NONE);
 		energyLabel.setText("Energy");
 
-		energyFormattedText = new FormattedText(xRayGroup, SWT.SINGLE | SWT.BORDER);
+		energyFormattedText = new FormattedText(checkComp, SWT.SINGLE | SWT.BORDER);
 		energyFormattedText.setFormatter(new NumberFormatter(FORMAT_MASK, FORMAT_MASK, Locale.UK));
 		energyFormattedText.getControl().setToolTipText("Set the wavelength in keV");
 		energyFormattedText.getControl().setSize(200, 20);
@@ -573,8 +574,8 @@ public class DiffractionCalibrationView extends ViewPart {
 				}
 			}
 		});
-		energyFormattedText.getControl().setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true));
-		Label unitEnergyLabel = new Label(xRayGroup, SWT.NONE);
+		energyFormattedText.getControl().setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, true));
+		Label unitEnergyLabel = new Label(checkComp, SWT.NONE);
 		unitEnergyLabel.setText(SI.KILO(NonSI.ELECTRON_VOLT).toString());
 		return xRayGroup;
 	}
