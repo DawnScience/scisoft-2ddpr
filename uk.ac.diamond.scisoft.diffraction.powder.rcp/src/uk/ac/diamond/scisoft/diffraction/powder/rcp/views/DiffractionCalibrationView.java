@@ -182,6 +182,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		final Display display = parent.getDisplay();
 
 		initializeListeners();
+		standards = CalibrationFactory.getCalibrationStandards();
 
 		Composite controlComp = new Composite(parent, SWT.NONE);
 		controlComp.setLayout(new GridLayout(1, false));
@@ -203,7 +204,6 @@ public class DiffractionCalibrationView extends ViewPart {
 
 		scrollHolder = new Composite(scrollComposite, SWT.NONE);
 		scrollHolder.setLayout(new GridLayout(1, false));
-		scrollHolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
 		// table of images and found rings
 		diffractionTableViewer = new DiffCalTableViewer(scrollHolder, pathsList, service);
@@ -212,10 +212,23 @@ public class DiffractionCalibrationView extends ViewPart {
 		model = diffractionTableViewer.getModel();
 
 		Composite mainHolder = new Composite(scrollHolder, SWT.NONE);
-		mainHolder.setLayout(new GridLayout(2, false));
-		mainHolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		mainHolder.setLayout(new GridLayout(1, false));
+		mainHolder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
+		// create calibrant combo
+		Composite topComp = new Composite(mainHolder, SWT.NONE);
+		topComp.setLayout(new GridLayout(2, false));
+		topComp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		createCalibrantGroup(topComp);
+		//Xrays text fields
+		xRayGroup = createXRayGroup(topComp);
+		xRayGroup.deactivate(); //deactivate by default
+		// Enable/disable the modifiers
+		setXRaysModifiersEnabled(false);
+
+		//TabFolder
 		tabFolder = new TabFolder(mainHolder, SWT.BORDER | SWT.FILL);
+		tabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		TabItem autoTabItem = new TabItem(tabFolder, SWT.FILL);
 		autoTabItem.setText("Auto");
 		autoTabItem.setToolTipText("Automatic calibration");
@@ -228,8 +241,6 @@ public class DiffractionCalibrationView extends ViewPart {
 		});
 		diffractionTableViewer.setTabFolder(tabFolder);
 
-		standards = CalibrationFactory.getCalibrationStandards();
-
 		TabItem manualTabItem = new TabItem(tabFolder, SWT.FILL);
 		manualTabItem.setText("Manual");
 		manualTabItem.setToolTipText("Manual calibration");
@@ -240,73 +251,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		settingTabItem.setToolTipText("Calibration settings");
 		settingTabItem.setControl(getSettingTabControl(tabFolder, standards));
 
-		// create calibrant combo
-		Composite rightComp = new Composite(mainHolder, SWT.NONE);
-		rightComp.setLayout(new GridLayout(1, false));
-		rightComp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-
-		Group selectCalibComp = new Group(rightComp, SWT.NONE);
-		selectCalibComp.setText("Calibrant");
-		selectCalibComp.setLayout(new GridLayout(1, false));
-		selectCalibComp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-
-		Composite comp = new Composite(selectCalibComp, SWT.NONE);
-		comp.setLayout(new GridLayout(2, false));
-		comp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		calibrantCombo = new Combo(comp, SWT.READ_ONLY);
-		calibrantCombo.setToolTipText("Select a type of calibrant");
-		calibrantCombo.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				if (currentData == null)
-					return;
-				String calibrantName = calibrantCombo.getItem(calibrantCombo
-						.getSelectionIndex());
-				// update the calibrant in diffraction tool
-				standards.setSelectedCalibrant(calibrantName, true);
-				DiffractionCalibrationUtils.drawCalibrantRings(currentData.augmenter);
-				// set the maximum number of rings
-				ringNumberSpinner.setMaximum(standards.getCalibrant().getHKLs().size());
-				PowderCheckTool powderTool = (PowderCheckTool)toolSystem.getToolPage(POWDERCHECK_ID);
-				if (powderTool != null) powderTool.updateCalibrantLines();
-				showCalibrantAndBeamCentre(checked, currentData);
-			}
-		});
-		for (String c : standards.getCalibrantList()) {
-			calibrantCombo.add(c);
-		}
-		String s = standards.getSelectedCalibrant();
-		if (s != null) {
-			calibrantCombo.setText(s);
-		}
-
-		Button configCalibrantButton = new Button(comp, SWT.NONE);
-		configCalibrantButton.setText("Configure...");
-		configCalibrantButton.setToolTipText("Open Calibrant configuration page");
-		configCalibrantButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				PreferenceDialog pref = PreferencesUtil.createPreferenceDialogOn(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), DiffractionPreferencePage.ID, null, null);
-				if (pref != null)
-					pref.open();
-			}
-		});
-
-		final Button showCalibAndBeamCtrCheckBox = new Button(selectCalibComp, SWT.CHECK);
-		showCalibAndBeamCtrCheckBox.setText("Show Calibrant and Beam Centre");
-		showCalibAndBeamCtrCheckBox.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				checked = showCalibAndBeamCtrCheckBox.getSelection();
-				showCalibrantAndBeamCentre(checked, currentData);
-			}
-		});
-		showCalibAndBeamCtrCheckBox.setSelection(true);
-
-		xRayGroup = createXRayGroup(rightComp);
-		xRayGroup.deactivate(); //deactivate by default
-//		// Enable/disable the modifiers
-		setXRaysModifiersEnabled(false);
+		
 
 		scrollHolder.layout();
 		scrollComposite.setContent(scrollHolder);
@@ -486,13 +431,79 @@ public class DiffractionCalibrationView extends ViewPart {
 		energyFormattedText.setValue(energy);
 	}
 
+	private void createCalibrantGroup(Composite composite) {
+		Group selectCalibComp = new Group(composite, SWT.NONE);
+		selectCalibComp.setText("Calibrant");
+		selectCalibComp.setLayout(new GridLayout(1, false));
+		selectCalibComp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+
+		Composite comp = new Composite(selectCalibComp, SWT.NONE);
+		comp.setLayout(new GridLayout(2, true));
+		comp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		calibrantCombo = new Combo(comp, SWT.READ_ONLY);
+		calibrantCombo.setToolTipText("Select a type of calibrant");
+		calibrantCombo.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		calibrantCombo.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				if (currentData == null)
+					return;
+				String calibrantName = calibrantCombo.getItem(calibrantCombo.getSelectionIndex());
+				// update the calibrant in diffraction tool
+				standards.setSelectedCalibrant(calibrantName, true);
+				DiffractionCalibrationUtils.drawCalibrantRings(currentData.augmenter);
+				// set the maximum number of rings
+				ringNumberSpinner.setMaximum(standards.getCalibrant().getHKLs().size());
+				PowderCheckTool powderTool = (PowderCheckTool) toolSystem.getToolPage(POWDERCHECK_ID);
+				if (powderTool != null)
+					powderTool.updateCalibrantLines();
+				showCalibrantAndBeamCentre(checked, currentData);
+			}
+		});
+		for (String c : standards.getCalibrantList()) {
+			calibrantCombo.add(c);
+		}
+		String s = standards.getSelectedCalibrant();
+		if (s != null) {
+			calibrantCombo.setText(s);
+		}
+
+		Button configCalibrantButton = new Button(comp, SWT.NONE);
+		configCalibrantButton.setText("Configure...");
+		configCalibrantButton.setToolTipText("Open Calibrant configuration page");
+		configCalibrantButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		configCalibrantButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				PreferenceDialog pref = PreferencesUtil
+						.createPreferenceDialogOn(PlatformUI.getWorkbench()
+								.getActiveWorkbenchWindow().getShell(),
+								DiffractionPreferencePage.ID, null, null);
+				if (pref != null)
+					pref.open();
+			}
+		});
+
+		final Button showCalibAndBeamCtrCheckBox = new Button(selectCalibComp, SWT.CHECK);
+		showCalibAndBeamCtrCheckBox.setText("Show Calibrant and Beam Centre");
+		showCalibAndBeamCtrCheckBox.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				checked = showCalibAndBeamCtrCheckBox.getSelection();
+				showCalibrantAndBeamCentre(checked, currentData);
+			}
+		});
+		showCalibAndBeamCtrCheckBox.setSelection(true);
+	}
+
 	private CheckBoxGroup createXRayGroup(Composite composite) {
 		CheckBoxGroup xRayGroup = new CheckBoxGroup(composite, SWT.FILL);
 		xRayGroup.setText("Fix X-Ray Wavelength");
 		xRayGroup.setToolTipText("Set the wavelength / energy");
+		xRayGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		Composite checkComp = xRayGroup.getContent();
 		checkComp.setLayout(new GridLayout(3, false));
-		checkComp.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, true));
+		checkComp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
 		Label wavelengthLabel = new Label(checkComp, SWT.NONE);
 		wavelengthLabel.setText("Wavelength");
@@ -500,7 +511,6 @@ public class DiffractionCalibrationView extends ViewPart {
 		wavelengthFormattedText = new FormattedText(checkComp, SWT.SINGLE | SWT.BORDER);
 		wavelengthFormattedText.setFormatter(new NumberFormatter(FORMAT_MASK, FORMAT_MASK, Locale.UK));
 		wavelengthFormattedText.getControl().setToolTipText("Set the wavelength in Angstrom");
-//		wavelengthFormattedText.getControl().setSize(300, 20);
 		wavelengthFormattedText.getControl().addListener(SWT.KeyUp, new Listener() {
 			@Override
 			public void handleEvent(Event event) {
@@ -532,10 +542,9 @@ public class DiffractionCalibrationView extends ViewPart {
 				}
 			}
 		});
-		GridData data = new GridData();
-		data.widthHint = 200;
+		GridData data = new GridData(SWT.FILL, SWT.FILL, true, false);
+		data.widthHint = 150;
 		wavelengthFormattedText.getControl().setLayoutData(data);
-//		wavelengthFormattedText.getControl().setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true));
 		Label unitDistanceLabel = new Label(checkComp, SWT.NONE);
 		unitDistanceLabel.setText(NonSI.ANGSTROM.toString());
 
@@ -545,7 +554,6 @@ public class DiffractionCalibrationView extends ViewPart {
 		energyFormattedText = new FormattedText(checkComp, SWT.SINGLE | SWT.BORDER);
 		energyFormattedText.setFormatter(new NumberFormatter(FORMAT_MASK, FORMAT_MASK, Locale.UK));
 		energyFormattedText.getControl().setToolTipText("Set the wavelength in keV");
-//		energyFormattedText.getControl().setSize(300, 20);
 		energyFormattedText.getControl().addListener(SWT.KeyUp, new Listener() {
 			@Override
 			public void handleEvent(Event event) {
@@ -578,7 +586,6 @@ public class DiffractionCalibrationView extends ViewPart {
 			}
 		});
 		energyFormattedText.getControl().setLayoutData(data);
-//		energyFormattedText.getControl().setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true));
 		Label unitEnergyLabel = new Label(checkComp, SWT.NONE);
 		unitEnergyLabel.setText(SI.KILO(NonSI.ELECTRON_VOLT).toString());
 		return xRayGroup;
@@ -753,8 +760,9 @@ public class DiffractionCalibrationView extends ViewPart {
 	 * @return Control
 	 */
 	private Control getManualTabControl(TabFolder tabFolder) {
-		Composite composite = new Composite(tabFolder, SWT.FILL);
-		composite.setLayout(new GridLayout(1, false));
+		Composite composite = new Composite(tabFolder, SWT.NONE);
+		composite.setLayout(new GridLayout());
+		composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 		calibrantPositioning = new CalibrantPositioningWidget(composite, model);
 
 		calibrateImagesButton = new Button(composite, SWT.PUSH);
