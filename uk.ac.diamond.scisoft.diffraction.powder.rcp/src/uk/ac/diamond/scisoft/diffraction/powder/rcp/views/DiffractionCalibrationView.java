@@ -8,14 +8,12 @@ import javax.measure.quantity.Length;
 import javax.measure.unit.NonSI;
 import javax.measure.unit.SI;
 
-import org.mihalis.opal.checkBoxGroup.CheckBoxGroup;
-
 import org.dawb.common.ui.util.EclipseUtils;
 import org.dawb.common.ui.util.GridUtils;
 import org.dawb.common.ui.wizard.persistence.PersistenceExportWizard;
 import org.dawb.common.ui.wizard.persistence.PersistenceImportWizard;
-import org.dawb.workbench.ui.diffraction.DiffractionCalibrationUtils;
 import org.dawb.workbench.ui.diffraction.CalibrantPositioningWidget;
+import org.dawb.workbench.ui.diffraction.DiffractionCalibrationUtils;
 import org.dawb.workbench.ui.diffraction.table.DiffCalTableViewer;
 import org.dawb.workbench.ui.diffraction.table.DiffractionTableData;
 import org.dawb.workbench.ui.diffraction.table.TableChangedEvent;
@@ -28,9 +26,9 @@ import org.dawnsci.plotting.api.tool.IToolPageSystem;
 import org.dawnsci.plotting.tools.diffraction.DiffractionImageAugmenter;
 import org.dawnsci.plotting.tools.diffraction.DiffractionTool;
 import org.dawnsci.plotting.tools.diffraction.DiffractionTreeModel;
-import org.dawnsci.plotting.tools.powdercheck.PowderCheckTool;
 import org.dawnsci.plotting.tools.preference.diffraction.DiffractionPreferencePage;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
@@ -79,6 +77,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.part.ViewPart;
+import org.mihalis.opal.checkBoxGroup.CheckBoxGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,6 +93,7 @@ import uk.ac.diamond.scisoft.diffraction.powder.rcp.PowderCalibrationUtils;
 
 public class DiffractionCalibrationView extends ViewPart {
 
+	//TODO make more variables more local.. (too many class wide variables)
 	public static final String ID = "uk.ac.diamond.scisoft.diffraction.powder.rcp.diffractionCalibrationView";
 	private final Logger logger = LoggerFactory.getLogger(DiffractionCalibrationView.class);
 
@@ -129,6 +129,9 @@ public class DiffractionCalibrationView extends ViewPart {
 	private CalibrantPositioningWidget calibrantPositioning;
 	private CheckBoxGroup xRayGroup;
 
+	// FIXME These have leaked from another view to this one
+	// using getAdapter(...). This will likley lead to confusion
+	// because breaking encapsulation does.
 	private IPlottingSystem plottingSystem;
 	private IToolPageSystem toolSystem;
 
@@ -332,6 +335,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		}
 		toolSystem = (IToolPageSystem) plottingSystem.getAdapter(IToolPageSystem.class);
 
+		//TODO make a Powdertool extends the diffraction tool and set the corresponding boolean to true...
 		// Open the diffraction tool programmatically inside of a viewpart so we can set the hideToolBar boolean
 		try {
 			DiffractionTool diffTool = (DiffractionTool)toolSystem.getToolPage(DIFFRACTION_ID);
@@ -355,15 +359,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		selectionChangeListener = new ISelectionChangedListener() {
 			@Override
 			public void selectionChanged(SelectionChangedEvent event) {
-				ISelection is = event.getSelection();
-				if (is instanceof StructuredSelection) {
-					StructuredSelection structSelection = (StructuredSelection) is;
-					DiffractionTableData selectedData = (DiffractionTableData) structSelection.getFirstElement();
-					if (selectedData == null || selectedData == currentData)
-						return;
-					drawSelectedData(selectedData);
-					showCalibrantAndBeamCentre(checked, currentData);
-				}
+				updateSelection(false);
 			}
 		};
 
@@ -396,6 +392,19 @@ public class DiffractionCalibrationView extends ViewPart {
 			}
 		};
 
+	}
+
+	protected void updateSelection(boolean force) {
+		ISelection is = diffractionTableViewer.getSelection();
+		if (is instanceof StructuredSelection) {
+			StructuredSelection structSelection = (StructuredSelection) is;
+			DiffractionTableData selectedData = (DiffractionTableData) structSelection.getFirstElement();
+			if (selectedData == null || (!force && selectedData == currentData)) {
+				return;
+			}
+			drawSelectedData(selectedData);
+			showCalibrantAndBeamCentre(checked, currentData);
+		}
 	}
 
 	/**
@@ -454,10 +463,7 @@ public class DiffractionCalibrationView extends ViewPart {
 				DiffractionCalibrationUtils.drawCalibrantRings(currentData.augmenter);
 				// set the maximum number of rings
 				ringNumberSpinner.setMaximum(standards.getCalibrant().getHKLs().size());
-				PowderCheckTool powderTool = (PowderCheckTool) toolSystem.getToolPage(POWDERCHECK_ID);
-				if (powderTool != null)
-					powderTool.updateCalibrantLines();
-				showCalibrantAndBeamCentre(checked, currentData);
+   			   showCalibrantAndBeamCentre(checked, currentData);
 			}
 		});
 		for (String c : standards.getCalibrantList()) {
@@ -532,6 +538,7 @@ public class DiffractionCalibrationView extends ViewPart {
 				}
 				energyFormattedText.setValue(energy);
 				// update wavelength in diffraction tool tree viewer
+				//TODO no need for updating the Diffraction tool tree model
 				NumericNode<Length> node = getDiffractionTreeNode(WAVELENGTH_NODE_PATH);
 				if (node.getUnit().equals(NonSI.ANGSTROM)) {
 					updateDiffTool(WAVELENGTH_NODE_PATH, distance);
@@ -731,19 +738,7 @@ public class DiffractionCalibrationView extends ViewPart {
 					job = PowderCalibrationUtils.autoFindEllipsesMultipleImages(Display.getDefault(), plottingSystem, model, currentData,ringNumberSpinner.getSelection());
 				}
 
-				job.addJobChangeListener(new JobChangeAdapter() {
-					@Override
-					public void done(IJobChangeEvent event) {
-						Display.getDefault().asyncExec(new Runnable() {
-							@Override
-							public void run() {
-								updateScrolledComposite();
-								updateWavelengthAfterCalibration();
-								updateIntegrated(currentData);
-							}
-						});
-					}
-				});
+				job.addJobChangeListener(createJobListener());
 				job.setUser(true);
 				job.schedule();
 			}
@@ -780,25 +775,29 @@ public class DiffractionCalibrationView extends ViewPart {
 					job = PowderCalibrationUtils.calibrateMultipleImages(Display.getDefault(), plottingSystem, model, currentData);
 				}
 
-				job.addJobChangeListener(new JobChangeAdapter() {
-					@Override
-					public void done(IJobChangeEvent event) {
-						Display.getDefault().asyncExec(new Runnable() {
-							@Override
-							public void run() {
-								updateScrolledComposite();
-								updateIntegrated(currentData);
-								updateWavelengthAfterCalibration();
-							}
-						});
-					}
-				});
+				job.addJobChangeListener(createJobListener());
 				job.setUser(true);
 				job.schedule();
 			}
 		});
 		calibrateImagesButton.setEnabled(false);
 		return composite;
+	}
+
+	protected IJobChangeListener createJobListener() {
+		return new JobChangeAdapter() {
+			@Override
+			public void done(IJobChangeEvent event) {
+				Display.getDefault().asyncExec(new Runnable() {
+					@Override
+					public void run() {
+						updateScrolledComposite();
+						updateWavelengthAfterCalibration();
+						updateSelection(true);
+					}
+				});
+			}
+		};
 	}
 
 	/**
@@ -822,6 +821,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		return composite;
 	}
 
+	//TODO no need for updating the Diffraction tool tree model
 	private void updateDiffTool(String nodePath, double value) {
 		DiffractionTool diffTool = (DiffractionTool) toolSystem.getToolPage(DIFFRACTION_ID);
 		DiffractionTreeModel treeModel = diffTool.getModel();
@@ -917,29 +917,24 @@ public class DiffractionCalibrationView extends ViewPart {
 		DiffractionCalibrationUtils.hideFoundRings(plottingSystem);
 		DiffractionCalibrationUtils.drawCalibrantRings(aug);
 		
-		updateIntegrated(data);
 	}
 	
-	private void updateIntegrated(final DiffractionTableData data) {
-		PowderCheckTool powderTool = (PowderCheckTool) toolSystem.getToolPage(POWDERCHECK_ID);
-		powderTool.update();
-	}
 
-	@SuppressWarnings("rawtypes")
-	@Override
-	public Object getAdapter(Class key) {
-		if (key == IPlottingSystem.class) {
-			return plottingSystem;
-		} else if (key == IToolPageSystem.class) {
-			if (plottingSystem != null)
-				return plottingSystem.getAdapter(IToolPageSystem.class);
-			else
-				return PlottingFactory.getPlottingSystem(DiffractionPlotView.DIFFRACTION_PLOT_TITLE);
-		}
-		return super.getAdapter(key);
-	}
+//	@SuppressWarnings("rawtypes")
+//	@Override
+//	public Object getAdapter(Class key) {
+//		if (key == IPlottingSystem.class) {
+//			return plottingSystem;
+//		} else if (key == IToolPageSystem.class) {
+//			if (plottingSystem != null)
+//				return plottingSystem.getAdapter(IToolPageSystem.class);
+//			else
+//				return PlottingFactory.getPlottingSystem(DiffractionPlotView.DIFFRACTION_PLOT_TITLE);
+//		}
+//		return super.getAdapter(key);
+//	}
 
-	@SuppressWarnings("unused")
+//	@SuppressWarnings("unused")
 	private void setCalibrateButtons() {
 		// enable/disable calibrate button according to use column
 		int used = 0;

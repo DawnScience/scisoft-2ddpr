@@ -8,15 +8,13 @@ import javax.measure.quantity.Length;
 import javax.measure.unit.NonSI;
 import javax.measure.unit.SI;
 
-import uk.ac.diamond.scisoft.analysis.io.ILoaderService;
-
 import org.dawb.common.ui.util.EclipseUtils;
 import org.dawb.common.ui.util.GridUtils;
 import org.dawb.common.ui.widgets.ActionBarWrapper;
 import org.dawb.common.ui.wizard.persistence.PersistenceExportWizard;
 import org.dawb.common.ui.wizard.persistence.PersistenceImportWizard;
-import org.dawb.workbench.ui.diffraction.DiffractionCalibrationUtils;
 import org.dawb.workbench.ui.diffraction.CalibrantPositioningWidget;
+import org.dawb.workbench.ui.diffraction.DiffractionCalibrationUtils;
 import org.dawb.workbench.ui.diffraction.table.DiffCalTableViewer;
 import org.dawb.workbench.ui.diffraction.table.DiffractionTableData;
 import org.dawb.workbench.ui.diffraction.table.TableChangedEvent;
@@ -25,8 +23,8 @@ import org.dawnsci.common.widgets.tree.NumericNode;
 import org.dawnsci.plotting.api.IPlottingSystem;
 import org.dawnsci.plotting.api.PlotType;
 import org.dawnsci.plotting.api.PlottingFactory;
-import org.dawnsci.plotting.api.tool.IToolPageSystem;
 import org.dawnsci.plotting.api.tool.IToolPage.ToolPageRole;
+import org.dawnsci.plotting.api.tool.IToolPageSystem;
 import org.dawnsci.plotting.tools.diffraction.DiffractionImageAugmenter;
 import org.dawnsci.plotting.tools.diffraction.DiffractionTool;
 import org.dawnsci.plotting.tools.diffraction.DiffractionTreeModel;
@@ -88,6 +86,7 @@ import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationStandards;
 import uk.ac.diamond.scisoft.analysis.diffraction.DetectorProperties;
 import uk.ac.diamond.scisoft.analysis.diffraction.DiffractionCrystalEnvironment;
+import uk.ac.diamond.scisoft.analysis.io.ILoaderService;
 
 /**
  * Replaced by {@link uk.ac.diamond.scisoft.diffraction.powder.rcp.views.DiffractionCalibrationView}
@@ -281,8 +280,6 @@ public class DiffractionCalibrationView extends ViewPart {
 				DiffractionCalibrationUtils.drawCalibrantRings(currentData.augmenter);
 				// set the maximum number of rings
 				ringNumberSpinner.setMaximum(standards.getCalibrant().getHKLs().size());
-				PowderCheckTool powderTool = (PowderCheckTool)toolSystem.getToolPage(POWDERCHECK_ID);
-				if (powderTool != null) powderTool.updateCalibrantLines();
 				showCalibrantAndBeamCentre(checked, currentData);
 			}
 		});
@@ -744,7 +741,6 @@ public class DiffractionCalibrationView extends ViewPart {
 							public void run() {
 								updateScrolledComposite();
 								updateWavelengthAfterCalibration();
-								updateIntegrated(currentData);
 							}
 						});
 					}
@@ -791,7 +787,6 @@ public class DiffractionCalibrationView extends ViewPart {
 							@Override
 							public void run() {
 								updateScrolledComposite();
-								updateIntegrated(currentData);
 							}
 						});
 					}
@@ -915,14 +910,8 @@ public class DiffractionCalibrationView extends ViewPart {
 		DiffractionCalibrationUtils.hideFoundRings(plottingSystem);
 		DiffractionCalibrationUtils.drawCalibrantRings(aug);
 		
-		updateIntegrated(data);
 	}
 	
-	private void updateIntegrated(final DiffractionTableData data) {
-		PowderCheckTool powderTool = (PowderCheckTool) toolSystem.getToolPage(POWDERCHECK_ID);
-		powderTool.update();
-	}
-
 	@SuppressWarnings("rawtypes")
 	@Override
 	public Object getAdapter(Class key) {

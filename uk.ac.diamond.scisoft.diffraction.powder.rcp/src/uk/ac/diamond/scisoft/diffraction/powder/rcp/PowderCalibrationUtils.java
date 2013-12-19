@@ -11,7 +11,7 @@ import org.dawnsci.plotting.api.IPlottingSystem;
 import org.dawnsci.plotting.api.region.IRegion;
 import org.dawnsci.plotting.api.trace.IImageTrace;
 import org.dawnsci.plotting.tools.diffraction.DiffractionImageAugmenter;
-import org.dawnsci.plotting.tools.diffraction.DiffractionTool;
+import org.dawnsci.plotting.tools.diffraction.DiffractionUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -31,13 +31,12 @@ import uk.ac.diamond.scisoft.analysis.diffraction.PowderRingsUtils;
 import uk.ac.diamond.scisoft.analysis.diffraction.QSpace;
 import uk.ac.diamond.scisoft.analysis.diffraction.ResolutionEllipseROI;
 import uk.ac.diamond.scisoft.analysis.io.IDiffractionMetadata;
-import uk.ac.diamond.scisoft.analysis.monitor.IMonitor;
 import uk.ac.diamond.scisoft.analysis.roi.CircularROI;
 import uk.ac.diamond.scisoft.analysis.roi.EllipticalROI;
 import uk.ac.diamond.scisoft.analysis.roi.IROI;
 import uk.ac.diamond.scisoft.analysis.roi.ROIProfile;
-import uk.ac.diamond.scisoft.analysis.roi.SectorROI;
 import uk.ac.diamond.scisoft.analysis.roi.ROIProfile.XAxis;
+import uk.ac.diamond.scisoft.analysis.roi.SectorROI;
 import uk.ac.diamond.scisoft.diffraction.powder.BruteStandardMatcher;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrateEllipses;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
@@ -378,6 +377,7 @@ public class PowderCalibrationUtils {
 	private static final int MAX_RINGS = 10;
 	private static final int CENTRE_MASK_RADIUS = 50;
 	
+	// TODO Move to Job subclass
 	public static Job autoFindEllipsesAllSingleImage(final Display display,
 			final IPlottingSystem plottingSystem,
 			final DiffractionTableData currentData,
@@ -439,6 +439,7 @@ public class PowderCalibrationUtils {
 		return job;
 	}
 	
+	// TODO Move to Job subclass
 	public static Job autoFindEllipses(final Display display,
 			final IPlottingSystem plottingSystem,
 			final DiffractionTableData currentData,
@@ -499,6 +500,7 @@ public class PowderCalibrationUtils {
 		return job;
 	}
 	
+	// TODO Move to Job subclass - 1 instance
 	public static Job autoFindEllipsesMultipleImages(final Display display,
 			final IPlottingSystem plottingSystem,
 			final List<DiffractionTableData> model,
@@ -520,7 +522,7 @@ public class PowderCalibrationUtils {
 				
 				for (DiffractionTableData data : model) {
 					
-					plottingSystem.createPlot2D(data.image, null, monitor);
+					plottingSystem.updatePlot2D(data.image, null, monitor);
 					
 					final AbstractDataset image = (AbstractDataset)data.image;
 					IDiffractionMetadata meta = data.md;
@@ -607,7 +609,7 @@ public class PowderCalibrationUtils {
 			
 			IImageTrace t = DiffractionCalibrationUtils.getImageTrace(plottingSystem);
 			try {
-				roi = DiffractionTool.runEllipsePeakFit(monitor, display, plottingSystem, t, e, efs.innerSearch[i], efs.outerSearch[i],256);
+				roi = DiffractionUtils.runEllipsePeakFit(monitor, display, plottingSystem, t, e, efs.innerSearch[i], efs.outerSearch[i],256);
 			} catch (Exception ex) {
 				logger.debug(ex.getMessage());
 				roi = null;
