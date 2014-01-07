@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.print.attribute.standard.MediaSize.Other;
+
 import org.dawb.common.ui.monitor.ProgressMonitorWrapper;
 import org.dawb.workbench.ui.diffraction.DiffractionCalibrationUtils;
 import org.dawb.workbench.ui.diffraction.table.DiffractionTableData;
@@ -233,6 +235,8 @@ public class PowderCalibrationUtils {
 						dp.setBeamCentreCoords(bc);
 						
 						dp.setNormalAnglesInDegrees(output.getTilt().getDouble(0)*-1, 0, output.getTiltAngle().getDouble(0)*-1);
+						
+						currentData.residual = output.getResidual();
 
 						hideFoundRings(plottingSystem);
 						drawCalibrantRings(currentData.augmenter);
@@ -323,6 +327,9 @@ public class PowderCalibrationUtils {
 						int i = 0;
 
 						for (DiffractionTableData data : model) {
+							
+							data.residual = output.getResidual();
+							
 							DetectorProperties dp = data.md.getDetector2DProperties();
 
 							dp.setBeamCentreDistance(output.getDistance().getDouble(i));
@@ -426,6 +433,8 @@ public class PowderCalibrationUtils {
 						dp.setBeamCentreCoords(bc);
 
 						dp.setNormalAnglesInDegrees(output.getTilt().getDouble(0)*-1, 0, output.getTiltAngle().getDouble(0)*-1);
+						
+						currentData.residual = output.getResidual();
 
 						hideFoundRings(plottingSystem);
 						drawCalibrantRings(currentData.augmenter);
@@ -487,6 +496,8 @@ public class PowderCalibrationUtils {
 						dp.setBeamCentreCoords(bc);
 
 						dp.setNormalAnglesInDegrees(output.getTilt().getDouble(0)*-1, 0, output.getTiltAngle().getDouble(0)*-1);
+						
+						currentData.residual = output.getResidual();
 
 						hideFoundRings(plottingSystem);
 						drawCalibrantRings(currentData.augmenter);
@@ -573,6 +584,7 @@ public class PowderCalibrationUtils {
 							dp.setBeamCentreCoords(bc);
 
 							dp.setNormalAnglesInDegrees(output.getTilt().getDouble(i)*-1, 0, output.getTiltAngle().getDouble(i)*-1);
+							data.residual = output.getResidual();
 							data.md.getDiffractionCrystalEnvironment().setWavelength(output.getWavelength());
 							i++;
 						}

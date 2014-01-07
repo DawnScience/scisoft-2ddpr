@@ -110,6 +110,9 @@ public class DiffractionCalibrationView extends ViewPart {
 	private FormattedText energyFormattedText;
 	private CalibrantPositioningWidget calibrantPositioning;
 	private CheckBoxGroup xRayGroup;
+	private Label residualLabel;
+	
+	private static final String RESIDUAL = "Residual: ";
 
 	// FIXME These have leaked from another view to this one
 	// using getAdapter(...). This will likley lead to confusion
@@ -244,6 +247,10 @@ public class DiffractionCalibrationView extends ViewPart {
 		scrollComposite.setMinSize(scrollHolder.computeSize(r.width, SWT.DEFAULT));
 		scrollComposite.layout();
 		// end of Diffraction Calibration controls
+		
+		residualLabel = new Label(mainHolder, SWT.NONE);
+		residualLabel.setText(RESIDUAL);
+		residualLabel.setLayoutData(new GridData());
 
 		// try to load the previous data saved in the memento
 		DiffractionTableData good = null;
@@ -346,6 +353,8 @@ public class DiffractionCalibrationView extends ViewPart {
 					plottingSystem.clear();
 					setXRaysModifiersEnabled(false);
 					calibrateImagesButton.setEnabled(false);
+					residualLabel.setText(RESIDUAL);
+					residualLabel.getParent().layout();
 				}
 			}
 		};
@@ -726,6 +735,9 @@ public class DiffractionCalibrationView extends ViewPart {
 						updateScrolledComposite();
 						updateWavelengthAfterCalibration();
 						updateSelection(true);
+						
+						residualLabel.setText(RESIDUAL + currentData.residual);
+						residualLabel.getParent().layout();
 					}
 				});
 			}
