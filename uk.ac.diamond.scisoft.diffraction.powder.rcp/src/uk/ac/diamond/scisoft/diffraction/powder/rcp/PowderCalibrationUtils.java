@@ -421,6 +421,10 @@ public class PowderCalibrationUtils {
 				AbstractDataset deltaDistance = new DoubleDataset(dDist, dDist.length);
 				allDSpacings.add(dSpaceArray);
 				monitor.beginTask("Calibrating", IProgressMonitor.UNKNOWN);
+				
+				if (allEllipses.size() < 2) throw new IllegalArgumentException("Need more than 1 ellipse");
+				if (allDSpacings.size() != allDSpacings.size()) throw new IllegalArgumentException("Number of ellipses must equal number of d-spacings");
+				
 				final CalibrationOutput output = CalibrateEllipses.run(allEllipses, allDSpacings,deltaDistance, pixelSize);
 				
 				display.syncExec(new Runnable() {
