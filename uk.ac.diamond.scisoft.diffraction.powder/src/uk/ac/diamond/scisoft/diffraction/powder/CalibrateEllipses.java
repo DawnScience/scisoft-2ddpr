@@ -57,8 +57,8 @@ public class CalibrateEllipses {
 	
 	private static CalibrationOutput run(List<List<EllipticalROI>> allEllipses, List<double[]> allDSpacings, AbstractDataset deltaDistance,double pixel, double knownWavelength){
 		
-		if (allEllipses.size() < 2) throw new IllegalArgumentException("Need more than 1 ellipse");
-		if (allDSpacings.size() != allDSpacings.size()) throw new IllegalArgumentException("Number of ellipses must equal number of d-spacings");
+		if (allEllipses.isEmpty() || allEllipses.get(0).size() < 2) throw new IllegalArgumentException("Need more than 1 ellipse");
+		if (allDSpacings.isEmpty() || allEllipses.get(0).size() != allDSpacings.get(0).length) throw new IllegalArgumentException("Number of ellipses must equal number of d-spacings");
 		
 		//double w = 2048, h = 2048;
 		//double pixel = 0.2;

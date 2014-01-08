@@ -41,14 +41,10 @@
    <extension
          point="org.eclipse.ui.perspectives">
       <perspective
-            class="uk.ac.diamond.scisoft.diffraction.powder.rcp.DiffractionCalibrationPerspective"
-            id="uk.ac.diamond.scisoft.diffraction.powder.rcp.calibrationperspective"
-            name="Powder Calibration">
-      </perspective>
-      <perspective
             class="uk.ac.diamond.scisoft.diffraction.powder.rcp.DiffractionCalibrationMultipleViewsPerspective"
+            icon="icons/CalibrationRun.png"
             id="uk.ac.diamond.scisoft.diffraction.powder.rcp.calibrationMultipleViewsPerspective"
-            name="Powder Calibration Views">
+            name="Powder Calibration">
       </perspective>
    </extension>
    <extension
