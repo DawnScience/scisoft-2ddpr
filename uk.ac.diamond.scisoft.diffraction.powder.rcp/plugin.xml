@@ -4,12 +4,6 @@
    <extension
          point="org.eclipse.ui.views">
       <view
-            class="uk.ac.diamond.scisoft.diffraction.powder.rcp.DiffractionCalibrationView"
-            id="uk.ac.diamond.scisoft.diffraction.powder.rcp.calibrationview"
-            name="Diffraction Calibration"
-            restorable="true">
-      </view>
-      <view
             class="uk.ac.diamond.scisoft.analysis.rcp.views.PlotView"
             id="uk.ac.diamond.scisoft.diffraction.powder.rcp.calibrationplot"
             name="Calibration Plot"
@@ -41,9 +35,9 @@
    <extension
          point="org.eclipse.ui.perspectives">
       <perspective
-            class="uk.ac.diamond.scisoft.diffraction.powder.rcp.DiffractionCalibrationMultipleViewsPerspective"
+            class="uk.ac.diamond.scisoft.diffraction.powder.rcp.DiffractionCalibrationPerspective"
             icon="icons/CalibrationRun.png"
-            id="uk.ac.diamond.scisoft.diffraction.powder.rcp.calibrationMultipleViewsPerspective"
+            id="uk.ac.diamond.scisoft.diffraction.powder.rcp.calibrationPerspective"
             name="Powder Calibration">
       </perspective>
    </extension>
