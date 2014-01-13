@@ -877,4 +877,13 @@ public class DiffractionCalibrationView extends ViewPart {
 			parent.setFocus();
 	}
 
+	/**
+	 * Needed to retrieve the plotting system
+	 */
+	@Override
+	public Object getAdapter(@SuppressWarnings("rawtypes") Class key) {
+		if (key == IPlottingSystem.class)
+			return plottingSystem;
+		return null;
+	}
 }
