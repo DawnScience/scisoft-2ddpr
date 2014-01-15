@@ -23,11 +23,11 @@ import uk.ac.diamond.scisoft.analysis.roi.PolylineROI;
 
 public class CalibratePoints {
 
-	private static final double REL_TOL = 1e-21;
-	private static final double ABS_TOL = 1e-21;
+	private static final double REL_TOL = 1e-14;
+	private static final double ABS_TOL = 1e-14;
 	private static final int MAX_EVAL = 100000;
 	
-	public static CalibrationOutput runKnownWavelength(List<EllipticalFitROI> allEllipses, double[] allDSpacings, DetectorProperties detprop, double wavelength) {
+	public static CalibrationOutput runKnownWavelength(List<PolylineROI> allEllipses, double[] allDSpacings, DetectorProperties detprop, double wavelength) {
 		
 		final int heightInPixels = detprop.getPy();
 		final int widthInPixels = detprop.getPx();
@@ -40,8 +40,8 @@ public class CalibratePoints {
 		
 		int total = 0;
 		
-		for (EllipticalFitROI roi : allEllipses) {
-			total += roi.getPoints().getNumberOfPoints();
+		for (PolylineROI roi : allEllipses) {
+			total += roi.getNumberOfPoints();
 		}
 		
 		final DoubleDataset qd = new DoubleDataset(new int[]{total});
@@ -49,7 +49,7 @@ public class CalibratePoints {
 		final DoubleDataset yd = new DoubleDataset(new int[]{total});
 		int k = 0;
 		for (int i = 0; i < allEllipses.size(); i++) {
-			PolylineROI roi = allEllipses.get(i).getPoints();
+			PolylineROI roi = allEllipses.get(i);
 			double q = (2*Math.PI)/allDSpacings[i];
 			for (int j = 0; j < roi.getNumberOfPoints(); j++) {
 				PointROI p = roi.getPoint(j);

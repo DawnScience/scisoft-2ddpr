@@ -2,18 +2,12 @@ package uk.ac.diamond.scisoft.diffraction.powder.rcp;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-
-import javax.print.attribute.standard.MediaSize.Other;
 
 import org.dawb.common.ui.monitor.ProgressMonitorWrapper;
-import org.dawb.workbench.ui.diffraction.DiffractionCalibrationUtils;
 import org.dawb.workbench.ui.diffraction.table.DiffractionTableData;
 import org.dawnsci.plotting.api.IPlottingSystem;
 import org.dawnsci.plotting.api.region.IRegion;
-import org.dawnsci.plotting.api.trace.IImageTrace;
 import org.dawnsci.plotting.tools.diffraction.DiffractionImageAugmenter;
-import org.dawnsci.plotting.tools.diffraction.DiffractionUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -25,26 +19,12 @@ import org.slf4j.LoggerFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationStandards;
 import uk.ac.diamond.scisoft.analysis.crystallography.HKL;
-import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
-import uk.ac.diamond.scisoft.analysis.dataset.DoubleDataset;
 import uk.ac.diamond.scisoft.analysis.diffraction.DetectorProperties;
 import uk.ac.diamond.scisoft.analysis.diffraction.DiffractionCrystalEnvironment;
 import uk.ac.diamond.scisoft.analysis.diffraction.PowderRingsUtils;
 import uk.ac.diamond.scisoft.analysis.diffraction.QSpace;
-import uk.ac.diamond.scisoft.analysis.diffraction.ResolutionEllipseROI;
 import uk.ac.diamond.scisoft.analysis.io.IDiffractionMetadata;
-import uk.ac.diamond.scisoft.analysis.roi.CircularROI;
-import uk.ac.diamond.scisoft.analysis.roi.EllipticalFitROI;
-import uk.ac.diamond.scisoft.analysis.roi.EllipticalROI;
 import uk.ac.diamond.scisoft.analysis.roi.IROI;
-import uk.ac.diamond.scisoft.analysis.roi.ROIProfile;
-import uk.ac.diamond.scisoft.analysis.roi.ROIProfile.XAxis;
-import uk.ac.diamond.scisoft.analysis.roi.SectorROI;
-import uk.ac.diamond.scisoft.diffraction.powder.BruteStandardMatcher;
-import uk.ac.diamond.scisoft.diffraction.powder.CalibrateEllipses;
-import uk.ac.diamond.scisoft.diffraction.powder.CalibratePoints;
-import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
-import uk.ac.diamond.scisoft.diffraction.powder.CentreGuess;
 
 public class PowderCalibrationUtils {
 	
@@ -185,85 +165,4 @@ public class PowderCalibrationUtils {
 		aug.drawBeamCentre(true);
 	}
 	
-
-	public static Job calibrateImagesPointFittingMethod(final Display display,
-			   final IPlottingSystem plottingSystem,
-			   final DiffractionTableData currentData,
-			   final boolean fixedWavelength) {
-		
-		return new Job("Calibrate detector - Major Axis") {
-			@Override
-			protected IStatus run(final IProgressMonitor monitor) {
-				IStatus stat = Status.OK_STATUS;
-				//final ProgressMonitorWrapper mon = new ProgressMonitorWrapper(monitor);
-				monitor.beginTask("Calibrate detector", IProgressMonitor.UNKNOWN);
-				List<HKL> spacings = CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs();
-				
-				int n = currentData.rois.size();
-				if (n != spacings.size()) { // always allow a choice to be made
-					throw new IllegalArgumentException("Number of ellipses should be equal to spacings");
-				}
-				
-				int totalNonNull = 0;
-				
-				for (IROI roi : currentData.rois) {
-					if (roi != null) totalNonNull++;
-				}
-				
-				double[] ds = new double[totalNonNull];
-				List<EllipticalFitROI> erois = new ArrayList<EllipticalFitROI>(totalNonNull);
-				
-				int count = 0;
-				for (int i = 0; i < currentData.rois.size(); i++) {
-					IROI roi = currentData.rois.get(i);
-					if (roi != null) {
-						ds[count]  = spacings.get(i).getDNano()*10;
-						
-						if (roi instanceof EllipticalFitROI) {
-							erois.add((EllipticalFitROI)roi);
-						} else {
-							throw new IllegalArgumentException("ROI not elliptical fit");
-						}
-						
-						count++;
-					}
-				}
-				
-				List<List<EllipticalFitROI>> allEllipses = new ArrayList<List<EllipticalFitROI>> ();
-				allEllipses.add(erois);
-				List<double[]> allDSpacings = new ArrayList<double[]>();
-				allDSpacings.add(ds);
-				
-				double pixelSize = currentData.md.getDetector2DProperties().getHPxSize();
-				double wavelength = currentData.md.getDiffractionCrystalEnvironment().getWavelength();
-				
-				
-				CalibrationOutput o = CalibratePoints.runKnownWavelength(allEllipses.get(0), allDSpacings.get(0), currentData.md.getDetector2DProperties(),
-						currentData.md.getDiffractionCrystalEnvironment().getWavelength());
-
-				final CalibrationOutput output = o;
-				
-				display.syncExec(new Runnable() {
-					@Override
-					public void run() {
-//						
-						DetectorProperties dp = currentData.md.getDetector2DProperties();
-						
-						dp.setBeamCentreDistance(output.getDistance().getDouble(0));
-						double[] bc = new double[] {output.getBeamCentreX().getDouble(0),output.getBeamCentreY().getDouble(0) };
-						dp.setBeamCentreCoords(bc);
-						
-						dp.setNormalAnglesInDegrees(output.getTilt().getDouble(0)*-1, 0, output.getTiltAngle().getDouble(0)*-1);
-						
-						currentData.residual = output.getResidual();
-
-						hideFoundRings(plottingSystem);
-						drawCalibrantRings(currentData.augmenter);
-					}
-				});
-				return stat;
-			}
-		};
-		
-	}
 }
