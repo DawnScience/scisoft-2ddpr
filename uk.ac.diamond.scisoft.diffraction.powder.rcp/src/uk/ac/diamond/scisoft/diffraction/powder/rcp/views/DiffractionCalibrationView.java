@@ -84,6 +84,9 @@ import uk.ac.diamond.scisoft.analysis.diffraction.DiffractionCrystalEnvironment;
 import uk.ac.diamond.scisoft.analysis.io.ILoaderService;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.Activator;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.PowderCalibrationUtils;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.AbstractCalibrationJob;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.AutoCalibrationJob;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.FromRingsCalibrationJob;
 
 public class DiffractionCalibrationView extends ViewPart {
 
@@ -666,19 +669,8 @@ public class DiffractionCalibrationView extends ViewPart {
 		goBabyGoButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				Job job = null;
-				
-				if (model.size() == 1) {
-					
-					if (xRayGroup.isActivated()) {
-						job = PowderCalibrationUtils.autoFindEllipses(Display.getDefault(), plottingSystem, currentData,ringNumberSpinner.getSelection());
-					} else {
-						job = PowderCalibrationUtils.autoFindEllipsesAllSingleImage(Display.getDefault(), plottingSystem, currentData,ringNumberSpinner.getSelection());
-					}
-				} else {
-					job = PowderCalibrationUtils.autoFindEllipsesMultipleImages(Display.getDefault(), plottingSystem, model, currentData,ringNumberSpinner.getSelection());
-				}
-
+				Job job = new AutoCalibrationJob(Display.getDefault(), plottingSystem, model, currentData, ringNumberSpinner.getSelection());
+				((AutoCalibrationJob)job).setFixedWavelength(xRayGroup.isActivated());
 				job.addJobChangeListener(createJobListener());
 				job.setUser(true);
 				job.schedule();
@@ -708,14 +700,8 @@ public class DiffractionCalibrationView extends ViewPart {
 		calibrateImagesButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				Job job = null;
-
-				if (model.size() == 1) {
-					job = PowderCalibrationUtils.calibrateImagesMajorAxisMethod(Display.getDefault(), plottingSystem, currentData, xRayGroup.isActivated());
-				} else {
-					job = PowderCalibrationUtils.calibrateMultipleImages(Display.getDefault(), plottingSystem, model, currentData);
-				}
-
+				AbstractCalibrationJob job = new FromRingsCalibrationJob(Display.getDefault(), plottingSystem, model, currentData, ringNumberSpinner.getSelection());
+				job.setFixedWavelength(xRayGroup.isActivated());
 				job.addJobChangeListener(createJobListener());
 				job.setUser(true);
 				job.schedule();

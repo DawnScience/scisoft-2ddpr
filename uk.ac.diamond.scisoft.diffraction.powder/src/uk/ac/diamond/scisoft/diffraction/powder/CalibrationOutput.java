@@ -1,6 +1,7 @@
 package uk.ac.diamond.scisoft.diffraction.powder;
 
 import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
+import uk.ac.diamond.scisoft.analysis.dataset.DoubleDataset;
 
 public class CalibrationOutput {
 	
@@ -21,6 +22,17 @@ public class CalibrationOutput {
 		this.tiltAngle = tiltAngle;
 		this.distance = distance;
 		this.residual = residual;
+	}
+	
+	public CalibrationOutput(double wavelength, double beamCentreX, double beamCentreY,
+			double tilt, double tiltAngle, double distance, double residual) {
+		this(wavelength,
+				new DoubleDataset(new double[]{beamCentreX}, new int[]{1}),
+				new DoubleDataset(new double[]{beamCentreY}, new int[]{1}),
+				new DoubleDataset(new double[]{tilt}, new int[]{1}),
+				new DoubleDataset(new double[]{tiltAngle}, new int[]{1}),
+				new DoubleDataset(new double[]{distance}, new int[]{1}),
+				residual);
 	}
 
 	public double getWavelength() {

@@ -1,6 +1,8 @@
 package uk.ac.diamond.scisoft.diffraction.powder.rcp.handlers;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.dawb.workbench.ui.diffraction.table.DiffractionTableData;
 import org.dawnsci.plotting.api.IPlottingSystem;
@@ -18,6 +20,7 @@ import org.eclipse.swt.widgets.Display;
 import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
 import uk.ac.diamond.scisoft.analysis.io.IDiffractionMetadata;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.PowderCalibrationUtils;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.AutoCalibrationJob;
 
 public class DiffractionToolAutoCalHandler extends AbstractHandler {
 
@@ -53,8 +56,10 @@ public class DiffractionToolAutoCalHandler extends AbstractHandler {
 		dtd.md = dm;
 		
 		final Display display = Display.getDefault();
+		List<DiffractionTableData> model = new ArrayList<DiffractionTableData>();
+		model.add(dtd);
 		
-		Job job = PowderCalibrationUtils.autoFindEllipses(display, system, dtd, 10);
+		AutoCalibrationJob job = new AutoCalibrationJob(Display.getDefault(), system, model, dtd, 10);
 		
 		job.addJobChangeListener(new JobChangeAdapter() {
 			@Override
