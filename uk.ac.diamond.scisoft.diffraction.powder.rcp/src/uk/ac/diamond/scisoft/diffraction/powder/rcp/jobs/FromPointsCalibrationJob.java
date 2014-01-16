@@ -85,6 +85,8 @@ public class FromPointsCalibrationJob extends AbstractCalibrationJob {
 //				
 				DetectorProperties dp = currentData.md.getDetector2DProperties();
 				
+				currentData.md.getDiffractionCrystalEnvironment().setWavelength(output.getWavelength());
+				
 				dp.setBeamCentreDistance(output.getDistance().getDouble(0));
 				double[] bc = new double[] {output.getBeamCentreX().getDouble(0),output.getBeamCentreY().getDouble(0) };
 				dp.setBeamCentreCoords(bc);
@@ -94,7 +96,6 @@ public class FromPointsCalibrationJob extends AbstractCalibrationJob {
 				currentData.residual = output.getResidual();
 
 				hideFoundRings(plottingSystem);
-				drawCalibrantRings(currentData.augmenter);
 			}
 		});
 		return stat;

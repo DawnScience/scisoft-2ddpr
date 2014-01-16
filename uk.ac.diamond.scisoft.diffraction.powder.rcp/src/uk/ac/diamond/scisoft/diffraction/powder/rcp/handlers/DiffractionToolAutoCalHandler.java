@@ -13,13 +13,11 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.swt.widgets.Display;
 
 import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
 import uk.ac.diamond.scisoft.analysis.io.IDiffractionMetadata;
-import uk.ac.diamond.scisoft.diffraction.powder.rcp.PowderCalibrationUtils;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.AutoCalibrationJob;
 
 public class DiffractionToolAutoCalHandler extends AbstractHandler {
@@ -32,7 +30,6 @@ public class DiffractionToolAutoCalHandler extends AbstractHandler {
 		DiffractionTool dtool = (DiffractionTool)event.getApplicationContext();
 		
 		DiffractionTableData dtd = new DiffractionTableData();
-		dtd.augmenter  = dtool.getAugmenter();
 		
 		IPlottingSystem system = dtool.getPlottingSystem();
 		

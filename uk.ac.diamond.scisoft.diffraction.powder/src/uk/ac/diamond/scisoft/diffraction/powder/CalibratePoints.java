@@ -16,8 +16,6 @@ import uk.ac.diamond.scisoft.analysis.dataset.DoubleDataset;
 import uk.ac.diamond.scisoft.analysis.diffraction.DetectorProperties;
 import uk.ac.diamond.scisoft.analysis.diffraction.DiffractionCrystalEnvironment;
 import uk.ac.diamond.scisoft.analysis.diffraction.QSpace;
-import uk.ac.diamond.scisoft.analysis.roi.EllipticalFitROI;
-import uk.ac.diamond.scisoft.analysis.roi.EllipticalROI;
 import uk.ac.diamond.scisoft.analysis.roi.PointROI;
 import uk.ac.diamond.scisoft.analysis.roi.PolylineROI;
 
@@ -33,8 +31,6 @@ public class CalibratePoints {
 		final int widthInPixels = detprop.getPx();
 		final double pixelHeightInMM = detprop.getVPxSize();
 		final double pixelWidthInMM = detprop.getHPxSize();
-		final double bcx = detprop.getBeamCentreCoords()[0];
-		final double bcy =detprop.getBeamCentreCoords()[1];
 		
 		final DiffractionCrystalEnvironment dc = new DiffractionCrystalEnvironment(wavelength);
 		
@@ -69,7 +65,7 @@ public class CalibratePoints {
 				DetectorProperties d = new DetectorProperties(arg0[0],
 						arg0[1]*pixelHeightInMM, arg0[2]*pixelWidthInMM, heightInPixels, widthInPixels, pixelHeightInMM, pixelWidthInMM);
 				d.setNormalAnglesInDegrees(arg0[3], 0, arg0[4]);
-				
+				dc.setWavelength(arg0[5]);
 				QSpace q = new QSpace(d, dc);
 				
 				DoubleDataset qOut = new DoubleDataset(qd);
@@ -86,14 +82,14 @@ public class CalibratePoints {
 		
 		double[] initParam = new double[]{detprop.getBeamCentreDistance(),
 				detprop.getBeamCentreCoords()[0],detprop.getBeamCentreCoords()[1],
-				detprop.getNormalAnglesInDegrees()[0],detprop.getNormalAnglesInDegrees()[1]};
+				detprop.getNormalAnglesInDegrees()[0],detprop.getNormalAnglesInDegrees()[1], wavelength};
 		
 		PointValuePair result = opt.optimize(new InitialGuess(initParam), GoalType.MINIMIZE,
 				new ObjectiveFunction(fun), new MaxEval(MAX_EVAL),
-				new NelderMeadSimplex(5));
+				new NelderMeadSimplex(6));
 		
 		double[] point = result.getPointRef();
 		
-		return new CalibrationOutput(wavelength, point[1], point[2], point[3]*-1, point[4]*-1, point[0], result.getValue());
+		return new CalibrationOutput(point[5], point[1], point[2], point[3]*-1, point[4]*-1, point[0], result.getValue());
 	}
 }

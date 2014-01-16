@@ -9,7 +9,6 @@ import org.dawb.workbench.ui.diffraction.table.DiffractionTableData;
 import org.dawnsci.plotting.api.IPlottingSystem;
 import org.dawnsci.plotting.api.region.IRegion;
 import org.dawnsci.plotting.api.trace.IImageTrace;
-import org.dawnsci.plotting.tools.diffraction.DiffractionImageAugmenter;
 import org.dawnsci.plotting.tools.diffraction.DiffractionUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
@@ -18,7 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
-import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationStandards;
 import uk.ac.diamond.scisoft.analysis.crystallography.HKL;
 import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
 import uk.ac.diamond.scisoft.analysis.diffraction.DetectorProperties;
@@ -73,20 +71,6 @@ public abstract class AbstractCalibrationJob extends Job {
 				r.setVisible(false);
 			}
 		}
-	}
-	
-	/**
-	 * 
-	 * @param currentData
-	 */
-	public void drawCalibrantRings(DiffractionImageAugmenter aug) {
-
-		if (aug == null)
-			return;
-
-		CalibrationStandards standards = CalibrationFactory.getCalibrationStandards();
-		aug.drawCalibrantRings(true, standards.getCalibrant());
-		aug.drawBeamCentre(true);
 	}
 	
 	protected List<ResolutionEllipseROI> getFittedResolutionROIs(IPlottingSystem plottingSystem, EllipseFindingStructure efs,
@@ -234,7 +218,6 @@ public abstract class AbstractCalibrationJob extends Job {
 				}
 
 				hideFoundRings(plottingSystem);
-				drawCalibrantRings(currentData.augmenter);
 			}
 		});
 	}

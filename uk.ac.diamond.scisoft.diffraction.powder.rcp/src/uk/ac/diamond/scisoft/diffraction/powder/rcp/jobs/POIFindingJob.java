@@ -11,7 +11,6 @@ import org.dawnsci.plotting.api.region.RegionUtils;
 import org.dawnsci.plotting.api.region.IRegion.RegionType;
 import org.dawnsci.plotting.api.trace.IImageTrace;
 import org.dawnsci.plotting.api.trace.ITrace;
-import org.dawnsci.plotting.tools.diffraction.DiffractionImageAugmenter;
 import org.dawnsci.plotting.tools.diffraction.DiffractionUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -27,6 +26,7 @@ import uk.ac.diamond.scisoft.analysis.roi.EllipticalROI;
 import uk.ac.diamond.scisoft.analysis.roi.IROI;
 import uk.ac.diamond.scisoft.analysis.roi.PointROI;
 import uk.ac.diamond.scisoft.analysis.roi.PolylineROI;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.PowderCalibrationUtils;
 
 public class POIFindingJob extends Job {
 
@@ -52,14 +52,10 @@ public class POIFindingJob extends Job {
 		
 		IStatus stat = Status.OK_STATUS;
 		
-		if (currentData == null)
+		if (currentData == null && currentData.md == null)
 			return Status.CANCEL_STATUS;
 
-		DiffractionImageAugmenter aug = currentData.augmenter;
-		if (aug == null)
-			return Status.CANCEL_STATUS;
-
-		final List<IROI> resROIs = aug.getResolutionROIs();
+		final List<IROI> resROIs = PowderCalibrationUtils.getResolutionRings(currentData.md);
 		final IImageTrace image = getImageTrace(plottingSystem);
 		if (currentData.rois == null) {
 			currentData.rois = new ArrayList<IROI>();
