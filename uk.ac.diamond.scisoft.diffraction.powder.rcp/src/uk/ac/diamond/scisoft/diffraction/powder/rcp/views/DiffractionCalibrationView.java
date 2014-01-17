@@ -319,7 +319,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		augmenter = new DiffractionImageAugmenter(plottingSystem);
 		augmenter.activate();
 		ringFindJob = new POIFindingRun(plottingSystem, currentData, ringNumberSpinner.getSelection());
-		calibrantPositioning.setRingFindingJob(ringFindJob);
+		calibrantPositioning.setRingFinder(ringFindJob);
 	}
 
 	private void initializeListeners(){
