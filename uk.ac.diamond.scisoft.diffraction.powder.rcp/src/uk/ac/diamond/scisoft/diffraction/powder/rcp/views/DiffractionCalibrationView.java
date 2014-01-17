@@ -357,6 +357,9 @@ public class DiffractionCalibrationView extends ViewPart {
 			@Override
 			public void calibrantSelectionChanged(CalibrantSelectionEvent evt) {
 				calibrantCombo.select(calibrantCombo.indexOf(evt.getCalibrant()));
+				
+				ringNumberSpinner.setMaximum(CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs().size());
+				
 				if (currentData != null)
 					showCalibrantAndBeamCentre(checked);
 			}
