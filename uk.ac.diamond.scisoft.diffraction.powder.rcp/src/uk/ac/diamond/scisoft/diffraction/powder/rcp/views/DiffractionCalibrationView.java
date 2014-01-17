@@ -81,11 +81,11 @@ import uk.ac.diamond.scisoft.analysis.diffraction.DetectorProperties;
 import uk.ac.diamond.scisoft.analysis.diffraction.DiffractionCrystalEnvironment;
 import uk.ac.diamond.scisoft.analysis.io.ILoaderService;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.Activator;
-import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.AbstractCalibrationJob;
-import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.AutoCalibrationJob;
-import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.FromPointsCalibrationJob;
-import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.FromRingsCalibrationJob;
-import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.POIFindingJob;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.AbstractCalibrationRun;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.AutoCalibrationRun;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.FromPointsCalibrationRun;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.FromRingsCalibrationRun;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.POIFindingRun;
 
 public class DiffractionCalibrationView extends ViewPart {
 
@@ -114,7 +114,7 @@ public class DiffractionCalibrationView extends ViewPart {
 	private CheckBoxGroup xRayGroup;
 	private Label residualLabel;
 	private Button usePointCalibration;
-	private POIFindingJob ringFindJob;
+	private POIFindingRun ringFindJob;
 	private DiffractionImageAugmenter augmenter;
 	
 	private static final String RESIDUAL = "Residual: ";
@@ -318,7 +318,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		plottingSystem.setFocus();
 		augmenter = new DiffractionImageAugmenter(plottingSystem);
 		augmenter.activate();
-		ringFindJob = new POIFindingJob(plottingSystem, currentData, ringNumberSpinner.getSelection());
+		ringFindJob = new POIFindingRun(plottingSystem, currentData, ringNumberSpinner.getSelection());
 		calibrantPositioning.setRingFindingJob(ringFindJob);
 	}
 
@@ -673,8 +673,8 @@ public class DiffractionCalibrationView extends ViewPart {
 		goBabyGoButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				IRunnableWithProgress job = new AutoCalibrationJob(Display.getDefault(), plottingSystem, model, currentData, ringNumberSpinner.getSelection());
-				((AutoCalibrationJob)job).setFixedWavelength(xRayGroup.isActivated());
+				IRunnableWithProgress job = new AutoCalibrationRun(Display.getDefault(), plottingSystem, model, currentData, ringNumberSpinner.getSelection());
+				((AutoCalibrationRun)job).setFixedWavelength(xRayGroup.isActivated());
 
 				ProgressMonitorDialog dia = new ProgressMonitorDialog(Display.getCurrent().getActiveShell());
 				try {
@@ -706,7 +706,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		Composite composite = new Composite(tabFolder, SWT.NONE);
 		composite.setLayout(new GridLayout());
 		composite.setLayoutData(new GridData(GridData.FILL_BOTH));
-		ringFindJob = new POIFindingJob(null, null, 0);
+		ringFindJob = new POIFindingRun(null, null, 0);
 		calibrantPositioning = new CalibrantPositioningWidget(composite, model);
 
 		calibrateImagesButton = new Button(composite, SWT.PUSH);
@@ -720,12 +720,12 @@ public class DiffractionCalibrationView extends ViewPart {
 				IRunnableWithProgress job = null;
 				
 				if (usePointCalibration.getSelection()) {
-					job = new FromPointsCalibrationJob(Display.getDefault(), plottingSystem, model, currentData, ringNumberSpinner.getSelection());
+					job = new FromPointsCalibrationRun(Display.getDefault(), plottingSystem, model, currentData, ringNumberSpinner.getSelection());
 				} else {
-					job = new FromRingsCalibrationJob(Display.getDefault(), plottingSystem, model, currentData, ringNumberSpinner.getSelection());
+					job = new FromRingsCalibrationRun(Display.getDefault(), plottingSystem, model, currentData, ringNumberSpinner.getSelection());
 				}
 				
-				((AbstractCalibrationJob)job).setFixedWavelength(xRayGroup.isActivated());
+				((AbstractCalibrationRun)job).setFixedWavelength(xRayGroup.isActivated());
 				ProgressMonitorDialog dia = new ProgressMonitorDialog(Display.getCurrent().getActiveShell());
 				try {
 					dia.run(true, true, job);

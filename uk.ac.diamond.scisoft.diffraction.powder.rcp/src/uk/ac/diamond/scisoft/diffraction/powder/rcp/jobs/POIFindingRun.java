@@ -28,17 +28,17 @@ import uk.ac.diamond.scisoft.analysis.roi.PointROI;
 import uk.ac.diamond.scisoft.analysis.roi.PolylineROI;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.PowderCalibrationUtils;
 
-public class POIFindingJob implements IRunnableWithProgress {
+public class POIFindingRun implements IRunnableWithProgress {
 
 	IPlottingSystem plottingSystem;
 	DiffractionTableData currentData;
 	int nRings;
 	
-	private static Logger logger = LoggerFactory.getLogger(POIFindingJob.class);
+	private static Logger logger = LoggerFactory.getLogger(POIFindingRun.class);
 	
 	static String REGION_PREFIX = "Pixel peaks";
 	
-	public POIFindingJob(final IPlottingSystem plottingSystem,
+	public POIFindingRun(final IPlottingSystem plottingSystem,
 			final DiffractionTableData currentData,
 			final int nRings) {
 		this.plottingSystem = plottingSystem;

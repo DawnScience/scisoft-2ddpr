@@ -17,10 +17,10 @@ import uk.ac.diamond.scisoft.analysis.roi.EllipticalROI;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrateEllipses;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
 
-public class AutoCalibrationJob extends AbstractCalibrationJob {
+public class AutoCalibrationRun extends AbstractCalibrationRun {
 
 
-	public AutoCalibrationJob(Display display, IPlottingSystem plottingSystem,
+	public AutoCalibrationRun(Display display, IPlottingSystem plottingSystem,
 			List<DiffractionTableData> model, DiffractionTableData currentData,
 			int maxRings) {
 		super(display, plottingSystem, model, currentData, maxRings);

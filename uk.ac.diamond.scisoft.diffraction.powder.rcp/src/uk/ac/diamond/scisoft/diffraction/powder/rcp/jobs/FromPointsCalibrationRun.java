@@ -17,9 +17,9 @@ import uk.ac.diamond.scisoft.analysis.roi.PolylineROI;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibratePoints;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
 
-public class FromPointsCalibrationJob extends AbstractCalibrationJob {
+public class FromPointsCalibrationRun extends AbstractCalibrationRun {
 
-	public FromPointsCalibrationJob(Display display,
+	public FromPointsCalibrationRun(Display display,
 			IPlottingSystem plottingSystem, List<DiffractionTableData> model,
 			DiffractionTableData currentData, int maxRings) {
 		super(display, plottingSystem, model, currentData, maxRings);

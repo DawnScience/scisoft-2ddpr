@@ -31,7 +31,7 @@ import uk.ac.diamond.scisoft.diffraction.powder.BruteStandardMatcher;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
 import uk.ac.diamond.scisoft.diffraction.powder.CentreGuess;
 
-public abstract class AbstractCalibrationJob implements IRunnableWithProgress {
+public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 
 	Display display;
 	IPlottingSystem plottingSystem;
@@ -44,9 +44,9 @@ public abstract class AbstractCalibrationJob implements IRunnableWithProgress {
 	private static final int CENTRE_MASK_RADIUS = 50;
 	private static String REGION_PREFIX = "Pixel peaks";
 	
-	private static Logger logger = LoggerFactory.getLogger(AbstractCalibrationJob.class);
+	private static Logger logger = LoggerFactory.getLogger(AbstractCalibrationRun.class);
 	
-	public AbstractCalibrationJob(Display display,
+	public AbstractCalibrationRun(Display display,
 			IPlottingSystem plottingSystem,
 			List<DiffractionTableData> model,
 			DiffractionTableData currentData,

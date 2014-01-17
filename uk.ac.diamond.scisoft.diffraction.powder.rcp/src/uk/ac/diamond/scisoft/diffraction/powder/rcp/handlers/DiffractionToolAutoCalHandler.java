@@ -18,7 +18,7 @@ import org.eclipse.swt.widgets.Display;
 
 import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
 import uk.ac.diamond.scisoft.analysis.io.IDiffractionMetadata;
-import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.AutoCalibrationJob;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.AutoCalibrationRun;
 
 public class DiffractionToolAutoCalHandler extends AbstractHandler {
 
@@ -55,7 +55,7 @@ public class DiffractionToolAutoCalHandler extends AbstractHandler {
 		List<DiffractionTableData> model = new ArrayList<DiffractionTableData>();
 		model.add(dtd);
 		
-		AutoCalibrationJob job = new AutoCalibrationJob(Display.getDefault(), system, model, dtd, 10);
+		AutoCalibrationRun job = new AutoCalibrationRun(Display.getDefault(), system, model, dtd, 10);
 		
 		ProgressMonitorDialog dia = new ProgressMonitorDialog(Display.getCurrent().getActiveShell());
 		try {

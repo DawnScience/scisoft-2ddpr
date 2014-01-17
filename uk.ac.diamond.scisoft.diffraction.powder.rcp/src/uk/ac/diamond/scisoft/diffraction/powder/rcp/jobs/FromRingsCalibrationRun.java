@@ -18,9 +18,9 @@ import uk.ac.diamond.scisoft.analysis.roi.IROI;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrateEllipses;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
 
-public class FromRingsCalibrationJob extends AbstractCalibrationJob {
+public class FromRingsCalibrationRun extends AbstractCalibrationRun {
 
-	public FromRingsCalibrationJob(Display display,
+	public FromRingsCalibrationRun(Display display,
 			IPlottingSystem plottingSystem, List<DiffractionTableData> model,
 			DiffractionTableData currentData, int maxRings) {
 		super(display, plottingSystem, model, currentData, maxRings);
