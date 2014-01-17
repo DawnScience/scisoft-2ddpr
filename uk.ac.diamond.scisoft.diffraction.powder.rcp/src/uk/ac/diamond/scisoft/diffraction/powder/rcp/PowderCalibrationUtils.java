@@ -130,10 +130,16 @@ public class PowderCalibrationUtils {
 		List<IROI> rois = new ArrayList<IROI>(cs.getHKLs().size());
 		
 		for (HKL hkl : cs.getHKLs()) {
-			
 			DetectorProperties detprop = metadata.getDetector2DProperties();
 			DiffractionCrystalEnvironment diffenv = metadata.getDiffractionCrystalEnvironment();
-			rois.add(DSpacing.conicFromDSpacing(detprop, diffenv, Double.valueOf(hkl.getD().doubleValue(NonSI.ANGSTROM))));
+			try {
+				IROI roi = DSpacing.conicFromDSpacing(detprop, diffenv, Double.valueOf(hkl.getD().doubleValue(NonSI.ANGSTROM)));
+				rois.add(roi);
+			} catch ( Exception e) {
+				rois.add(null);
+			}
+			
+			
 		}
 		
 		return rois;

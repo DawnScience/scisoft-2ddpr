@@ -16,6 +16,7 @@ import uk.ac.diamond.scisoft.analysis.dataset.DoubleDataset;
 import uk.ac.diamond.scisoft.analysis.diffraction.DetectorProperties;
 import uk.ac.diamond.scisoft.analysis.diffraction.DiffractionCrystalEnvironment;
 import uk.ac.diamond.scisoft.analysis.diffraction.QSpace;
+import uk.ac.diamond.scisoft.analysis.io.IDiffractionMetadata;
 import uk.ac.diamond.scisoft.analysis.roi.PointROI;
 import uk.ac.diamond.scisoft.analysis.roi.PolylineROI;
 
@@ -25,14 +26,7 @@ public class CalibratePoints {
 	private static final double ABS_TOL = 1e-14;
 	private static final int MAX_EVAL = 100000;
 	
-	public static CalibrationOutput runKnownWavelength(List<PolylineROI> allEllipses, double[] allDSpacings, DetectorProperties detprop, double wavelength) {
-		
-		final int heightInPixels = detprop.getPy();
-		final int widthInPixels = detprop.getPx();
-		final double pixelHeightInMM = detprop.getVPxSize();
-		final double pixelWidthInMM = detprop.getHPxSize();
-		
-		final DiffractionCrystalEnvironment dc = new DiffractionCrystalEnvironment(wavelength);
+	public static CalibrationOutput run(List<PolylineROI> allEllipses, double[] allDSpacings, final IDiffractionMetadata md, final CalibratePointsParameterModel paramModel) {
 		
 		int total = 0;
 		
@@ -62,10 +56,9 @@ public class CalibratePoints {
 			@Override
 			public double value(double[] arg0) {
 				
-				DetectorProperties d = new DetectorProperties(arg0[0],
-						arg0[1]*pixelHeightInMM, arg0[2]*pixelWidthInMM, heightInPixels, widthInPixels, pixelHeightInMM, pixelWidthInMM);
-				d.setNormalAnglesInDegrees(arg0[3], 0, arg0[4]);
-				QSpace q = new QSpace(d, dc);
+				IDiffractionMetadata argMd = paramModel.getMetadata(arg0, md);
+				
+				QSpace q = new QSpace(argMd.getDetector2DProperties(), argMd.getDiffractionCrystalEnvironment());
 				
 				DoubleDataset qOut = new DoubleDataset(qd);
 				
@@ -79,16 +72,22 @@ public class CalibratePoints {
 			}
 		};
 		
-		double[] initParam = new double[]{detprop.getBeamCentreDistance(),
-				detprop.getBeamCentreCoords()[0],detprop.getBeamCentreCoords()[1],
-				detprop.getNormalAnglesInDegrees()[0],detprop.getNormalAnglesInDegrees()[1]};
+		double[] initParam = paramModel.getInitialParams(md);
 		
 		PointValuePair result = opt.optimize(new InitialGuess(initParam), GoalType.MINIMIZE,
 				new ObjectiveFunction(fun), new MaxEval(MAX_EVAL),
-				new NelderMeadSimplex(5));
+				new NelderMeadSimplex(paramModel.getNumberOfFloatingParameters()));
 		
 		double[] point = result.getPointRef();
 		
-		return new CalibrationOutput(wavelength, point[1], point[2], point[3]*-1, point[4]*-1, point[0], result.getValue());
+		IDiffractionMetadata outMd = paramModel.getMetadata(point, md);
+		
+		return new CalibrationOutput(outMd.getDiffractionCrystalEnvironment().getWavelength(),
+									outMd.getDetector2DProperties().getBeamCentreCoords()[0],
+									outMd.getDetector2DProperties().getBeamCentreCoords()[1],
+									outMd.getDetector2DProperties().getNormalAnglesInDegrees()[0]*-1,
+									outMd.getDetector2DProperties().getNormalAnglesInDegrees()[2]*-1,
+									outMd.getDetector2DProperties().getBeamCentreDistance(),
+									result.getValue());
 	}
 }

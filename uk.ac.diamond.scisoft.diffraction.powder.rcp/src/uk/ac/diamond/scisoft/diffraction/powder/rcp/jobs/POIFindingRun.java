@@ -94,13 +94,18 @@ public class POIFindingRun implements IRunnableWithProgress {
 				double deltahigh = 50;
 				
 				if (i != 0) {
-					deltalow = 0.5*(major - ((EllipticalROI)resROIs.get(i-1)).getSemiAxis(0));
-					deltalow = deltalow > 50 ? 50 : deltalow;
+					
+					if (resROIs.get(i-1) instanceof EllipticalROI) {
+						deltalow = 0.5*(major - ((EllipticalROI)resROIs.get(i-1)).getSemiAxis(0));
+						deltalow = deltalow > 50 ? 50 : deltalow;
+					}
 				}
 				
 				if (i < resROIs.size()-1) {
+					if (resROIs.get(i+1) instanceof EllipticalROI) {
 					deltahigh = 0.5*(((EllipticalROI)resROIs.get(i+1)).getSemiAxis(0) - major);
 					deltahigh = deltahigh > 50 ? 50 : deltahigh;
+					}
 				}
 				
 

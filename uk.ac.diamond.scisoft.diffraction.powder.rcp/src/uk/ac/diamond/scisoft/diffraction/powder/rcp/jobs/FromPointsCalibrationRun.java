@@ -15,6 +15,7 @@ import uk.ac.diamond.scisoft.analysis.roi.EllipticalFitROI;
 import uk.ac.diamond.scisoft.analysis.roi.IROI;
 import uk.ac.diamond.scisoft.analysis.roi.PolylineROI;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibratePoints;
+import uk.ac.diamond.scisoft.diffraction.powder.CalibratePointsParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
 
 public class FromPointsCalibrationRun extends AbstractCalibrationRun {
@@ -68,11 +69,9 @@ public class FromPointsCalibrationRun extends AbstractCalibrationRun {
 		List<double[]> allDSpacings = new ArrayList<double[]>();
 		allDSpacings.add(ds);
 		
-		double wavelength = currentData.md.getDiffractionCrystalEnvironment().getWavelength();
-		
-		
-		CalibrationOutput o = CalibratePoints.runKnownWavelength(allEllipses.get(0), allDSpacings.get(0), currentData.md.getDetector2DProperties(),
-				wavelength);
+		CalibratePointsParameterModel pm = new CalibratePointsParameterModel();
+		pm.setFloatEnergy(false);
+		CalibrationOutput o = CalibratePoints.run(allEllipses.get(0), allDSpacings.get(0), currentData.md,pm);
 
 		final CalibrationOutput output = o;
 		
