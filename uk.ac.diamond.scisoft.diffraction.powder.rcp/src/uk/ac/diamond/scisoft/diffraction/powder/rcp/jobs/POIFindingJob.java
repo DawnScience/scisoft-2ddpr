@@ -15,8 +15,8 @@ import org.dawnsci.plotting.tools.diffraction.DiffractionUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.draw2d.ColorConstants;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Display;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +28,7 @@ import uk.ac.diamond.scisoft.analysis.roi.PointROI;
 import uk.ac.diamond.scisoft.analysis.roi.PolylineROI;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.PowderCalibrationUtils;
 
-public class POIFindingJob extends Job {
+public class POIFindingJob implements IRunnableWithProgress {
 
 	IPlottingSystem plottingSystem;
 	DiffractionTableData currentData;
@@ -41,19 +41,18 @@ public class POIFindingJob extends Job {
 	public POIFindingJob(final IPlottingSystem plottingSystem,
 			final DiffractionTableData currentData,
 			final int nRings) {
-		super("Finding points of interest");
 		this.plottingSystem = plottingSystem;
 		this.currentData = currentData;
 		this.nRings = nRings;
 	}
 	
 	@Override
-	protected IStatus run(IProgressMonitor monitor) {
+	public void run(IProgressMonitor monitor) {
 		
 		IStatus stat = Status.OK_STATUS;
 		
 		if (currentData == null && currentData.md == null)
-			return Status.CANCEL_STATUS;
+			return;
 
 		final List<IROI> resROIs = PowderCalibrationUtils.getResolutionRings(currentData.md);
 		final IImageTrace image = getImageTrace(plottingSystem);
@@ -110,7 +109,7 @@ public class POIFindingJob extends Job {
 				} catch (NullPointerException ex) {
 					stat = Status.CANCEL_STATUS;
 					n = -1; // indicate, to finally clause, problem with getting image or other issues
-					return stat;
+					return;
 				}
 				
 				if (roi != null) {
@@ -134,7 +133,7 @@ public class POIFindingJob extends Job {
 		if (currentData.nrois > 0) {
 			currentData.use = true;
 		}
-		return stat;
+		return;
 	}
 	
 	public void setNumberOfRingsToFind(int nRings) {

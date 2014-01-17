@@ -1,5 +1,6 @@
 package uk.ac.diamond.scisoft.diffraction.powder.rcp.handlers;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -12,8 +13,7 @@ import org.dawnsci.plotting.tools.diffraction.DiffractionTool;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.swt.widgets.Display;
 
 import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
@@ -52,26 +52,21 @@ public class DiffractionToolAutoCalHandler extends AbstractHandler {
 		dtd.image = ds;
 		dtd.md = dm;
 		
-		final Display display = Display.getDefault();
 		List<DiffractionTableData> model = new ArrayList<DiffractionTableData>();
 		model.add(dtd);
 		
 		AutoCalibrationJob job = new AutoCalibrationJob(Display.getDefault(), system, model, dtd, 10);
 		
-		job.addJobChangeListener(new JobChangeAdapter() {
-			@Override
-			public void done(IJobChangeEvent event) {
-				display.asyncExec(new Runnable() {
-					@Override
-					public void run() {
-						//TODO show dialog with reduced data
-						//updateIntegrated(currentData);
-					}
-				});
-			}
-		});
-		job.setUser(true);
-		job.schedule();
+		ProgressMonitorDialog dia = new ProgressMonitorDialog(Display.getCurrent().getActiveShell());
+		try {
+			dia.run(true, true, job);
+		} catch (InvocationTargetException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		
 		return null;
 	}

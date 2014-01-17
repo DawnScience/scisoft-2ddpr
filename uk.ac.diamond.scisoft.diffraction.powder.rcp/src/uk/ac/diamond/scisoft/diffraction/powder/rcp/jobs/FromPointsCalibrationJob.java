@@ -6,8 +6,6 @@ import java.util.List;
 import org.dawb.workbench.ui.diffraction.table.DiffractionTableData;
 import org.dawnsci.plotting.api.IPlottingSystem;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.widgets.Display;
 
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
@@ -29,8 +27,7 @@ public class FromPointsCalibrationJob extends AbstractCalibrationJob {
 	}
 
 	@Override
-	protected IStatus run(IProgressMonitor monitor) {
-		IStatus stat = Status.OK_STATUS;
+	public void run(IProgressMonitor monitor) {
 		//final ProgressMonitorWrapper mon = new ProgressMonitorWrapper(monitor);
 		monitor.beginTask("Calibrate detector", IProgressMonitor.UNKNOWN);
 		List<HKL> spacings = CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs();
@@ -98,7 +95,7 @@ public class FromPointsCalibrationJob extends AbstractCalibrationJob {
 				hideFoundRings(plottingSystem);
 			}
 		});
-		return stat;
+		return;
 	}
 
 }

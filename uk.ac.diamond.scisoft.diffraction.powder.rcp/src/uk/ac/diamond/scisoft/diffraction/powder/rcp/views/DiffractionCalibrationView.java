@@ -1,5 +1,6 @@
 package uk.ac.diamond.scisoft.diffraction.powder.rcp.views;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -21,13 +22,11 @@ import org.dawnsci.plotting.api.IPlottingSystem;
 import org.dawnsci.plotting.api.PlottingFactory;
 import org.dawnsci.plotting.tools.diffraction.DiffractionImageAugmenter;
 import org.dawnsci.plotting.tools.preference.diffraction.DiffractionPreferencePage;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
-import org.eclipse.core.runtime.jobs.IJobChangeListener;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -674,11 +673,22 @@ public class DiffractionCalibrationView extends ViewPart {
 		goBabyGoButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				Job job = new AutoCalibrationJob(Display.getDefault(), plottingSystem, model, currentData, ringNumberSpinner.getSelection());
+				IRunnableWithProgress job = new AutoCalibrationJob(Display.getDefault(), plottingSystem, model, currentData, ringNumberSpinner.getSelection());
 				((AutoCalibrationJob)job).setFixedWavelength(xRayGroup.isActivated());
-				job.addJobChangeListener(createJobListener());
-				job.setUser(true);
-				job.schedule();
+
+				ProgressMonitorDialog dia = new ProgressMonitorDialog(Display.getCurrent().getActiveShell());
+				try {
+					dia.run(true, true, job);
+				} catch (InvocationTargetException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
+				updateAfterCalibration();
+				
 			}
 		});
 		return composite;
@@ -707,7 +717,7 @@ public class DiffractionCalibrationView extends ViewPart {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				
-				AbstractCalibrationJob job = null;
+				IRunnableWithProgress job = null;
 				
 				if (usePointCalibration.getSelection()) {
 					job = new FromPointsCalibrationJob(Display.getDefault(), plottingSystem, model, currentData, ringNumberSpinner.getSelection());
@@ -715,33 +725,31 @@ public class DiffractionCalibrationView extends ViewPart {
 					job = new FromRingsCalibrationJob(Display.getDefault(), plottingSystem, model, currentData, ringNumberSpinner.getSelection());
 				}
 				
-				job.setFixedWavelength(xRayGroup.isActivated());
-				job.addJobChangeListener(createJobListener());
-				job.setUser(true);
-				job.schedule();
+				((AbstractCalibrationJob)job).setFixedWavelength(xRayGroup.isActivated());
+				ProgressMonitorDialog dia = new ProgressMonitorDialog(Display.getCurrent().getActiveShell());
+				try {
+					dia.run(true, true, job);
+				} catch (InvocationTargetException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				updateAfterCalibration();
 			}
 		});
 		calibrateImagesButton.setEnabled(false);
 		return composite;
 	}
-
-	protected IJobChangeListener createJobListener() {
-		return new JobChangeAdapter() {
-			@Override
-			public void done(IJobChangeEvent event) {
-				Display.getDefault().asyncExec(new Runnable() {
-					@Override
-					public void run() {
-						updateScrolledComposite();
-						updateWavelengthAfterCalibration();
-						updateSelection(true);
-						
-						residualLabel.setText(RESIDUAL + currentData.residual);
-						residualLabel.getParent().layout();
-					}
-				});
-			}
-		};
+	
+	private void updateAfterCalibration() {
+		updateScrolledComposite();
+		updateWavelengthAfterCalibration();
+		updateSelection(true);
+		
+		residualLabel.setText(RESIDUAL + currentData.residual);
+		residualLabel.getParent().layout();
 	}
 
 	/**

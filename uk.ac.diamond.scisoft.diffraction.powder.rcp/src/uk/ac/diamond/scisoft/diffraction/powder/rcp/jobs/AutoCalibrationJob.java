@@ -6,8 +6,6 @@ import java.util.List;
 import org.dawb.workbench.ui.diffraction.table.DiffractionTableData;
 import org.dawnsci.plotting.api.IPlottingSystem;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.widgets.Display;
 
 import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
@@ -29,7 +27,7 @@ public class AutoCalibrationJob extends AbstractCalibrationJob {
 	}
 
 	@Override
-	protected IStatus run(final IProgressMonitor monitor) {
+	public void run(final IProgressMonitor monitor) {
 		
 		double[] deltaDistance = new double[model.size()];
 		
@@ -42,20 +40,20 @@ public class AutoCalibrationJob extends AbstractCalibrationJob {
 		
 		for (DiffractionTableData data : model) {
 			
-			plottingSystem.updatePlot2D(data.image, null, monitor);
+			if (model.size() > 1) plottingSystem.updatePlot2D(data.image, null, monitor);
 			
 			final AbstractDataset image = (AbstractDataset)data.image;
 			IDiffractionMetadata meta = data.md;
 			
 			final EllipseFindingStructure efs = getResolutionEllipses(image, meta, maxRings, monitor);
 			
-			if (monitor.isCanceled()) return Status.CANCEL_STATUS;
+			if (monitor.isCanceled()) return;
 			
-			if (efs == null) return Status.CANCEL_STATUS;
+			if (efs == null) return;
 			
 			List<ResolutionEllipseROI> foundEllipses = getFittedResolutionROIs(plottingSystem, efs, display, monitor);
 			
-			if (monitor.isCanceled() || foundEllipses == null) return Status.CANCEL_STATUS;
+			if (monitor.isCanceled() || foundEllipses == null);
 			
 			
 			double[] dSpaceArray = new double[foundEllipses.size()];
@@ -91,9 +89,11 @@ public class AutoCalibrationJob extends AbstractCalibrationJob {
 		
 		updateOnFinish(output);
 
-		return Status.OK_STATUS;
+		return;
 	}
 	
-
+	public void runForRunnable(final IProgressMonitor monitor) {
+		run(monitor);
+	}
 
 }

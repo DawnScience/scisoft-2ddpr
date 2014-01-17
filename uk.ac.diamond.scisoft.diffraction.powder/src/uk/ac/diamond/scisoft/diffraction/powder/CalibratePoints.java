@@ -65,7 +65,6 @@ public class CalibratePoints {
 				DetectorProperties d = new DetectorProperties(arg0[0],
 						arg0[1]*pixelHeightInMM, arg0[2]*pixelWidthInMM, heightInPixels, widthInPixels, pixelHeightInMM, pixelWidthInMM);
 				d.setNormalAnglesInDegrees(arg0[3], 0, arg0[4]);
-				dc.setWavelength(arg0[5]);
 				QSpace q = new QSpace(d, dc);
 				
 				DoubleDataset qOut = new DoubleDataset(qd);
@@ -82,14 +81,14 @@ public class CalibratePoints {
 		
 		double[] initParam = new double[]{detprop.getBeamCentreDistance(),
 				detprop.getBeamCentreCoords()[0],detprop.getBeamCentreCoords()[1],
-				detprop.getNormalAnglesInDegrees()[0],detprop.getNormalAnglesInDegrees()[1], wavelength};
+				detprop.getNormalAnglesInDegrees()[0],detprop.getNormalAnglesInDegrees()[1]};
 		
 		PointValuePair result = opt.optimize(new InitialGuess(initParam), GoalType.MINIMIZE,
 				new ObjectiveFunction(fun), new MaxEval(MAX_EVAL),
-				new NelderMeadSimplex(6));
+				new NelderMeadSimplex(5));
 		
 		double[] point = result.getPointRef();
 		
-		return new CalibrationOutput(point[5], point[1], point[2], point[3]*-1, point[4]*-1, point[0], result.getValue());
+		return new CalibrationOutput(wavelength, point[1], point[2], point[3]*-1, point[4]*-1, point[0], result.getValue());
 	}
 }

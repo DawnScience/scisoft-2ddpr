@@ -11,7 +11,7 @@ import org.dawnsci.plotting.api.region.IRegion;
 import org.dawnsci.plotting.api.trace.IImageTrace;
 import org.dawnsci.plotting.tools.diffraction.DiffractionUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Display;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +31,7 @@ import uk.ac.diamond.scisoft.diffraction.powder.BruteStandardMatcher;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
 import uk.ac.diamond.scisoft.diffraction.powder.CentreGuess;
 
-public abstract class AbstractCalibrationJob extends Job {
+public abstract class AbstractCalibrationJob implements IRunnableWithProgress {
 
 	Display display;
 	IPlottingSystem plottingSystem;
@@ -51,7 +51,6 @@ public abstract class AbstractCalibrationJob extends Job {
 			List<DiffractionTableData> model,
 			DiffractionTableData currentData,
 			int maxRings) {
-		super("Calibration");
 		
 		this.display = display;
 		this.plottingSystem = plottingSystem;
