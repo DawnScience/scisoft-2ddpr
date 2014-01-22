@@ -36,7 +36,23 @@ public class CalibrateEllipses {
 	 * @return calibrationOutput
 	 */
 	public static CalibrationOutput run(List<List<EllipticalROI>> allEllipses, List<double[]> allDSpacings, AbstractDataset deltaDistance, double pixel) {
-		return run(allEllipses, allDSpacings, deltaDistance,pixel, -1);
+		return run(allEllipses, allDSpacings, deltaDistance,pixel, -1, false);
+	}
+	
+	/**
+	 * Calibrate a single image at a known wavelength
+	 * <p>
+	 * Returns distance, detector tilt and beam centre
+	 * <p>
+	 * @param allEllipses - list of ellipses for each image (should only be one image)
+	 * @param allDSpacings - array of d-spacings for each image (should only be one image)
+	 * @param pixel size in mm
+	 * @param wavelength in angstroms
+	 * @return calibrationOutput
+	 */
+	public static CalibrationOutput runKnownDistance(List<List<EllipticalROI>> allEllipses, List<double[]> allDSpacings,double pixel,double knownDistance) {
+		AbstractDataset deltaDistance = AbstractDataset.zeros(new int[]{1}, AbstractDataset.FLOAT64);
+		return run(allEllipses, allDSpacings, deltaDistance,pixel, knownDistance, false);
 	}
 	
 	/**
@@ -52,10 +68,10 @@ public class CalibrateEllipses {
 	 */
 	public static CalibrationOutput runKnownWavelength(List<List<EllipticalROI>> allEllipses, List<double[]> allDSpacings,double pixel,double knownWavelength) {
 		AbstractDataset deltaDistance = AbstractDataset.zeros(new int[]{1}, AbstractDataset.FLOAT64);
-		return run(allEllipses, allDSpacings, deltaDistance,pixel, knownWavelength);
+		return run(allEllipses, allDSpacings, deltaDistance,pixel, knownWavelength, true);
 	}
 	
-	private static CalibrationOutput run(List<List<EllipticalROI>> allEllipses, List<double[]> allDSpacings, AbstractDataset deltaDistance,double pixel, double knownWavelength){
+	private static CalibrationOutput run(List<List<EllipticalROI>> allEllipses, List<double[]> allDSpacings, AbstractDataset deltaDistance,double pixel, double knownValue, boolean isWavelength){
 		
 		if (allEllipses.isEmpty() || allEllipses.get(0).size() < 2) throw new IllegalArgumentException("Need more than 1 ellipse");
 		if (allDSpacings.isEmpty() || allEllipses.get(0).size() != allDSpacings.get(0).length) throw new IllegalArgumentException("Number of ellipses must equal number of d-spacings");
@@ -116,10 +132,11 @@ public class CalibrateEllipses {
 		
 		double[] out;
 		double wavelength;
+		double dist = 0;
 		double distFactor = 0;
 		AbstractDataset calculatedMajors;
 		
-		if (knownWavelength == -1) {
+		if (knownValue == -1) {
 			AbstractDataset xcen = new DoubleDataset(beamcentres[0].clone(), beamcentres[0].length);
 			AbstractDataset ycen = new DoubleDataset(beamcentres[1].clone(), beamcentres[1].length);
 			
@@ -131,15 +148,24 @@ public class CalibrateEllipses {
 			
 			out = LambdaFitter.fit(Maths.multiply(allMajorD, pixel), Maths.multiply(allNormDistD, distFactor), allDD, Maths.multiply(allDSinD, pixel), deltaDistance.getDouble(deltaDistance.getSize()-1), 0.14);
 			wavelength = out[1];
-			
+			dist = out[0];
 			calculatedMajors = LambdaFitter.calculateMajorAxesfinal(Maths.multiply(allNormDistD, distFactor), allDD, Maths.multiply(allDSinD, pixel), out[0], wavelength);
 			calculatedMajors.imultiply(1/pixel);
 			
-		} else {
-			wavelength = knownWavelength;
-			out = LambdaFitter.fit(Maths.multiply(allMajorD, pixel), allDD, Maths.multiply(allDSinD, pixel), deltaDistance.getDouble(deltaDistance.getSize()-1), wavelength);
+		} else if (isWavelength){
+			wavelength = knownValue;
+			out = LambdaFitter.fitKnownWavelength(Maths.multiply(allMajorD, pixel), allDD, Maths.multiply(allDSinD, pixel), deltaDistance.getDouble(deltaDistance.getSize()-1), wavelength);
+			dist = out[0];
 			AbstractDataset d0 = AbstractDataset.zeros(allNormDistD);
-			calculatedMajors = LambdaFitter.calculateMajorAxesfinal(d0, allDD, Maths.multiply(allDSinD, pixel), out[0], wavelength);
+			calculatedMajors = LambdaFitter.calculateMajorAxesfinal(d0, allDD, Maths.multiply(allDSinD, pixel), dist, wavelength);
+			calculatedMajors.imultiply(1/pixel);
+		} else {
+			dist = knownValue;
+			calculatedMajors = null;
+			out = LambdaFitter.fitKnownDistance(Maths.multiply(allMajorD, pixel), allDD, Maths.multiply(allDSinD, pixel), deltaDistance.getDouble(deltaDistance.getSize()-1), dist);
+			wavelength = out[0];
+			AbstractDataset d0 = AbstractDataset.zeros(allNormDistD);
+			calculatedMajors = LambdaFitter.calculateMajorAxesfinal(d0, allDD, Maths.multiply(allDSinD, pixel), dist, wavelength);
 			calculatedMajors.imultiply(1/pixel);
 		}
 		
@@ -149,9 +175,9 @@ public class CalibrateEllipses {
 		
 		logger.debug("R2 value: " + rCoeff);
 		
-		AbstractDataset tilts = getFittedTilts(out[0], Maths.multiply(normDist, distFactor), dSint,pixel);
+		AbstractDataset tilts = getFittedTilts(dist, Maths.multiply(normDist, distFactor), dSint,pixel);
 		
-		AbstractDataset distances = Maths.subtract(out[0], Maths.multiply(normDist, distFactor));
+		AbstractDataset distances = Maths.subtract(dist, Maths.multiply(normDist, distFactor));
 		
 		AbstractDataset tiltAngles = getTiltAngles(ellipseParams, mcs);
 		

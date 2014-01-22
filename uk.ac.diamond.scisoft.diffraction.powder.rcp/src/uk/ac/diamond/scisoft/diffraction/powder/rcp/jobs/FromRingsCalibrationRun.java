@@ -82,9 +82,11 @@ public class FromRingsCalibrationRun extends AbstractCalibrationRun {
 		
 		CalibrationOutput o = null;
 		
-		if (params.isFloatEnergy()) {
+		if (!params.isFloatEnergy()) {
 			o =  CalibrateEllipses.runKnownWavelength(allEllipses, allDSpacings, pixelSize,currentData.md.getDiffractionCrystalEnvironment().getWavelength());
-		} else {
+		} else if (!params.isFloatDistance()){
+			o =  CalibrateEllipses.runKnownDistance(allEllipses, allDSpacings, pixelSize,currentData.md.getDetector2DProperties().getBeamCentreDistance());
+		}else {
 			o =  CalibrateEllipses.run(allEllipses, allDSpacings,ddist, pixelSize);
 		}
 		

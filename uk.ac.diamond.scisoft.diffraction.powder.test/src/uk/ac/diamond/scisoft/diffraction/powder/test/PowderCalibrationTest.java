@@ -249,6 +249,22 @@ public class PowderCalibrationTest {
 		assertEquals(289.0386307906849, output.getDistance().getDouble(0), 0.1);
 	}
 	
+	@Test
+	public void CalibrateKnownDistance() {
+		CalibrationStruct st = getCalibrationStruct(1);
+		List<List<EllipticalROI>> ellipses =  st.ellipses;
+		List<double[]> allDSpacings = st.dSpacings;
+		
+		CalibrationOutput output = CalibrateEllipses.runKnownDistance(ellipses, allDSpacings,0.2,289.0386307906849);
+		
+		assertEquals(4.250447566358648e-01, output.getWavelength(), 0.001);
+		assertEquals(1.051567822834576e+03, output.getBeamCentreX().getDouble(0), 0.00001);
+		assertEquals(1.017507361310649e+03, output.getBeamCentreY().getDouble(0), 0.00001);
+		assertEquals(1.472049755053897e-01, output.getTilt().getDouble(0), 0.0001);
+		assertEquals(1.274805927288948e+02, output.getTiltAngle().getDouble(0), 0.001);
+		assertEquals(289.0386307906849, output.getDistance().getDouble(0), 0.1);
+	}
+	
 	
 	@Test
 	public void CalibrateTestRunTilted(){

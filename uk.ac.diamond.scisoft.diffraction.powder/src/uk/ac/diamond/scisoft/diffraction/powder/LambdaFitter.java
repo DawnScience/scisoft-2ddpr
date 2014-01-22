@@ -70,7 +70,7 @@ public class LambdaFitter {
 	 * @param wavelength
 	 * @return distance
 	 */
-	public static double[] fit(final AbstractDataset major, final AbstractDataset dspace,  final AbstractDataset sint, final double dApprox, final double wavelength) {
+	public static double[] fitKnownWavelength(final AbstractDataset major, final AbstractDataset dspace,  final AbstractDataset sint, final double dApprox, final double wavelength) {
 	
 		final AbstractDataset distance = AbstractDataset.zeros(major);
 		
@@ -81,6 +81,41 @@ public class LambdaFitter {
 			public double value(double[] arg0) {
 
 				return calculateResidual(major, distance, dspace, sint, arg0[0], wavelength);
+			}
+		};
+
+		PointValuePair result = opt.optimize(new InitialGuess(new double[]{dApprox}), GoalType.MINIMIZE,
+				new ObjectiveFunction(fun), new MaxEval(MAX_EVAL),
+				new NelderMeadSimplex(1));	
+
+		return result.getPointRef();
+		
+	}
+	
+	/**
+	 * Uses a NelderMeadSimplex to fit calculated major axis values against measured, to determine wavelength
+	 * when distance is known.
+	 * <p>
+	 * Returns a double array containing distance
+	 * <p>
+	 * @param major
+	 * @param dspace
+	 * @param sint
+	 * @param dApprox
+	 * @param distance
+	 * @return wavelength
+	 */
+	public static double[] fitKnownDistance(final AbstractDataset major, final AbstractDataset dspace,  final AbstractDataset sint, final double dApprox, final double distance) {
+	
+		final AbstractDataset distances = AbstractDataset.zeros(major);
+		
+		MultivariateOptimizer opt = new SimplexOptimizer(REL_TOL,ABS_TOL);
+		MultivariateFunction fun = new MultivariateFunction() {
+
+			@Override
+			public double value(double[] arg0) {
+
+				return calculateResidual(major, distances, dspace, sint, distance , arg0[0]);
 			}
 		};
 
