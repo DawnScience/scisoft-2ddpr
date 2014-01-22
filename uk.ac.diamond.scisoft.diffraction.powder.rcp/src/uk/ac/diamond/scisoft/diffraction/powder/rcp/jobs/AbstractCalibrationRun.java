@@ -30,6 +30,7 @@ import uk.ac.diamond.scisoft.analysis.roi.ROIProfile.XAxis;
 import uk.ac.diamond.scisoft.diffraction.powder.BruteStandardMatcher;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
 import uk.ac.diamond.scisoft.diffraction.powder.CentreGuess;
+import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 
 public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 
@@ -37,9 +38,7 @@ public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 	IPlottingSystem plottingSystem;
 	List<DiffractionTableData> model;
 	DiffractionTableData currentData;
-	int maxRings;
-	
-	boolean fixedWavelength = false;
+	SimpleCalibrationParameterModel params;
 
 	private static final int CENTRE_MASK_RADIUS = 50;
 	private static String REGION_PREFIX = "Pixel peaks";
@@ -50,12 +49,12 @@ public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 			IPlottingSystem plottingSystem,
 			List<DiffractionTableData> model,
 			DiffractionTableData currentData,
-			int maxRings) {
+			SimpleCalibrationParameterModel params) {
 		
 		this.display = display;
 		this.plottingSystem = plottingSystem;
 		this.model = model;
-		this.maxRings = maxRings;
+		this.params = params;
 		this.currentData = currentData;
 	}
 	
@@ -187,14 +186,6 @@ public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 		List<ResolutionEllipseROI> ellipses;
 		double[] innerSearch;
 		double[] outerSearch;
-	}
-	
-	public boolean isFixedWavelength() {
-		return fixedWavelength;
-	}
-
-	public void setFixedWavelength(boolean fixedWavelength) {
-		this.fixedWavelength = fixedWavelength;
 	}
 	
 	protected void updateOnFinish(final CalibrationOutput output) {

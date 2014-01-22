@@ -22,8 +22,8 @@ public class FromPointsCalibrationRun extends AbstractCalibrationRun {
 
 	public FromPointsCalibrationRun(Display display,
 			IPlottingSystem plottingSystem, List<DiffractionTableData> model,
-			DiffractionTableData currentData, int maxRings) {
-		super(display, plottingSystem, model, currentData, maxRings);
+			DiffractionTableData currentData, CalibratePointsParameterModel params) {
+		super(display, plottingSystem, model, currentData, params);
 		// TODO Auto-generated constructor stub
 	}
 
@@ -69,9 +69,7 @@ public class FromPointsCalibrationRun extends AbstractCalibrationRun {
 		List<double[]> allDSpacings = new ArrayList<double[]>();
 		allDSpacings.add(ds);
 		
-		CalibratePointsParameterModel pm = new CalibratePointsParameterModel();
-		pm.setFloatEnergy(false);
-		CalibrationOutput o = CalibratePoints.run(allEllipses.get(0), allDSpacings.get(0), currentData.md,pm);
+		CalibrationOutput o = CalibratePoints.run(allEllipses.get(0), allDSpacings.get(0), currentData.md,(CalibratePointsParameterModel)params);
 
 		final CalibrationOutput output = o;
 		

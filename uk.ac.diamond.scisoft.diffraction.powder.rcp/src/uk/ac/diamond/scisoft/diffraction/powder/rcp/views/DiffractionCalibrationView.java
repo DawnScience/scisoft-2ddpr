@@ -80,8 +80,9 @@ import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationStandards;
 import uk.ac.diamond.scisoft.analysis.diffraction.DetectorProperties;
 import uk.ac.diamond.scisoft.analysis.diffraction.DiffractionCrystalEnvironment;
 import uk.ac.diamond.scisoft.analysis.io.ILoaderService;
+import uk.ac.diamond.scisoft.diffraction.powder.CalibratePointsParameterModel;
+import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.Activator;
-import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.AbstractCalibrationRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.AutoCalibrationRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.FromPointsCalibrationRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.FromRingsCalibrationRun;
@@ -676,8 +677,11 @@ public class DiffractionCalibrationView extends ViewPart {
 		goBabyGoButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				IRunnableWithProgress job = new AutoCalibrationRun(Display.getDefault(), plottingSystem, model, currentData, ringNumberSpinner.getSelection());
-				((AutoCalibrationRun)job).setFixedWavelength(xRayGroup.isActivated());
+				
+				SimpleCalibrationParameterModel params = new SimpleCalibrationParameterModel();
+				params.setFloatEnergy(!xRayGroup.isActivated());
+				params.setNumberOfRings(ringNumberSpinner.getSelection());
+				IRunnableWithProgress job = new AutoCalibrationRun(Display.getDefault(), plottingSystem, model, currentData, params);
 
 				ProgressMonitorDialog dia = new ProgressMonitorDialog(Display.getCurrent().getActiveShell());
 				try {
@@ -722,13 +726,18 @@ public class DiffractionCalibrationView extends ViewPart {
 				
 				IRunnableWithProgress job = null;
 				
+				CalibratePointsParameterModel params = new CalibratePointsParameterModel();
+				params.setNumberOfRings(ringNumberSpinner.getSelection());
+				params.setFloatEnergy(!xRayGroup.isActivated());
+				
 				if (usePointCalibration.getSelection()) {
-					job = new FromPointsCalibrationRun(Display.getDefault(), plottingSystem, model, currentData, ringNumberSpinner.getSelection());
+					
+					
+					job = new FromPointsCalibrationRun(Display.getDefault(), plottingSystem, model, currentData, params);
 				} else {
-					job = new FromRingsCalibrationRun(Display.getDefault(), plottingSystem, model, currentData, ringNumberSpinner.getSelection());
+					job = new FromRingsCalibrationRun(Display.getDefault(), plottingSystem, model, currentData, params);
 				}
 				
-				((AbstractCalibrationRun)job).setFixedWavelength(xRayGroup.isActivated());
 				ProgressMonitorDialog dia = new ProgressMonitorDialog(Display.getCurrent().getActiveShell());
 				try {
 					dia.run(true, true, job);

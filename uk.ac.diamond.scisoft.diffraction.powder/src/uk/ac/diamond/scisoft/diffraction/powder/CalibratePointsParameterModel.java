@@ -5,10 +5,8 @@ import uk.ac.diamond.scisoft.analysis.diffraction.DiffractionCrystalEnvironment;
 import uk.ac.diamond.scisoft.analysis.io.DiffractionMetadata;
 import uk.ac.diamond.scisoft.analysis.io.IDiffractionMetadata;
 
-public class CalibratePointsParameterModel {
+public class CalibratePointsParameterModel extends SimpleCalibrationParameterModel {
 	
-	boolean floatEnergy = true;
-	boolean floatDistance = true;
 	boolean floatBeamCentre = true;
 	boolean floatTilt = true;
 	
@@ -97,14 +95,6 @@ public class CalibratePointsParameterModel {
 		
 		return count;
 	}
-	
-	public boolean isFloatEnergy() {
-		return floatEnergy;
-	}
-
-	public boolean isFloatDistance() {
-		return floatDistance;
-	}
 
 	public boolean isFloatBeamCentre() {
 		return floatBeamCentre;
@@ -112,14 +102,6 @@ public class CalibratePointsParameterModel {
 
 	public boolean isFloatTilt() {
 		return floatTilt;
-	}
-
-	public void setFloatEnergy(boolean floatEnergy) {
-		this.floatEnergy = floatEnergy;
-	}
-
-	public void setFloatDistance(boolean floatDistance) {
-		this.floatDistance = floatDistance;
 	}
 
 	public void setFloatBeamCentre(boolean floatBeamCentre) {

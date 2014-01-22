@@ -17,13 +17,14 @@ import uk.ac.diamond.scisoft.analysis.roi.EllipticalROI;
 import uk.ac.diamond.scisoft.analysis.roi.IROI;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrateEllipses;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
+import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 
 public class FromRingsCalibrationRun extends AbstractCalibrationRun {
 
 	public FromRingsCalibrationRun(Display display,
 			IPlottingSystem plottingSystem, List<DiffractionTableData> model,
-			DiffractionTableData currentData, int maxRings) {
-		super(display, plottingSystem, model, currentData, maxRings);
+			DiffractionTableData currentData, SimpleCalibrationParameterModel params) {
+		super(display, plottingSystem, model, currentData, params);
 	}
 
 	@Override
@@ -81,7 +82,7 @@ public class FromRingsCalibrationRun extends AbstractCalibrationRun {
 		
 		CalibrationOutput o = null;
 		
-		if (fixedWavelength) {
+		if (params.isFloatEnergy()) {
 			o =  CalibrateEllipses.runKnownWavelength(allEllipses, allDSpacings, pixelSize,currentData.md.getDiffractionCrystalEnvironment().getWavelength());
 		} else {
 			o =  CalibrateEllipses.run(allEllipses, allDSpacings,ddist, pixelSize);
