@@ -193,7 +193,6 @@ public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 			@Override
 			public void run() {
 				int i = 0;
-				plottingSystem.createPlot2D(currentData.image, null, null);
 				for (DiffractionTableData data : model) {
 					DetectorProperties dp = data.md.getDetector2DProperties();
 

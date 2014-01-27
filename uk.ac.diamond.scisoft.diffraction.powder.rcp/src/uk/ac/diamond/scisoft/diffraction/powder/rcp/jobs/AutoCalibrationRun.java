@@ -54,7 +54,7 @@ public class AutoCalibrationRun extends AbstractCalibrationRun {
 			
 			List<ResolutionEllipseROI> foundEllipses = getFittedResolutionROIs(plottingSystem, efs, display, monitor);
 			
-			if (monitor.isCanceled() || foundEllipses == null);
+			if (monitor.isCanceled() || foundEllipses == null) return;
 			
 			
 			double[] dSpaceArray = new double[foundEllipses.size()];
