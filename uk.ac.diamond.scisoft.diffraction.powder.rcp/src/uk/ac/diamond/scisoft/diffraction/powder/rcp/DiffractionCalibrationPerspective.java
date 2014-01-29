@@ -23,11 +23,11 @@ public class DiffractionCalibrationPerspective implements IPerspectiveFactory {
 		String diffractionID = "uk.ac.diamond.scisoft.diffraction.powder.rcp.powderDiffractionTool";
 
 		// Top left: Diffraction calibration view
-		IFolderLayout topLeft = layout.createFolder("topLeft", IPageLayout.RIGHT, 0.25f, editorArea);
+		IFolderLayout topLeft = layout.createFolder("topLeft", IPageLayout.LEFT, 0.5f, editorArea);
 		topLeft.addView(DiffractionCalibrationView.ID);
 
 		// Top right: Diffraction plotting view
-		IFolderLayout topRight = layout.createFolder("topRight", IPageLayout.RIGHT, 0.50f, "topLeft");
+		IFolderLayout topRight = layout.createFolder("topRight", IPageLayout.TOP, 0.50f,editorArea);
 		topRight.addView(DiffractionPlotView.ID);
 
 		// Bottom left: Diffraction tool view
