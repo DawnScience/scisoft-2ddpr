@@ -64,5 +64,50 @@
             visible="false">
       </plotting_tool_page>
    </extension>
+   <extension
+         point="org.eclipse.ui.navigator.navigatorContent">
+      <actionProvider
+            class="uk.ac.diamond.scisoft.diffraction.powder.rcp.handlers.PowderActionProvider"
+            id="uk.ac.diamond.scisoft.diffraction.powder.rcp.handlers.OpenProvider"
+            overrides="org.eclipse.ui.navigator.resources.actions.EditActions"
+            priority="highest">
+         <enablement>
+            <with
+                  variable="activeWorkbenchWindow.activePerspective">
+               <equals
+                     value="uk.ac.diamond.scisoft.diffraction.powder.rcp.calibrationPerspective">
+               </equals>
+            </with>
+         </enablement>
+      </actionProvider>
+      <actionProvider
+            class="uk.ac.diamond.scisoft.diffraction.powder.rcp.handlers.PowderActionProvider"
+            id="uk.ac.diamond.scisoft.diffraction.powder.rcp.handlers.OpenProvider2"
+            overrides="org.eclipse.ui.navigator.resources.OpenActions"
+            priority="highest">
+         <enablement>
+            <with
+                  variable="activeWorkbenchWindow.activePerspective">
+               <equals
+                     value="uk.ac.diamond.scisoft.diffraction.powder.rcp.calibrationPerspective">
+               </equals>
+            </with>
+         </enablement>
+      </actionProvider>
+   </extension>
+   <extension
+         point="org.eclipse.ui.navigator.viewer">
+      <viewer
+            viewerId="org.eclipse.ui.navigator.ProjectExplorer">
+      </viewer>
+      <viewerActionBinding
+            viewerId="org.eclipse.ui.navigator.ProjectExplorer">
+         <includes>
+            <actionExtension
+                  pattern="uk.ac.diamond.scisoft.diffraction.powder.rcp.handlers.*">
+            </actionExtension>
+         </includes>
+      </viewerActionBinding>
+   </extension>
 
 </plugin>
