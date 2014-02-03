@@ -348,7 +348,9 @@ public class DiffractionCalibrationView extends ViewPart {
 		calibrantChangeListener = new CalibrantSelectedListener() {
 			@Override
 			public void calibrantSelectionChanged(CalibrantSelectionEvent evt) {
-				calibrantCombo.select(calibrantCombo.indexOf(evt.getCalibrant()));
+				final int index = calibrantCombo.getSelectionIndex();
+				if (index>-1 && calibrantCombo.getItems()[index].equals(evt.getCalibrant())) return;
+				setCalibrantChoice();
 				
 				ringNumberSpinner.setMaximum(CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs().size());
 				
@@ -356,7 +358,14 @@ public class DiffractionCalibrationView extends ViewPart {
 					showCalibrantAndBeamCentre(checked);
 			}
 		};
+	}
 
+	private void setCalibrantChoice() {
+		final List<String> cl = standards.getCalibrantList();
+		calibrantCombo.setItems(cl.toArray(new String[cl.size()]));
+		String selCalib = standards.getSelectedCalibrant();
+		final int index = cl.indexOf(selCalib);
+		calibrantCombo.select(index); 
 	}
 
 	protected void updateSelection(boolean force) {
