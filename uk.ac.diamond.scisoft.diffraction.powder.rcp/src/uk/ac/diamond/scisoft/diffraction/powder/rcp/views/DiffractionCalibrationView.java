@@ -19,6 +19,7 @@ import org.dawb.workbench.ui.diffraction.table.DiffractionDataChanged;
 import org.dawb.workbench.ui.diffraction.table.DiffractionDataManager;
 import org.dawb.workbench.ui.diffraction.table.DiffractionTableData;
 import org.dawb.workbench.ui.diffraction.table.IDiffractionDataListener;
+import org.dawnsci.common.widgets.radio.RadioGroupWidget;
 import org.dawnsci.plotting.api.IPlottingSystem;
 import org.dawnsci.plotting.api.PlottingFactory;
 import org.dawnsci.plotting.tools.diffraction.DiffractionImageAugmenter;
@@ -125,6 +126,9 @@ public class DiffractionCalibrationView extends ViewPart {
 
 	private boolean checked = true;
 	private String calibrantName;
+
+	private CheckBoxGroup ellipseParamGroup;
+	private CheckBoxGroup pointCalibrateGroup;
 
 	public DiffractionCalibrationView() {
 	}
@@ -731,8 +735,6 @@ public class DiffractionCalibrationView extends ViewPart {
 				params.setFloatEnergy(!xRayGroup.isActivated());
 				
 				if (usePointCalibration.getSelection()) {
-					
-					
 					job = new FromPointsCalibrationRun(Display.getDefault(), plottingSystem, manager.getModel(), manager.getCurrentData(), params);
 				} else {
 					job = new FromRingsCalibrationRun(Display.getDefault(), plottingSystem, manager.getModel(), manager.getCurrentData(), params);
@@ -781,9 +783,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		ringNumberSpinner.setMaximum(standards.getCalibrant().getHKLs().size());
 		ringNumberSpinner.setMinimum(2);
 		ringNumberSpinner.setSelection(100);
-		
 		ringNumberSpinner.addSelectionListener(new SelectionAdapter() {
-		
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				if (ringFindJob != null) ringFindJob.setNumberOfRingsToFind(ringNumberSpinner.getSelection());
@@ -791,10 +791,123 @@ public class DiffractionCalibrationView extends ViewPart {
 		});
 		
 		usePointCalibration = new Button(composite, SWT.CHECK);
+		usePointCalibration.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 2, 1));
 		usePointCalibration.setText("Manual calibration uses points not ellipse parameters");
 		usePointCalibration.setSelection(false);
 
+		Group calibRoutineGroup = new Group(composite, SWT.NONE);
+		calibRoutineGroup.setLayout(new GridLayout());
+		calibRoutineGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+		calibRoutineGroup.setText("Calibration Routine");
+
+		ellipseParamGroup = new CheckBoxGroup(calibRoutineGroup, SWT.FILL);
+		ellipseParamGroup.setText("Ellipse Parameters");
+		ellipseParamGroup.setToolTipText("Set the Ellipse Parameters");
+		ellipseParamGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		ellipseParamGroup.addSelectionListener(new SelectionAdapter(){
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				Button ellipseParam = (Button) e.getSource();
+				boolean selected = ellipseParam.getSelection();
+				if (!selected)
+					pointCalibrateGroup.activate();
+				else
+					pointCalibrateGroup.deactivate();
+			}
+		});
+
+		Composite ellipseParamComp = ellipseParamGroup.getContent();
+		ellipseParamComp.setLayout(new GridLayout(1, false));
+		RadioGroupWidget calibEllipseParamRadios = new RadioGroupWidget(ellipseParamComp);
+		calibEllipseParamRadios.setActions(getEllipseParamActions());
+
+		pointCalibrateGroup = new CheckBoxGroup(calibRoutineGroup, SWT.FILL);
+		pointCalibrateGroup.setText("Point Calibrate");
+		pointCalibrateGroup.setToolTipText("Set the Ellipse Parameters");
+		pointCalibrateGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		pointCalibrateGroup.deactivate();
+		pointCalibrateGroup.addSelectionListener(new SelectionAdapter(){
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				Button pointCalib = (Button) e.getSource();
+				boolean selected = pointCalib.getSelection();
+				if (!selected)
+					ellipseParamGroup.activate();
+				else
+					ellipseParamGroup.deactivate();
+			}
+		});
+		Composite pointCalibrateComp = pointCalibrateGroup.getContent();
+		pointCalibrateComp.setLayout(new GridLayout(1, false));
+		final Button fixEnergyButton = new Button(pointCalibrateComp, SWT.CHECK);
+		fixEnergyButton.setText("Fixe Energy");
+		fixEnergyButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				//TODO
+			}
+		});
+		final Button fixDistanceButton = new Button(pointCalibrateComp, SWT.CHECK);
+		fixDistanceButton.setText("Fixe Distance");
+		fixDistanceButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				//TODO
+			}
+		});
+		final Button fixBeamCentreButton = new Button(pointCalibrateComp, SWT.CHECK);
+		fixBeamCentreButton.setText("Fixe Beam Centre");
+		fixBeamCentreButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				//TODO
+			}
+		});
+		final Button fixTiltButton = new Button(pointCalibrateComp, SWT.CHECK);
+		fixTiltButton.setText("Fixe Tilt");
+		fixTiltButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				//TODO
+			}
+		});
+
 		return composite;
+	}
+
+	private List<Action> getEllipseParamActions() {
+		List<Action> radioActions = new ArrayList<Action>();
+		Action fixNoneAction = new Action() {
+			@Override
+			public void run() {
+				//TODO
+			}
+		};
+		fixNoneAction.setText("Fix None");
+		fixNoneAction.setToolTipText("No parameter is fixed");
+
+		Action fixEnergyAction = new Action() {
+			@Override
+			public void run() {
+				//TODO
+			}
+		};
+		fixEnergyAction.setText("Fix Energy");
+		fixEnergyAction.setToolTipText("Energy parameter is fixed");
+
+		Action fixDistanceAction = new Action() {
+			@Override
+			public void run() {
+				//TODO
+			}
+		};
+		fixDistanceAction.setText("Fix Distance");
+		fixDistanceAction.setToolTipText("Distance parameter is fixed");
+
+		radioActions.add(fixNoneAction);
+		radioActions.add(fixEnergyAction);
+		radioActions.add(fixDistanceAction);
+		return radioActions;
 	}
 
 	private void setWavelength(DiffractionTableData data) {
