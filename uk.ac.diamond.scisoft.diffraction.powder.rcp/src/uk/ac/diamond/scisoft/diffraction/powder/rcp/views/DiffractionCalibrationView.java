@@ -3,10 +3,6 @@ package uk.ac.diamond.scisoft.diffraction.powder.rcp.views;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-
-import javax.measure.unit.NonSI;
-import javax.measure.unit.SI;
 
 import org.dawb.common.ui.util.EclipseUtils;
 import org.dawb.common.ui.util.GridUtils;
@@ -36,8 +32,6 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.jface.wizard.WizardDialog;
-import org.eclipse.nebula.widgets.formattedtext.FormattedText;
-import org.eclipse.nebula.widgets.formattedtext.NumberFormatter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -52,11 +46,9 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
@@ -108,8 +100,6 @@ public class DiffractionCalibrationView extends ViewPart {
 	private Button calibrateImagesButton;
 	private Combo calibrantCombo;
 	private Spinner ringNumberSpinner;
-	private FormattedText wavelengthFormattedText;
-	private FormattedText energyFormattedText;
 	private CalibrantPositioningWidget calibrantPositioning;
 	private CheckBoxGroup xRayGroup;
 	private Label residualLabel;
@@ -195,7 +185,6 @@ public class DiffractionCalibrationView extends ViewPart {
 		
 		manager = new DiffractionDataManager();
 		
-		
 		// table of images and found rings
 		diffractionTableViewer = new DiffCalTableViewer(scrollHolder, pathsList, manager);
 		diffractionTableViewer.addSelectionChangedListener(selectionChangeListener);
@@ -210,11 +199,6 @@ public class DiffractionCalibrationView extends ViewPart {
 		topComp.setLayout(new GridLayout(2, false));
 		topComp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		createCalibrantGroup(topComp);
-		//Xrays text fields
-		xRayGroup = createXRayGroup(topComp);
-		xRayGroup.deactivate(); //deactivate by default
-		// Enable/disable the modifiers
-		setXRaysModifiersEnabled(false);
 
 		//TabFolder
 		final TabFolder tabFolder = new TabFolder(mainHolder, SWT.BORDER | SWT.FILL);
@@ -278,10 +262,6 @@ public class DiffractionCalibrationView extends ViewPart {
 			}
 		}
 
-
-		if (!manager.isEmpty())
-			setXRaysModifiersEnabled(true);
-
 		CalibrationFactory.addCalibrantSelectionListener(calibrantChangeListener);
 
 		calibrantPositioning.setControlsToUpdate(calibrateImagesButton);
@@ -332,20 +312,14 @@ public class DiffractionCalibrationView extends ViewPart {
 			@Override
 			public void selectionChanged(SelectionChangedEvent event) {
 				updateSelection(false);
-				
-				setWavelength(manager.getCurrentData());
-				if (!manager.isEmpty()) {
-					setXRaysModifiersEnabled(true);
-				} else {
+				if (manager.isEmpty()) {
 					diffractionTableViewer.refresh();
 					updateCurrentData(null); // need to reset this
 					plottingSystem.clear();
-					setXRaysModifiersEnabled(false);
 					calibrateImagesButton.setEnabled(false);
 					residualLabel.setText(RESIDUAL);
 					residualLabel.getParent().layout();
 				}
-				
 			}
 		};
 
@@ -425,18 +399,6 @@ public class DiffractionCalibrationView extends ViewPart {
 		}
 	}
 
-	private void updateWavelengthAfterCalibration(){
-		double wavelength = manager.getCurrentData().md.getDiffractionCrystalEnvironment().getWavelength();
-		wavelength = DiffractionCalibrationUtils.setPrecision(wavelength, 5);
-		String newFormat = DiffractionCalibrationUtils.getFormatMask(wavelength, wavelength);
-		wavelengthFormattedText.setFormatter(new NumberFormatter(FORMAT_MASK, newFormat, Locale.UK));
-		wavelengthFormattedText.setValue(wavelength);
-		double energy = DiffractionCalibrationUtils.getWavelengthEnergy(wavelength);
-		newFormat = DiffractionCalibrationUtils.getFormatMask(energy, energy);
-		energyFormattedText.setFormatter(new NumberFormatter(FORMAT_MASK, newFormat, Locale.UK));
-		energyFormattedText.setValue(energy);
-	}
-
 	private void createCalibrantGroup(Composite composite) {
 		Group selectCalibComp = new Group(composite, SWT.NONE);
 		selectCalibComp.setText("Calibrant");
@@ -495,84 +457,6 @@ public class DiffractionCalibrationView extends ViewPart {
 			}
 		});
 		showCalibAndBeamCtrCheckBox.setSelection(true);
-	}
-
-	private CheckBoxGroup createXRayGroup(Composite composite) {
-		CheckBoxGroup xRayGroup = new CheckBoxGroup(composite, SWT.FILL);
-		xRayGroup.setText("Fix X-Ray Wavelength");
-		xRayGroup.setToolTipText("Set the wavelength / energy");
-		xRayGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		Composite checkComp = xRayGroup.getContent();
-		checkComp.setLayout(new GridLayout(3, false));
-		checkComp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-
-		Label wavelengthLabel = new Label(checkComp, SWT.NONE);
-		wavelengthLabel.setText("Wavelength");
-
-		wavelengthFormattedText = new FormattedText(checkComp, SWT.SINGLE | SWT.BORDER);
-		wavelengthFormattedText.setFormatter(new NumberFormatter(FORMAT_MASK, FORMAT_MASK, Locale.UK));
-		wavelengthFormattedText.getControl().setToolTipText("Set the wavelength in Angstrom");
-		wavelengthFormattedText.getControl().addListener(SWT.KeyUp, new Listener() {
-			@Override
-			public void handleEvent(Event event) {
-				// update wavelength of each image
-				double distance = 0;
-				Object obj = wavelengthFormattedText.getValue();
-				if (obj instanceof Long)
-					distance = ((Long) obj).doubleValue();
-				else if (obj instanceof Double)
-					distance = (Double) obj;
-				manager.setWavelength(distance);
-				// update wavelength in keV
-				double energy = DiffractionCalibrationUtils.getWavelengthEnergy(distance);
-				if (energy != Double.POSITIVE_INFINITY) {
-					String newFormat = DiffractionCalibrationUtils.getFormatMask(distance, energy);
-					energyFormattedText.setFormatter(new NumberFormatter(FORMAT_MASK, newFormat, Locale.UK));
-				}
-				energyFormattedText.setValue(energy);
-			}
-		});
-		GridData data = new GridData(SWT.FILL, SWT.FILL, true, false);
-		data.widthHint = 150;
-		wavelengthFormattedText.getControl().setLayoutData(data);
-		Label unitDistanceLabel = new Label(checkComp, SWT.NONE);
-		unitDistanceLabel.setText(NonSI.ANGSTROM.toString());
-
-		Label energyLabel = new Label(checkComp, SWT.NONE);
-		energyLabel.setText("Energy");
-
-		energyFormattedText = new FormattedText(checkComp, SWT.SINGLE | SWT.BORDER);
-		energyFormattedText.setFormatter(new NumberFormatter(FORMAT_MASK, FORMAT_MASK, Locale.UK));
-		energyFormattedText.getControl().setToolTipText("Set the wavelength in keV");
-		energyFormattedText.getControl().addListener(SWT.KeyUp, new Listener() {
-			@Override
-			public void handleEvent(Event event) {
-				// update wavelength of each image
-				double energy = 0;
-				Object obj = energyFormattedText.getValue();
-				if (obj instanceof Long)
-					energy = ((Long) obj).doubleValue();
-				else if (obj instanceof Double)
-					energy = (Double) obj;
-				manager.setWavelength(DiffractionCalibrationUtils.getWavelengthEnergy(energy));
-				// update wavelength in Angstrom
-				double distance = DiffractionCalibrationUtils.getWavelengthEnergy(energy);
-				if (distance != Double.POSITIVE_INFINITY) {
-					String newFormat = DiffractionCalibrationUtils.getFormatMask(energy, distance);
-					wavelengthFormattedText.setFormatter(new NumberFormatter(FORMAT_MASK, newFormat, Locale.UK));
-				}
-				wavelengthFormattedText.setValue(distance);
-			}
-		});
-		energyFormattedText.getControl().setLayoutData(data);
-		Label unitEnergyLabel = new Label(checkComp, SWT.NONE);
-		unitEnergyLabel.setText(SI.KILO(NonSI.ELECTRON_VOLT).toString());
-		return xRayGroup;
-	}
-
-	private void setXRaysModifiersEnabled(boolean b) {
-		wavelengthFormattedText.getControl().setEnabled(b);
-		energyFormattedText.getControl().setEnabled(b);
 	}
 
 	private void createToolbarActions(Composite parent) {
@@ -647,10 +531,6 @@ public class DiffractionCalibrationView extends ViewPart {
 						manager.getModel().get(i).md.getDetector2DProperties().restore(originalProps);
 						manager.getModel().get(i).md.getDiffractionCrystalEnvironment().restore(originalEnvironment);
 					}
-					// update wavelength
-					double wavelength = manager.getCurrentData().md.getDiffractionCrystalEnvironment().getWavelength();
-					energyFormattedText.setValue(DiffractionCalibrationUtils.getWavelengthEnergy(wavelength));
-					wavelengthFormattedText.setValue(wavelength);
 					diffractionTableViewer.refresh();
 				}
 			}
@@ -677,7 +557,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		Button goBabyGoButton = new Button(composite, SWT.PUSH);
 		goBabyGoButton.setImage(Activator.getImage("icons/CalibrationRun.png"));
 		goBabyGoButton.setText("Run Auto Calibration");
-		goBabyGoButton.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
+		goBabyGoButton.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, true, true));
 		goBabyGoButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -759,7 +639,6 @@ public class DiffractionCalibrationView extends ViewPart {
 	
 	private void updateAfterCalibration() {
 		updateScrolledComposite();
-		updateWavelengthAfterCalibration();
 		updateSelection(true);
 		
 		residualLabel.setText(RESIDUAL + manager.getCurrentData().residual);
@@ -908,20 +787,6 @@ public class DiffractionCalibrationView extends ViewPart {
 		radioActions.add(fixEnergyAction);
 		radioActions.add(fixDistanceAction);
 		return radioActions;
-	}
-
-	private void setWavelength(DiffractionTableData data) {
-		// set the wavelength
-		if (data != null) {
-			double wavelength = data.md.getOriginalDiffractionCrystalEnvironment().getWavelength();
-			wavelengthFormattedText.setValue(wavelength);
-			double energy = DiffractionCalibrationUtils.getWavelengthEnergy(wavelength);
-			if (energy != Double.POSITIVE_INFINITY) {
-				energyFormattedText.setFormatter(new NumberFormatter(FORMAT_MASK, 
-						DiffractionCalibrationUtils.getFormatMask(wavelength, energy), Locale.UK));
-			}
-			energyFormattedText.setValue(energy);
-		}
 	}
 
 	private void setCalibrant() {
