@@ -62,7 +62,6 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.part.ViewPart;
-import org.mihalis.opal.checkBoxGroup.CheckBoxGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,8 +84,6 @@ public class DiffractionCalibrationView extends ViewPart {
 	public static final String ID = "uk.ac.diamond.scisoft.diffraction.powder.rcp.diffractionCalibrationView";
 	private final Logger logger = LoggerFactory.getLogger(DiffractionCalibrationView.class);
 
-	public static final String FORMAT_MASK = "##,##0.##########";
-
 	private final String DATA_PATH = "DataPath";
 	private final String CALIBRANT = "Calibrant";
 
@@ -101,9 +98,15 @@ public class DiffractionCalibrationView extends ViewPart {
 	private Combo calibrantCombo;
 	private Spinner ringNumberSpinner;
 	private CalibrantPositioningWidget calibrantPositioning;
-	private CheckBoxGroup xRayGroup;
 	private Label residualLabel;
 	private Button usePointCalibration;
+	private Group ellipseParamGroup;
+	private Group pointCalibrateGroup;
+	private Button fixEnergyButton;
+	private Button fixDistanceButton;
+	private Button fixBeamCentreButton;
+	private Button fixTiltButton;
+	private RadioGroupWidget calibEllipseParamRadios;
 	private POIFindingRun ringFindJob;
 	private DiffractionImageAugmenter augmenter;
 	
@@ -116,14 +119,6 @@ public class DiffractionCalibrationView extends ViewPart {
 
 	private boolean checked = true;
 	private String calibrantName;
-
-	private Group ellipseParamGroup;
-	private Group pointCalibrateGroup;
-	private Button fixEnergyButton;
-	private Button fixDistanceButton;
-	private Button fixBeamCentreButton;
-	private Button fixTiltButton;
-	private RadioGroupWidget calibEllipseParamRadios;
 
 	public DiffractionCalibrationView() {
 	}
@@ -568,7 +563,7 @@ public class DiffractionCalibrationView extends ViewPart {
 			public void widgetSelected(SelectionEvent e) {
 				
 				SimpleCalibrationParameterModel params = new SimpleCalibrationParameterModel();
-				params.setFloatEnergy(!xRayGroup.isActivated());
+//				params.setFloatEnergy(!xRayGroup.isActivated()); TODO set float energy or not?
 				params.setNumberOfRings(ringNumberSpinner.getSelection());
 				IRunnableWithProgress job = new AutoCalibrationRun(Display.getDefault(), plottingSystem, manager.getModel(), manager.getCurrentData(), params);
 
@@ -576,11 +571,11 @@ public class DiffractionCalibrationView extends ViewPart {
 				try {
 					dia.run(true, true, job);
 				} catch (InvocationTargetException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
+					logger.error("Error running Job:" + e1.getMessage());
 				} catch (InterruptedException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
+					logger.error("Error running Job:" + e1.getMessage());
 				}
 				
 				updateAfterCalibration();
@@ -617,7 +612,7 @@ public class DiffractionCalibrationView extends ViewPart {
 				
 				CalibratePointsParameterModel params = new CalibratePointsParameterModel();
 				params.setNumberOfRings(ringNumberSpinner.getSelection());
-				params.setFloatEnergy(!xRayGroup.isActivated());
+//				params.setFloatEnergy(!xRayGroup.isActivated()); TODO set float energy or not?
 				
 				if (usePointCalibration.getSelection()) {
 					job = new FromPointsCalibrationRun(Display.getDefault(), plottingSystem, manager.getModel(), manager.getCurrentData(), params);
@@ -629,11 +624,11 @@ public class DiffractionCalibrationView extends ViewPart {
 				try {
 					dia.run(true, true, job);
 				} catch (InvocationTargetException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
+					logger.error("Error running Job:" + e1.getMessage());
 				} catch (InterruptedException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
+					logger.error("Error running Job:" + e1.getMessage());
 				}
 				updateAfterCalibration();
 			}
@@ -864,7 +859,6 @@ public class DiffractionCalibrationView extends ViewPart {
 	public void dispose() {
 		super.dispose();
 		removeListeners();
-		// FIXME Clear
 	}
 
 	@Override
@@ -880,10 +874,8 @@ public class DiffractionCalibrationView extends ViewPart {
 	public Object getAdapter(@SuppressWarnings("rawtypes") Class key) {
 		if (key == IPlottingSystem.class)
 			return plottingSystem;
-		//FIXME passed to load data from actions, table shouldnt be doing this
 		if (key == DiffractionDataManager.class)
 			return manager;
-					
 		return null;
 	}
 }
