@@ -2,7 +2,9 @@ package uk.ac.diamond.scisoft.diffraction.powder.rcp.views;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.dawb.common.ui.util.EclipseUtils;
 import org.dawb.common.ui.util.GridUtils;
@@ -86,11 +88,13 @@ public class DiffractionCalibrationView extends ViewPart {
 
 	private final String DATA_PATH = "DataPath";
 	private final String CALIBRANT = "Calibrant";
+	private final String RINGS = "Rings";
 
 	private DiffractionDataManager manager;
 	
 	private List<String> pathsList = new ArrayList<String>();
 	private CalibrationStandards standards;
+	private Map<String, Integer> calibrantRingsMap = new HashMap<String, Integer>();
 
 	private Composite parent;
 	private DiffCalTableViewer diffractionTableViewer;
@@ -119,6 +123,7 @@ public class DiffractionCalibrationView extends ViewPart {
 
 	private boolean checked = true;
 	private String calibrantName;
+	private int ringNumberSaved;
 
 	public DiffractionCalibrationView() {
 	}
@@ -138,6 +143,9 @@ public class DiffractionCalibrationView extends ViewPart {
 				if (k.startsWith(CALIBRANT)) {
 					calibrantName = memento.getString(k);
 				}
+				if (k.startsWith(RINGS)) {
+					ringNumberSaved = memento.getInteger(k);
+				}
 			}
 		}
 	}
@@ -150,6 +158,7 @@ public class DiffractionCalibrationView extends ViewPart {
 				memento.putString(DATA_PATH + String.valueOf(i++), data.path);
 			}
 			memento.putString(CALIBRANT, calibrantCombo.getItem(calibrantCombo.getSelectionIndex()));
+			memento.putInteger(RINGS, ringNumberSpinner.getSelection());
 		}
 	}
 
@@ -266,6 +275,9 @@ public class DiffractionCalibrationView extends ViewPart {
 
 		calibrantPositioning.setControlsToUpdate(calibrateImagesButton);
 		calibrantPositioning.setTableViewerToUpdate(diffractionTableViewer);
+
+		//initialize the calibrant ring Map
+		calibrantRingsMap.put(calibrantName, ringNumberSaved);
 	}
 
 	private IViewPart getView(String viewID) {
@@ -416,11 +428,20 @@ public class DiffractionCalibrationView extends ViewPart {
 			public void widgetSelected(SelectionEvent e) {
 				if (manager.getCurrentData() == null)
 					return;
-				String calibrantName = calibrantCombo.getItem(calibrantCombo.getSelectionIndex());
+				int index = calibrantCombo.getSelectionIndex();
+				calibrantName = calibrantCombo.getItem(index);
 				// update the calibrant in diffraction tool
 				standards.setSelectedCalibrant(calibrantName, true);
 				// set the maximum number of rings
-				ringNumberSpinner.setMaximum(standards.getCalibrant().getHKLs().size());
+				int ringMaxNumber = standards.getCalibrant().getHKLs().size();
+				ringNumberSpinner.setMaximum(ringMaxNumber);
+				// Set the calibrant ring number
+				if (calibrantRingsMap.containsKey(calibrantName)) {
+					ringNumberSpinner.setSelection(calibrantRingsMap.get(calibrantName));
+				} else {
+					calibrantRingsMap.put(calibrantName, ringMaxNumber);
+					ringNumberSpinner.setSelection(ringMaxNumber);
+				}
 			}
 		});
 		for (String c : standards.getCalibrantList()) {
@@ -665,7 +686,11 @@ public class DiffractionCalibrationView extends ViewPart {
 		ringNumberSpinner.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				if (ringFindJob != null) ringFindJob.setNumberOfRingsToFind(ringNumberSpinner.getSelection());
+				int ringNumber = ringNumberSpinner.getSelection();
+				if (ringFindJob != null) ringFindJob.setNumberOfRingsToFind(ringNumber);
+				// Fill the Map with ring number for the selected calibrant
+				
+				calibrantRingsMap.put(calibrantName, ringNumber);
 			}
 		});
 
