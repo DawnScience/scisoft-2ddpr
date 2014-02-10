@@ -117,8 +117,13 @@ public class DiffractionCalibrationView extends ViewPart {
 	private boolean checked = true;
 	private String calibrantName;
 
-	private CheckBoxGroup ellipseParamGroup;
-	private CheckBoxGroup pointCalibrateGroup;
+	private Group ellipseParamGroup;
+	private Group pointCalibrateGroup;
+	private Button fixEnergyButton;
+	private Button fixDistanceButton;
+	private Button fixBeamCentreButton;
+	private Button fixTiltButton;
+	private RadioGroupWidget calibEllipseParamRadios;
 
 	public DiffractionCalibrationView() {
 	}
@@ -668,90 +673,82 @@ public class DiffractionCalibrationView extends ViewPart {
 				if (ringFindJob != null) ringFindJob.setNumberOfRingsToFind(ringNumberSpinner.getSelection());
 			}
 		});
-		
+
 		usePointCalibration = new Button(composite, SWT.CHECK);
 		usePointCalibration.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 2, 1));
 		usePointCalibration.setText("Manual calibration uses points not ellipse parameters");
 		usePointCalibration.setSelection(false);
+		usePointCalibration.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				boolean isManual = usePointCalibration.getSelection();
+				setPointCalibrateEnabled(isManual);
+			}
+		});
 
-		Group calibRoutineGroup = new Group(composite, SWT.NONE);
-		calibRoutineGroup.setLayout(new GridLayout());
-		calibRoutineGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
-		calibRoutineGroup.setText("Calibration Routine");
-
-		ellipseParamGroup = new CheckBoxGroup(calibRoutineGroup, SWT.FILL);
+		ellipseParamGroup = new Group(composite, SWT.FILL);
 		ellipseParamGroup.setText("Ellipse Parameters");
 		ellipseParamGroup.setToolTipText("Set the Ellipse Parameters");
-		ellipseParamGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		ellipseParamGroup.addSelectionListener(new SelectionAdapter(){
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				Button ellipseParam = (Button) e.getSource();
-				boolean selected = ellipseParam.getSelection();
-				if (!selected)
-					pointCalibrateGroup.activate();
-				else
-					pointCalibrateGroup.deactivate();
-			}
-		});
+		ellipseParamGroup.setLayout(new GridLayout());
+		ellipseParamGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
 
-		Composite ellipseParamComp = ellipseParamGroup.getContent();
-		ellipseParamComp.setLayout(new GridLayout(1, false));
-		RadioGroupWidget calibEllipseParamRadios = new RadioGroupWidget(ellipseParamComp);
+		calibEllipseParamRadios = new RadioGroupWidget(ellipseParamGroup);
 		calibEllipseParamRadios.setActions(getEllipseParamActions());
 
-		pointCalibrateGroup = new CheckBoxGroup(calibRoutineGroup, SWT.FILL);
+		pointCalibrateGroup = new Group(composite, SWT.FILL);
 		pointCalibrateGroup.setText("Point Calibrate");
-		pointCalibrateGroup.setToolTipText("Set the Ellipse Parameters");
-		pointCalibrateGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		pointCalibrateGroup.deactivate();
-		pointCalibrateGroup.addSelectionListener(new SelectionAdapter(){
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				Button pointCalib = (Button) e.getSource();
-				boolean selected = pointCalib.getSelection();
-				if (!selected)
-					ellipseParamGroup.activate();
-				else
-					ellipseParamGroup.deactivate();
-			}
-		});
-		Composite pointCalibrateComp = pointCalibrateGroup.getContent();
-		pointCalibrateComp.setLayout(new GridLayout(1, false));
-		final Button fixEnergyButton = new Button(pointCalibrateComp, SWT.CHECK);
-		fixEnergyButton.setText("Fixe Energy");
+		pointCalibrateGroup.setToolTipText("Set the Point Parameters");
+		pointCalibrateGroup.setLayout(new GridLayout());
+		pointCalibrateGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+
+		fixEnergyButton = new Button(pointCalibrateGroup, SWT.CHECK);
+		fixEnergyButton.setText("Fix Energy");
 		fixEnergyButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				//TODO
 			}
 		});
-		final Button fixDistanceButton = new Button(pointCalibrateComp, SWT.CHECK);
-		fixDistanceButton.setText("Fixe Distance");
+		fixDistanceButton = new Button(pointCalibrateGroup, SWT.CHECK);
+		fixDistanceButton.setText("Fix Distance");
 		fixDistanceButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				//TODO
 			}
 		});
-		final Button fixBeamCentreButton = new Button(pointCalibrateComp, SWT.CHECK);
-		fixBeamCentreButton.setText("Fixe Beam Centre");
+		fixBeamCentreButton = new Button(pointCalibrateGroup, SWT.CHECK);
+		fixBeamCentreButton.setText("Fix Beam Centre");
 		fixBeamCentreButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				//TODO
 			}
 		});
-		final Button fixTiltButton = new Button(pointCalibrateComp, SWT.CHECK);
-		fixTiltButton.setText("Fixe Tilt");
+		fixTiltButton = new Button(pointCalibrateGroup, SWT.CHECK);
+		fixTiltButton.setText("Fix Tilt");
 		fixTiltButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				//TODO
 			}
 		});
+		setPointCalibrateEnabled(false);
 
 		return composite;
+	}
+
+	private void setEllipseGroupEnabled(boolean b) {
+		ellipseParamGroup.setEnabled(b);
+		calibEllipseParamRadios.setEnabled(b);
+	}
+
+	private void setPointCalibrateEnabled(boolean b) {
+		pointCalibrateGroup.setEnabled(b);
+		fixEnergyButton.setEnabled(b);
+		fixDistanceButton.setEnabled(b);
+		fixBeamCentreButton.setEnabled(b);
+		fixTiltButton.setEnabled(b);
 	}
 
 	private List<Action> getEllipseParamActions() {
