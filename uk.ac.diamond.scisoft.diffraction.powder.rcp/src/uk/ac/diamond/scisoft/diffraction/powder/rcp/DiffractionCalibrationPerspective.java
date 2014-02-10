@@ -23,22 +23,22 @@ public class DiffractionCalibrationPerspective implements IPerspectiveFactory {
 		String diffractionID = "uk.ac.diamond.scisoft.diffraction.powder.rcp.powderDiffractionTool";
 
 		// Top left: Diffraction calibration view
-		IFolderLayout topLeft = layout.createFolder("topLeft", IPageLayout.LEFT, 0.5f, editorArea);
-		topLeft.addView(DiffractionCalibrationView.ID);
-
-		// Top right: Diffraction plotting view
-		IFolderLayout topRight = layout.createFolder("topRight", IPageLayout.TOP, 0.50f,editorArea);
-		topRight.addView(DiffractionPlotView.ID);
-
-		// Bottom left: Diffraction tool view
-		IFolderLayout bottomLeft = layout.createFolder("bottomLeft", IPageLayout.BOTTOM, 0.50f, "topLeft");
-		// open the tool as a fixed view
-		bottomLeft.addView(fixed + diffractionID);
+		IFolderLayout left = layout.createFolder("diffCalibrationView", IPageLayout.LEFT, 0.30f, editorArea);
+		left.addView(DiffractionCalibrationView.ID);
 
 		// Bottom Right: Powder diffraction tool
-		IFolderLayout bottomRight = layout.createFolder("bottomRight", IPageLayout.BOTTOM, 0.50f, "topRight");
+		IFolderLayout bottomRight = layout.createFolder("powderCalibration", IPageLayout.RIGHT, 0.30f, "diffCalibrationView");
 		// open the tool as a fixed view
 		bottomRight.addView(fixed + powderCheckID);
+
+		// Top right: Diffraction plotting view
+		IFolderLayout top = layout.createFolder("diffractionPlotting", IPageLayout.TOP, 0.50f, "powderCalibration");
+		top.addView(DiffractionPlotView.ID);
+
+		// Bottom left: Diffraction tool view
+		IFolderLayout topRight = layout.createFolder("powderDiffraction", IPageLayout.RIGHT, 0.50f, "diffractionPlotting");
+		// open the tool as a fixed view
+		topRight.addView(fixed + diffractionID);
 
 		layout.getViewLayout(DiffractionPlotView.ID).setCloseable(false);
 		layout.getViewLayout(DiffractionCalibrationView.ID).setCloseable(false);
