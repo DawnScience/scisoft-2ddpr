@@ -74,19 +74,10 @@ public class AutoCalibrationRun extends AbstractCalibrationRun {
 			});
 		}
 		
-		double pixelSize = model.get(0).md.getDetector2DProperties().getHPxSize();
-		
 		monitor.beginTask("Calibrating", IProgressMonitor.UNKNOWN);
-		
-		CalibrationOutput o = null;
-		
-		if (!params.isFloatEnergy()) {
-			o =  CalibrateEllipses.runKnownWavelength(allEllipses, allDSpacings, pixelSize,currentData.md.getDiffractionCrystalEnvironment().getWavelength());
-		} else {
-			o =  CalibrateEllipses.run(allEllipses, allDSpacings,ddist, pixelSize);
-		}
-		
-		final CalibrationOutput output = o;
+		//TODO make sure fix wavelength/distance ignored for multiple images
+		final CalibrationOutput output =  CalibrateEllipses.run(allEllipses, allDSpacings,ddist,currentData.md, params);
+
 		
 		updateOnFinish(output);
 

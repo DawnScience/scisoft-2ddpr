@@ -113,6 +113,8 @@ public class DiffractionCalibrationView extends ViewPart {
 	private RadioGroupWidget calibEllipseParamRadios;
 	private POIFindingRun ringFindJob;
 	private DiffractionImageAugmenter augmenter;
+	CalibratePointsParameterModel pointParameters = new CalibratePointsParameterModel();
+	SimpleCalibrationParameterModel ellipseParameters = new SimpleCalibrationParameterModel();
 	
 	private static final String RESIDUAL = "Residual: ";
 
@@ -582,11 +584,8 @@ public class DiffractionCalibrationView extends ViewPart {
 		goBabyGoButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				
-				SimpleCalibrationParameterModel params = new SimpleCalibrationParameterModel();
-//				params.setFloatEnergy(!xRayGroup.isActivated()); TODO set float energy or not?
-				params.setNumberOfRings(ringNumberSpinner.getSelection());
-				IRunnableWithProgress job = new AutoCalibrationRun(Display.getDefault(), plottingSystem, manager.getModel(), manager.getCurrentData(), params);
+				ellipseParameters.setNumberOfRings(ringNumberSpinner.getSelection());
+				IRunnableWithProgress job = new AutoCalibrationRun(Display.getDefault(), plottingSystem, manager.getModel(), manager.getCurrentData(), ellipseParameters);
 
 				ProgressMonitorDialog dia = new ProgressMonitorDialog(Display.getCurrent().getActiveShell());
 				try {
@@ -631,14 +630,12 @@ public class DiffractionCalibrationView extends ViewPart {
 				
 				IRunnableWithProgress job = null;
 				
-				CalibratePointsParameterModel params = new CalibratePointsParameterModel();
-				params.setNumberOfRings(ringNumberSpinner.getSelection());
-//				params.setFloatEnergy(!xRayGroup.isActivated()); TODO set float energy or not?
-				
 				if (usePointCalibration.getSelection()) {
-					job = new FromPointsCalibrationRun(Display.getDefault(), plottingSystem, manager.getModel(), manager.getCurrentData(), params);
+					pointParameters.setNumberOfRings(ringNumberSpinner.getSelection());
+					job = new FromPointsCalibrationRun(Display.getDefault(), plottingSystem, manager.getModel(), manager.getCurrentData(), pointParameters);
 				} else {
-					job = new FromRingsCalibrationRun(Display.getDefault(), plottingSystem, manager.getModel(), manager.getCurrentData(), params);
+					ellipseParameters.setNumberOfRings(ringNumberSpinner.getSelection());
+					job = new FromRingsCalibrationRun(Display.getDefault(), plottingSystem, manager.getModel(), manager.getCurrentData(), ellipseParameters);
 				}
 				
 				ProgressMonitorDialog dia = new ProgressMonitorDialog(Display.getCurrent().getActiveShell());
@@ -726,7 +723,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		fixEnergyButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				//TODO
+				pointParameters.setFloatEnergy(!((Button)e.getSource()).getSelection());
 			}
 		});
 		fixDistanceButton = new Button(pointCalibrateGroup, SWT.CHECK);
@@ -734,7 +731,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		fixDistanceButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				//TODO
+				pointParameters.setFloatDistance(!((Button)e.getSource()).getSelection());
 			}
 		});
 		fixBeamCentreButton = new Button(pointCalibrateGroup, SWT.CHECK);
@@ -742,7 +739,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		fixBeamCentreButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				//TODO
+				pointParameters.setFloatBeamCentre(!((Button)e.getSource()).getSelection());
 			}
 		});
 		fixTiltButton = new Button(pointCalibrateGroup, SWT.CHECK);
@@ -750,7 +747,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		fixTiltButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				//TODO
+				pointParameters.setFloatTilt(!((Button)e.getSource()).getSelection());
 			}
 		});
 		setPointCalibrateEnabled(false);
@@ -776,7 +773,8 @@ public class DiffractionCalibrationView extends ViewPart {
 		Action fixNoneAction = new Action() {
 			@Override
 			public void run() {
-				//TODO
+				ellipseParameters.setFloatDistance(true);
+				ellipseParameters.setFloatEnergy(true);
 			}
 		};
 		fixNoneAction.setText("Fix None");
@@ -785,7 +783,8 @@ public class DiffractionCalibrationView extends ViewPart {
 		Action fixEnergyAction = new Action() {
 			@Override
 			public void run() {
-				//TODO
+				ellipseParameters.setFloatDistance(true);
+				ellipseParameters.setFloatEnergy(false);
 			}
 		};
 		fixEnergyAction.setText("Fix Energy");
@@ -794,7 +793,8 @@ public class DiffractionCalibrationView extends ViewPart {
 		Action fixDistanceAction = new Action() {
 			@Override
 			public void run() {
-				//TODO
+				ellipseParameters.setFloatDistance(false);
+				ellipseParameters.setFloatEnergy(true);
 			}
 		};
 		fixDistanceAction.setText("Fix Distance");

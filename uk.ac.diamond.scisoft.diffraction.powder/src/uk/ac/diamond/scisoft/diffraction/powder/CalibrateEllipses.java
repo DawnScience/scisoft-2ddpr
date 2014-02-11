@@ -10,6 +10,7 @@ import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
 import uk.ac.diamond.scisoft.analysis.dataset.DatasetUtils;
 import uk.ac.diamond.scisoft.analysis.dataset.DoubleDataset;
 import uk.ac.diamond.scisoft.analysis.dataset.Maths;
+import uk.ac.diamond.scisoft.analysis.io.IDiffractionMetadata;
 import uk.ac.diamond.scisoft.analysis.roi.EllipticalROI;
 
 /**
@@ -70,6 +71,35 @@ public class CalibrateEllipses {
 		AbstractDataset deltaDistance = AbstractDataset.zeros(new int[]{1}, AbstractDataset.FLOAT64);
 		return run(allEllipses, allDSpacings, deltaDistance,pixel, knownWavelength, true);
 	}
+	
+	
+	/**
+	 * Calibrate a set of images at a unknown distance and wavelength, but known delta distance
+	 * <p>
+	 * Returns the wavelength, distances, detector tilts and beam centres for each image
+	 * <p>
+	 * @param allEllipses - list of ellipses for each image
+	 * @param allDSpacings - array of d-spacings for each image
+	 * @param deltaDistance - approximate distances between each image with accurate differences between distances
+	 * @param pixel size in mm
+	 * @param wavelength in angstroms
+	 * @return calibrationOutput
+	 */
+	public static CalibrationOutput run(List<List<EllipticalROI>> allEllipses, List<double[]> allDSpacings, AbstractDataset deltaDistance, IDiffractionMetadata md, SimpleCalibrationParameterModel params) {
+		
+		double pixel = md.getDetector2DProperties().getHPxSize();
+		
+		if (params.isFloatDistance() && !params.isFloatEnergy()) {
+			double w = md.getDiffractionCrystalEnvironment().getWavelength();
+			return runKnownWavelength(allEllipses, allDSpacings, pixel, w);
+		} else if (!params.isFloatDistance() && params.isFloatEnergy()) {
+			double d = md.getDetector2DProperties().getBeamCentreDistance();
+			return runKnownDistance(allEllipses, allDSpacings, pixel, d);
+		} else {
+			return run(allEllipses, allDSpacings, deltaDistance,pixel, -1, false);
+		}
+	}
+	
 	
 	private static CalibrationOutput run(List<List<EllipticalROI>> allEllipses, List<double[]> allDSpacings, AbstractDataset deltaDistance,double pixel, double knownValue, boolean isWavelength){
 		
