@@ -55,10 +55,13 @@ import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.ui.IMemento;
+import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -116,6 +119,7 @@ public class DiffractionCalibrationView extends ViewPart {
 
 	private ISelectionChangedListener selectionChangeListener;
 	private CalibrantSelectedListener calibrantChangeListener;
+	private IPartListener2 partListener;
 
 	private boolean checked = true;
 	private String calibrantName;
@@ -307,7 +311,10 @@ public class DiffractionCalibrationView extends ViewPart {
 		}
 
 		// set the focus on the plotting system to trigger the tools (powder tool)
-		plottingSystem.setFocus();
+		IWorkbenchPart part = plottingSystem.getPart();
+		if (part != null) {
+			part.getSite().getPage().activate(part);
+		}
 		augmenter = new DiffractionImageAugmenter(plottingSystem);
 		augmenter.activate();
 		ringFindJob = new POIFindingRun(plottingSystem, manager.getCurrentData(), ringNumberSpinner.getSelection());
@@ -344,6 +351,25 @@ public class DiffractionCalibrationView extends ViewPart {
 					showCalibrantAndBeamCentre(checked);
 			}
 		};
+		
+		partListener = new PartListener2Stub() {
+			
+			@Override
+			public void partVisible(IWorkbenchPartReference partRef) {
+				if (partRef.getPart(false) == DiffractionCalibrationView.this) {
+					if (plottingSystem != null) {
+						IWorkbenchPart part = plottingSystem.getPart();
+						if (part != null) {
+							part.getSite().getPage().activate(part);
+						}
+						if (augmenter != null) augmenter.activate();
+					}
+				}
+			}
+		};
+		
+		
+		this.getViewSite().getPage().addPartListener(partListener);
 	}
 
 	private void setCalibrantChoice() {
@@ -859,6 +885,8 @@ public class DiffractionCalibrationView extends ViewPart {
 			manager.getModel().clear();
 		}
 		logger.debug("model emptied");
+		
+		this.getViewSite().getPage().removePartListener(partListener);
 	}
 
 	@Override
