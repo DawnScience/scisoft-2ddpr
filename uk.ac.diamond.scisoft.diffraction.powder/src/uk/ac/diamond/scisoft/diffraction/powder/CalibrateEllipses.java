@@ -74,15 +74,15 @@ public class CalibrateEllipses {
 	
 	
 	/**
-	 * Calibrate a set of images at a unknown distance and wavelength, but known delta distance
+	 * Calibrate images with various options
 	 * <p>
 	 * Returns the wavelength, distances, detector tilts and beam centres for each image
 	 * <p>
 	 * @param allEllipses - list of ellipses for each image
 	 * @param allDSpacings - array of d-spacings for each image
 	 * @param deltaDistance - approximate distances between each image with accurate differences between distances
-	 * @param pixel size in mm
-	 * @param wavelength in angstroms
+	 * @param md - diffraction metadata object for the image
+	 * @param params - parameter model for calibration process
 	 * @return calibrationOutput
 	 */
 	public static CalibrationOutput run(List<List<EllipticalROI>> allEllipses, List<double[]> allDSpacings, AbstractDataset deltaDistance, IDiffractionMetadata md, SimpleCalibrationParameterModel params) {
