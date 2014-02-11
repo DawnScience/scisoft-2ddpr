@@ -83,6 +83,7 @@ import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.AutoCalibrationRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.FromPointsCalibrationRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.FromRingsCalibrationRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.POIFindingRun;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.RingsSelectionText;
 
 public class DiffractionCalibrationView extends ViewPart {
 
@@ -711,7 +712,13 @@ public class DiffractionCalibrationView extends ViewPart {
 			}
 		});
 
-		usePointCalibration = new Button(composite, SWT.CHECK);
+		Label ringSelectionLabel = new Label(composite, SWT.NONE);
+		ringSelectionLabel.setText("Specify ring numbers:");
+		RingsSelectionText ringSelect = new RingsSelectionText(composite, SWT.BORDER);
+		ringSelect.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		ringSelect.setToolTipText("Enter unique ring numbers separated by commas");
+
+		usePointCalibration = new Button(composite, SWT.CHECK | SWT.WRAP);
 		usePointCalibration.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 2, 1));
 		usePointCalibration.setText("Manual calibration uses points not ellipse parameters");
 		usePointCalibration.setSelection(false);
@@ -876,7 +883,8 @@ public class DiffractionCalibrationView extends ViewPart {
 		}
 		CalibrationFactory.removeCalibrantSelectionListener(calibrantChangeListener);
 
-		augmenter.deactivate(false);
+		if (augmenter != null)
+			augmenter.deactivate(false);
 		
 		if (manager.getModel() != null) {
 			for (DiffractionTableData d : manager.getModel()) {
