@@ -104,12 +104,6 @@ public class DiffractionCalibrationView extends ViewPart {
 	private CalibrantPositioningWidget calibrantPositioning;
 	private Label residualLabel;
 	private Button usePointCalibration;
-	private Group ellipseParamGroup;
-	private Group pointCalibrateGroup;
-	private Button fixEnergyButton;
-	private Button fixDistanceButton;
-	private Button fixBeamCentreButton;
-	private Button fixTiltButton;
 	private RadioGroupWidget calibEllipseParamRadios;
 	private POIFindingRun ringFindJob;
 	private DiffractionImageAugmenter augmenter;
@@ -695,15 +689,9 @@ public class DiffractionCalibrationView extends ViewPart {
 		usePointCalibration.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 2, 1));
 		usePointCalibration.setText("Manual calibration uses points not ellipse parameters");
 		usePointCalibration.setSelection(false);
-		usePointCalibration.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				boolean isManual = usePointCalibration.getSelection();
-				setPointCalibrateEnabled(isManual);
-			}
-		});
+		
 
-		ellipseParamGroup = new Group(composite, SWT.FILL);
+		Group ellipseParamGroup = new Group(composite, SWT.FILL);
 		ellipseParamGroup.setText("Ellipse Parameters");
 		ellipseParamGroup.setToolTipText("Set the Ellipse Parameters");
 		ellipseParamGroup.setLayout(new GridLayout());
@@ -712,13 +700,13 @@ public class DiffractionCalibrationView extends ViewPart {
 		calibEllipseParamRadios = new RadioGroupWidget(ellipseParamGroup);
 		calibEllipseParamRadios.setActions(getEllipseParamActions());
 
-		pointCalibrateGroup = new Group(composite, SWT.FILL);
+		final Group pointCalibrateGroup = new Group(composite, SWT.FILL);
 		pointCalibrateGroup.setText("Point Calibrate");
 		pointCalibrateGroup.setToolTipText("Set the Point Parameters");
 		pointCalibrateGroup.setLayout(new GridLayout());
 		pointCalibrateGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
 
-		fixEnergyButton = new Button(pointCalibrateGroup, SWT.CHECK);
+		Button fixEnergyButton = new Button(pointCalibrateGroup, SWT.CHECK);
 		fixEnergyButton.setText("Fix Energy");
 		fixEnergyButton.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -726,7 +714,7 @@ public class DiffractionCalibrationView extends ViewPart {
 				pointParameters.setFloatEnergy(!((Button)e.getSource()).getSelection());
 			}
 		});
-		fixDistanceButton = new Button(pointCalibrateGroup, SWT.CHECK);
+		Button fixDistanceButton = new Button(pointCalibrateGroup, SWT.CHECK);
 		fixDistanceButton.setText("Fix Distance");
 		fixDistanceButton.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -734,7 +722,7 @@ public class DiffractionCalibrationView extends ViewPart {
 				pointParameters.setFloatDistance(!((Button)e.getSource()).getSelection());
 			}
 		});
-		fixBeamCentreButton = new Button(pointCalibrateGroup, SWT.CHECK);
+		Button fixBeamCentreButton = new Button(pointCalibrateGroup, SWT.CHECK);
 		fixBeamCentreButton.setText("Fix Beam Centre");
 		fixBeamCentreButton.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -742,7 +730,7 @@ public class DiffractionCalibrationView extends ViewPart {
 				pointParameters.setFloatBeamCentre(!((Button)e.getSource()).getSelection());
 			}
 		});
-		fixTiltButton = new Button(pointCalibrateGroup, SWT.CHECK);
+		Button fixTiltButton = new Button(pointCalibrateGroup, SWT.CHECK);
 		fixTiltButton.setText("Fix Tilt");
 		fixTiltButton.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -750,23 +738,27 @@ public class DiffractionCalibrationView extends ViewPart {
 				pointParameters.setFloatTilt(!((Button)e.getSource()).getSelection());
 			}
 		});
-		setPointCalibrateEnabled(false);
+		
+		usePointCalibration.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				boolean isManual = usePointCalibration.getSelection();
+				enableControl(pointCalibrateGroup, isManual);
+			}
+		});
+		
+		enableControl(pointCalibrateGroup, false);
 
 		return composite;
 	}
 
-	private void setEllipseGroupEnabled(boolean b) {
-		ellipseParamGroup.setEnabled(b);
-		calibEllipseParamRadios.setEnabled(b);
+	private void enableControl(Group group, boolean enabled) {
+		for (Control child : group.getChildren())
+			  child.setEnabled(enabled);
+		
+		group.setEnabled(enabled);
 	}
-
-	private void setPointCalibrateEnabled(boolean b) {
-		pointCalibrateGroup.setEnabled(b);
-		fixEnergyButton.setEnabled(b);
-		fixDistanceButton.setEnabled(b);
-		fixBeamCentreButton.setEnabled(b);
-		fixTiltButton.setEnabled(b);
-	}
+ 	
 
 	private List<Action> getEllipseParamActions() {
 		List<Action> radioActions = new ArrayList<Action>();
@@ -804,17 +796,6 @@ public class DiffractionCalibrationView extends ViewPart {
 		radioActions.add(fixEnergyAction);
 		radioActions.add(fixDistanceAction);
 		return radioActions;
-	}
-
-	private void setCalibrant() {
-		// set the calibrant
-		CalibrationStandards standard = CalibrationFactory.getCalibrationStandards();
-		if (calibrantName != null) {
-			calibrantCombo.select(calibrantCombo.indexOf(calibrantName));
-			standard.setSelectedCalibrant(calibrantName, true);
-		} else {
-			calibrantCombo.select(calibrantCombo.indexOf(standard.getSelectedCalibrant()));
-		}
 	}
 
 	private void drawSelectedData(DiffractionTableData data) {
