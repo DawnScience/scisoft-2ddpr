@@ -89,7 +89,7 @@ public class FromPointsCalibrationRun extends AbstractCalibrationRun {
 				
 				currentData.residual = output.getResidual();
 
-				hideFoundRings(plottingSystem);
+				removeFoundRings(plottingSystem);
 			}
 		});
 		return;

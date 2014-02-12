@@ -62,12 +62,12 @@ public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 	 * 
 	 * @param plottingSystem
 	 */
-	public void hideFoundRings(IPlottingSystem plottingSystem) {
+	public void removeFoundRings(IPlottingSystem plottingSystem) {
 		for (IRegion r : plottingSystem.getRegions()) {
 			String n = r.getName();
 			if (n.startsWith(REGION_PREFIX)) {
-				r.setVisible(false);
-			}
+				plottingSystem.removeRegion(r);
+				}
 		}
 	}
 	
@@ -206,7 +206,7 @@ public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 					i++;
 				}
 
-				hideFoundRings(plottingSystem);
+				removeFoundRings(plottingSystem);
 			}
 		});
 	}

@@ -69,7 +69,7 @@ public class AutoCalibrationRun extends AbstractCalibrationRun {
 			display.syncExec(new Runnable() {
 				@Override
 				public void run() {
-					hideFoundRings(plottingSystem);
+					removeFoundRings(plottingSystem);
 				}
 			});
 		}
