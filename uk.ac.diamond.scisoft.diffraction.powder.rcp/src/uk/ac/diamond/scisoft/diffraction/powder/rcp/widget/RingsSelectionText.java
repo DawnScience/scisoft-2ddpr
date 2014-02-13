@@ -46,9 +46,13 @@ public class RingsSelectionText {
 			@Override
 			public void modifyText(ModifyEvent e) {
 				String currentText = ringText.getText();
+				if (currentText.endsWith(","))
+					return;
 				String[] arrayString = currentText.split(",");
+				if (arrayString[arrayString.length - 1].equals(""))
+					return;
 				int currentNumber = Integer.valueOf(arrayString[arrayString.length - 1]);
-				if (!isUnique(arrayString) || currentNumber > maxRingNumber) {
+				if (!isUnique(currentNumber) || currentNumber > maxRingNumber) {
 					// change colour of last entry to red
 					StyleRange colourStyle = new StyleRange();
 					colourStyle.start = currentText.lastIndexOf(',')+1;
@@ -57,6 +61,8 @@ public class RingsSelectionText {
 					ringText.setStyleRange(colourStyle);
 				} else {
 					StyleRange resetStyle = new StyleRange();
+					resetStyle.start = currentText.lastIndexOf(',')+1;
+					resetStyle.length = arrayString[arrayString.length - 1].length();
 					ringText.setStyleRange(resetStyle);
 				}
 			}
@@ -69,11 +75,27 @@ public class RingsSelectionText {
 	 * @param arrayString
 	 * @return
 	 */
+	@SuppressWarnings("unused")
 	private boolean isUnique(String[] arrayString) {
 		List<String> valueList = Arrays.asList(arrayString);
 		Set<String> valueSet = new HashSet<String>(valueList);
 		if (valueSet.size() < valueList.size())
 			return false;
+		return true;
+	}
+
+	/**
+	 * Test if the int entered is unique
+	 * @param number
+	 * @return
+	 */
+	private boolean isUnique(int number) {
+		String currentText = ringText.getText();
+		String[] tmp = currentText.split(",");
+		for (int i = 0; i < tmp.length - 1; i++) {
+			if (Integer.valueOf(tmp[i]) == number)
+				return false;
+		}
 		return true;
 	}
 
