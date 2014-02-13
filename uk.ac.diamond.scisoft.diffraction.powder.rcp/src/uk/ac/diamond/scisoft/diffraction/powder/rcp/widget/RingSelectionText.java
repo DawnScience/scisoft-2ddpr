@@ -125,6 +125,15 @@ public class RingSelectionText {
 
 	public void setEnabled(boolean isEnabled) {
 		ringText.setEnabled(isEnabled);
+		if (isEnabled) {
+			ringText.setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WHITE));
+		} else {
+			ringText.setBackground(Display.getDefault().getSystemColor(SWT.COLOR_GRAY));
+		}
+	}
+
+	public boolean isEnabled() {
+		return ringText.isEnabled();
 	}
 
 	/**

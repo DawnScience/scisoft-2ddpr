@@ -79,6 +79,10 @@ public class RingSelectionGroup {
 		ringNumberSpinner.setSelection(selection);
 	}
 
+	public boolean isUsingRingSpinner() {
+		return ringNumberSpinner.isEnabled();
+	}
+
 	/**
 	 * Sets the maximum ring number: maximum value of spinner and text field
 	 * @param maximumRingNumber
