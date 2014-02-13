@@ -125,6 +125,7 @@ public class DiffractionCalibrationView extends ViewPart {
 	private boolean checked = true;
 	private String calibrantName;
 	private int ringNumberSaved;
+	private RingsSelectionText ringSelect;
 
 	public DiffractionCalibrationView() {
 	}
@@ -465,6 +466,8 @@ public class DiffractionCalibrationView extends ViewPart {
 					calibrantRingsMap.put(calibrantName, ringMaxNumber);
 					ringNumberSpinner.setSelection(ringMaxNumber);
 				}
+				// Tell the ring selection field about the maximum number allowed
+				ringSelect.setMaximumRingNumber(ringNumberSpinner.getMaximum());
 			}
 		});
 		for (String c : standards.getCalibrantList()) {
@@ -714,7 +717,8 @@ public class DiffractionCalibrationView extends ViewPart {
 
 		Label ringSelectionLabel = new Label(composite, SWT.NONE);
 		ringSelectionLabel.setText("Specify ring numbers:");
-		RingsSelectionText ringSelect = new RingsSelectionText(composite, SWT.BORDER);
+		ringSelect = new RingsSelectionText(composite, SWT.BORDER);
+		ringSelect.setMaximumRingNumber(ringNumberSpinner.getMaximum());
 		ringSelect.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		ringSelect.setToolTipText("Enter unique ring numbers separated by commas");
 
