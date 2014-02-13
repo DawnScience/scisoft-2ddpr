@@ -51,7 +51,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.ui.IMemento;
@@ -83,7 +82,7 @@ import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.AutoCalibrationRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.FromPointsCalibrationRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.FromRingsCalibrationRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.POIFindingRun;
-import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.RingsSelectionText;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.RingSelectionGroup;
 
 public class DiffractionCalibrationView extends ViewPart {
 
@@ -104,7 +103,6 @@ public class DiffractionCalibrationView extends ViewPart {
 	private DiffCalTableViewer diffractionTableViewer;
 	private Button calibrateImagesButton;
 	private Combo calibrantCombo;
-	private Spinner ringNumberSpinner;
 	private CalibrantPositioningWidget calibrantPositioning;
 	private Label residualLabel;
 	private Button usePointCalibration;
@@ -125,7 +123,7 @@ public class DiffractionCalibrationView extends ViewPart {
 	private boolean checked = true;
 	private String calibrantName;
 	private int ringNumberSaved;
-	private RingsSelectionText ringSelect;
+	private RingSelectionGroup ringSelection;
 
 	public DiffractionCalibrationView() {
 	}
@@ -160,7 +158,7 @@ public class DiffractionCalibrationView extends ViewPart {
 				memento.putString(DATA_PATH + String.valueOf(i++), data.path);
 			}
 			memento.putString(CALIBRANT, calibrantCombo.getItem(calibrantCombo.getSelectionIndex()));
-			memento.putInteger(RINGS, ringNumberSpinner.getSelection());
+			memento.putInteger(RINGS, ringSelection.getRingSpinnerSelection());
 		}
 	}
 
@@ -253,6 +251,21 @@ public class DiffractionCalibrationView extends ViewPart {
 		settingTabItem.setToolTipText("Calibration settings");
 		settingTabItem.setControl(getSettingTabControl(tabFolder, standards));
 
+		ringSelection = new RingSelectionGroup(mainHolder, standards.getCalibrant().getHKLs().size());
+		ringSelection.addRingNumberSpinnerListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				int ringNumber = ringSelection.getRingSpinnerSelection();
+				if (ringFindJob != null) ringFindJob.setNumberOfRingsToFind(ringNumber);
+				// Fill the Map with ring number for the selected calibrant
+				calibrantRingsMap.put(calibrantName, ringNumber);
+			}
+		});
+
+		residualLabel = new Label(mainHolder, SWT.NONE);
+		residualLabel.setText(RESIDUAL);
+		residualLabel.setLayoutData(new GridData());
+
 		scrollHolder.layout();
 		scrollComposite.setContent(scrollHolder);
 		scrollComposite.setExpandHorizontal(true);
@@ -261,10 +274,6 @@ public class DiffractionCalibrationView extends ViewPart {
 		scrollComposite.setMinSize(scrollHolder.computeSize(r.width, SWT.DEFAULT));
 		scrollComposite.layout();
 		// end of Diffraction Calibration controls
-		
-		residualLabel = new Label(mainHolder, SWT.NONE);
-		residualLabel.setText(RESIDUAL);
-		residualLabel.setLayoutData(new GridData());
 
 		// try to load the previous data saved in the memento
 		for (String p : pathsList) {
@@ -319,7 +328,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		}
 		augmenter = new DiffractionImageAugmenter(plottingSystem);
 		augmenter.activate();
-		ringFindJob = new POIFindingRun(plottingSystem, manager.getCurrentData(), ringNumberSpinner.getSelection());
+		ringFindJob = new POIFindingRun(plottingSystem, manager.getCurrentData(), ringSelection.getRingSpinnerSelection());
 		calibrantPositioning.setRingFinder(ringFindJob);
 	}
 
@@ -346,16 +355,14 @@ public class DiffractionCalibrationView extends ViewPart {
 				final int index = calibrantCombo.getSelectionIndex();
 				if (index>-1 && calibrantCombo.getItems()[index].equals(evt.getCalibrant())) return;
 				setCalibrantChoice();
-				
-				ringNumberSpinner.setMaximum(CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs().size());
-				
+				ringSelection.setMaximumRingNumber(CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs().size());
+
 				if (manager.getCurrentData() != null)
 					showCalibrantAndBeamCentre(checked);
 			}
 		};
-		
+
 		partListener = new PartListener2Stub() {
-			
 			@Override
 			public void partVisible(IWorkbenchPartReference partRef) {
 				if (partRef.getPart(false) == DiffractionCalibrationView.this) {
@@ -369,8 +376,7 @@ public class DiffractionCalibrationView extends ViewPart {
 				}
 			}
 		};
-		
-		
+
 		this.getViewSite().getPage().addPartListener(partListener);
 	}
 
@@ -413,7 +419,7 @@ public class DiffractionCalibrationView extends ViewPart {
 	 * @param currentData
 	 */
 	private void showCalibrantAndBeamCentre(boolean show) {
-		
+		if (augmenter == null) return;
 		if (show) {
 			augmenter.activate();
 			augmenter.drawBeamCentre(show);
@@ -458,16 +464,16 @@ public class DiffractionCalibrationView extends ViewPart {
 				standards.setSelectedCalibrant(calibrantName, true);
 				// set the maximum number of rings
 				int ringMaxNumber = standards.getCalibrant().getHKLs().size();
-				ringNumberSpinner.setMaximum(ringMaxNumber);
+				ringSelection.setMaximumRingNumber(ringMaxNumber);
 				// Set the calibrant ring number
 				if (calibrantRingsMap.containsKey(calibrantName)) {
-					ringNumberSpinner.setSelection(calibrantRingsMap.get(calibrantName));
+					ringSelection.setRingSpinnerSelection(calibrantRingsMap.get(calibrantName));
 				} else {
 					calibrantRingsMap.put(calibrantName, ringMaxNumber);
-					ringNumberSpinner.setSelection(ringMaxNumber);
+					ringSelection.setRingSpinnerSelection(ringMaxNumber);
 				}
 				// Tell the ring selection field about the maximum number allowed
-				ringSelect.setMaximumRingNumber(ringNumberSpinner.getMaximum());
+				
 			}
 		});
 		for (String c : standards.getCalibrantList()) {
@@ -608,7 +614,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		goBabyGoButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				ellipseParameters.setNumberOfRings(ringNumberSpinner.getSelection());
+				ellipseParameters.setNumberOfRings(ringSelection.getRingSpinnerSelection());
 				IRunnableWithProgress job = new AutoCalibrationRun(Display.getDefault(), plottingSystem, manager.getModel(), manager.getCurrentData(), ellipseParameters);
 
 				ProgressMonitorDialog dia = new ProgressMonitorDialog(Display.getCurrent().getActiveShell());
@@ -655,10 +661,10 @@ public class DiffractionCalibrationView extends ViewPart {
 				IRunnableWithProgress job = null;
 				
 				if (usePointCalibration.getSelection()) {
-					pointParameters.setNumberOfRings(ringNumberSpinner.getSelection());
+					pointParameters.setNumberOfRings(ringSelection.getRingSpinnerSelection());
 					job = new FromPointsCalibrationRun(Display.getDefault(), plottingSystem, manager.getModel(), manager.getCurrentData(), pointParameters);
 				} else {
-					ellipseParameters.setNumberOfRings(ringNumberSpinner.getSelection());
+					ellipseParameters.setNumberOfRings(ringSelection.getRingSpinnerSelection());
 					job = new FromRingsCalibrationRun(Display.getDefault(), plottingSystem, manager.getModel(), manager.getCurrentData(), ellipseParameters);
 				}
 				
@@ -697,30 +703,6 @@ public class DiffractionCalibrationView extends ViewPart {
 	private Control getSettingTabControl(TabFolder tabFolder, CalibrationStandards standards) {
 		Composite composite = new Composite(tabFolder, SWT.FILL);
 		composite.setLayout(new GridLayout(2, false));
-
-		Label ringNumberLabel = new Label(composite, SWT.NONE);
-		ringNumberLabel.setText("No. of Rings to Use:");
-		ringNumberSpinner = new Spinner(composite, SWT.BORDER);
-		ringNumberSpinner.setMaximum(standards.getCalibrant().getHKLs().size());
-		ringNumberSpinner.setMinimum(2);
-		ringNumberSpinner.setSelection(100);
-		ringNumberSpinner.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				int ringNumber = ringNumberSpinner.getSelection();
-				if (ringFindJob != null) ringFindJob.setNumberOfRingsToFind(ringNumber);
-				// Fill the Map with ring number for the selected calibrant
-				
-				calibrantRingsMap.put(calibrantName, ringNumber);
-			}
-		});
-
-		Label ringSelectionLabel = new Label(composite, SWT.NONE);
-		ringSelectionLabel.setText("Specify ring numbers:");
-		ringSelect = new RingsSelectionText(composite, SWT.BORDER);
-		ringSelect.setMaximumRingNumber(ringNumberSpinner.getMaximum());
-		ringSelect.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-		ringSelect.setToolTipText("Enter unique ring numbers separated by commas");
 
 		usePointCalibration = new Button(composite, SWT.CHECK | SWT.WRAP);
 		usePointCalibration.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 2, 1));

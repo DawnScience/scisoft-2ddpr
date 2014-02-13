@@ -21,12 +21,12 @@ import org.eclipse.swt.widgets.Listener;
  * @author wqk87977
  *
  */
-public class RingsSelectionText {
+public class RingSelectionText {
 
 	private StyledText ringText;
 	private int maxRingNumber;
 
-	public RingsSelectionText(Composite parent, int style) {
+	public RingSelectionText(Composite parent, int style) {
 		ringText = new StyledText(parent, style);
 		ringText.addListener(SWT.Verify, new Listener() {
 			@Override
@@ -121,6 +121,10 @@ public class RingsSelectionText {
 	 */
 	public void setMaximumRingNumber(int maxRingNumber) {
 		this.maxRingNumber = maxRingNumber;
+	}
+
+	public void setEnabled(boolean isEnabled) {
+		ringText.setEnabled(isEnabled);
 	}
 
 	/**
