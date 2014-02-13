@@ -139,9 +139,13 @@ public class RingSelectionText {
 	/**
 	 * 
 	 * @return A set of unique ring numbers entered in the widget
+	 *       null if the text field is empty
 	 */
 	public Set<Integer> getUniqueRingNumbers() {
-		String[] array = ringText.getText().split(",");
+		String text = ringText.getText();
+		if (text.equals(""))
+			return null;
+		String[] array = text.split(",");
 		Integer[] tmp = new Integer[array.length];
 		for (int i = 0; i < array.length; i++) {
 			tmp[i] = Integer.valueOf(array[i]);
