@@ -57,8 +57,6 @@ public class RingsSelectionText {
 					ringText.setStyleRange(colourStyle);
 				} else {
 					StyleRange resetStyle = new StyleRange();
-					resetStyle.start = 0;
-					resetStyle.length = currentText.length();
 					ringText.setStyleRange(resetStyle);
 				}
 			}
