@@ -57,6 +57,7 @@ public class RingSelectionText {
 					StyleRange colourStyle = new StyleRange();
 					colourStyle.start = currentText.lastIndexOf(',')+1;
 					colourStyle.length = arrayString[arrayString.length - 1].length();
+					colourStyle.fontStyle = SWT.BOLD;
 					colourStyle.foreground = Display.getDefault().getSystemColor(SWT.COLOR_RED);
 					ringText.setStyleRange(colourStyle);
 				} else {
