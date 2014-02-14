@@ -26,13 +26,15 @@ import uk.ac.diamond.scisoft.analysis.roi.EllipticalROI;
 import uk.ac.diamond.scisoft.analysis.roi.IROI;
 import uk.ac.diamond.scisoft.analysis.roi.PointROI;
 import uk.ac.diamond.scisoft.analysis.roi.PolylineROI;
+import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.PowderCalibrationUtils;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.RingSelectionGroup;
 
 public class POIFindingRun implements IRunnableWithProgress {
 
 	IPlottingSystem plottingSystem;
 	DiffractionTableData currentData;
-	int nRings;
+	RingSelectionGroup param;
 	
 	private static Logger logger = LoggerFactory.getLogger(POIFindingRun.class);
 	
@@ -40,14 +42,16 @@ public class POIFindingRun implements IRunnableWithProgress {
 	
 	public POIFindingRun(final IPlottingSystem plottingSystem,
 			final DiffractionTableData currentData,
-			final int nRings) {
+			final RingSelectionGroup param) {
 		this.plottingSystem = plottingSystem;
 		this.currentData = currentData;
-		this.nRings = nRings;
+		this.param = param;
 	}
 	
 	@Override
 	public void run(IProgressMonitor monitor) {
+		
+		SimpleCalibrationParameterModel model = extractModelFromWidget(param);
 		
 		IStatus stat = Status.OK_STATUS;
 		
@@ -74,7 +78,9 @@ public class POIFindingRun implements IRunnableWithProgress {
 		
 		int numberToFit = resROIs.size();
 		
-		if (nRings > 0 && nRings < resROIs.size()) numberToFit = nRings;
+		if (!model.isUseRingSet()) {
+			numberToFit = Math.min(resROIs.size(), model.getNumberOfRings());
+		}
 		
 		int n = 0;
 		for (int i = 0; i < resROIs.size(); i++) {
@@ -86,6 +92,8 @@ public class POIFindingRun implements IRunnableWithProgress {
 				}
 				
 				if (i >= numberToFit) continue;
+				
+				if (model.isUseRingSet() && !model.getRingSet().contains(i+1)) continue;
 				
 				EllipticalROI e = (EllipticalROI) r;
 				double major = e.getSemiAxis(0);
@@ -141,8 +149,8 @@ public class POIFindingRun implements IRunnableWithProgress {
 		return;
 	}
 	
-	public void setNumberOfRingsToFind(int nRings) {
-		this.nRings = nRings;
+	public void setRingParameters(RingSelectionGroup param) {
+		this.param = param;
 	}
 	
 	public void setCurrentData(DiffractionTableData currentData) {
@@ -167,6 +175,23 @@ public class POIFindingRun implements IRunnableWithProgress {
 				plottingSystem.removeRegion(r);
 			}
 		}
+	}
+	
+	private SimpleCalibrationParameterModel extractModelFromWidget(final RingSelectionGroup ringSelection) {
+		
+		final SimpleCalibrationParameterModel model = new SimpleCalibrationParameterModel();
+		
+		Display.getDefault().syncExec(new Runnable() {
+			
+			@Override
+			public void run() {
+				model.setUseRingSet(!ringSelection.isUsingRingSpinner());
+				model.setNumberOfRings(ringSelection.getRingSpinnerSelection());
+				model.setRingSet(ringSelection.getRingSelectionText().getUniqueRingNumbers());
+			}
+		});
+		
+		return model;
 	}
 	
 	private IStatus drawFoundRing(final IProgressMonitor monitor, Display display, final IPlottingSystem plotter, final IROI froi) {

@@ -1,10 +1,14 @@
 package uk.ac.diamond.scisoft.diffraction.powder;
 
+import java.util.Set;
+
 public class SimpleCalibrationParameterModel {
 	
 	boolean floatEnergy = true;
 	boolean floatDistance = true;
+	boolean useRingSet = false;
 	int nRings;
+	Set<Integer> ringSet;
 	
 	public boolean isFloatDistance() {
 		return floatDistance;
@@ -28,6 +32,22 @@ public class SimpleCalibrationParameterModel {
 	
 	public int getNumberOfRings() {
 		return nRings;
+	}
+	
+	public void setRingSet(Set<Integer> ringSet) {
+		this.ringSet = ringSet;
+	}
+	
+	public Set<Integer> getRingSet() {
+		return ringSet;
+	}
+	
+	public boolean isUseRingSet() {
+		return useRingSet;
+	}
+	
+	public void setUseRingSet(boolean useRingSet) {
+		this.useRingSet = useRingSet;
 	}
 
 }

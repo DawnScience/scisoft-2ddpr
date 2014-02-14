@@ -46,7 +46,7 @@ public class AutoCalibrationRun extends AbstractCalibrationRun {
 			final AbstractDataset image = (AbstractDataset)data.image;
 			IDiffractionMetadata meta = data.md;
 			
-			final EllipseFindingStructure efs = getResolutionEllipses(image, meta, params.getNumberOfRings(), monitor);
+			final EllipseFindingStructure efs = getResolutionEllipses(image, meta, params, monitor);
 			
 			if (monitor.isCanceled()) return;
 			

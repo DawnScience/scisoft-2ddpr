@@ -256,7 +256,6 @@ public class DiffractionCalibrationView extends ViewPart {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				int ringNumber = ringSelection.getRingSpinnerSelection();
-				if (ringFindJob != null) ringFindJob.setNumberOfRingsToFind(ringNumber);
 				// Fill the Map with ring number for the selected calibrant
 				calibrantRingsMap.put(calibrantName, ringNumber);
 			}
@@ -328,7 +327,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		}
 		augmenter = new DiffractionImageAugmenter(plottingSystem);
 		augmenter.activate();
-		ringFindJob = new POIFindingRun(plottingSystem, manager.getCurrentData(), ringSelection.getRingSpinnerSelection());
+		ringFindJob = new POIFindingRun(plottingSystem, manager.getCurrentData(), ringSelection);
 		calibrantPositioning.setRingFinder(ringFindJob);
 	}
 
@@ -388,6 +387,12 @@ public class DiffractionCalibrationView extends ViewPart {
 		calibrantCombo.select(index); 
 	}
 
+	private void setUpCalbrationModel(SimpleCalibrationParameterModel model) {
+		model.setNumberOfRings(ringSelection.getRingSpinnerSelection());
+		model.setRingSet(ringSelection.getRingSelectionText().getUniqueRingNumbers());
+		model.setUseRingSet(!ringSelection.isUsingRingSpinner());
+	}
+	
 	protected void updateSelection(boolean force) {
 		ISelection is = diffractionTableViewer.getSelection();
 		if (is instanceof StructuredSelection) {
@@ -614,7 +619,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		goBabyGoButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				ellipseParameters.setNumberOfRings(ringSelection.getRingSpinnerSelection());
+				setUpCalbrationModel(ellipseParameters);
 				IRunnableWithProgress job = new AutoCalibrationRun(Display.getDefault(), plottingSystem, manager.getModel(), manager.getCurrentData(), ellipseParameters);
 
 				ProgressMonitorDialog dia = new ProgressMonitorDialog(Display.getCurrent().getActiveShell());
@@ -647,7 +652,6 @@ public class DiffractionCalibrationView extends ViewPart {
 		Composite composite = new Composite(tabFolder, SWT.NONE);
 		composite.setLayout(new GridLayout());
 		composite.setLayoutData(new GridData(GridData.FILL_BOTH));
-		ringFindJob = new POIFindingRun(null, null, 0);
 		calibrantPositioning = new CalibrantPositioningWidget(composite, manager.getModel());
 
 		calibrateImagesButton = new Button(composite, SWT.PUSH);
@@ -661,10 +665,10 @@ public class DiffractionCalibrationView extends ViewPart {
 				IRunnableWithProgress job = null;
 				
 				if (usePointCalibration.getSelection()) {
-					pointParameters.setNumberOfRings(ringSelection.getRingSpinnerSelection());
+					setUpCalbrationModel(pointParameters);
 					job = new FromPointsCalibrationRun(Display.getDefault(), plottingSystem, manager.getModel(), manager.getCurrentData(), pointParameters);
 				} else {
-					ellipseParameters.setNumberOfRings(ringSelection.getRingSpinnerSelection());
+					setUpCalbrationModel(ellipseParameters);
 					job = new FromRingsCalibrationRun(Display.getDefault(), plottingSystem, manager.getModel(), manager.getCurrentData(), ellipseParameters);
 				}
 				

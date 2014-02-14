@@ -1,8 +1,12 @@
 package uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.dawb.workbench.ui.diffraction.DiffractionCalibrationUtils;
 import org.dawb.workbench.ui.diffraction.table.DiffractionTableData;
@@ -112,7 +116,7 @@ public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 		return foundEllipses;
 	}
 	
-	protected EllipseFindingStructure getResolutionEllipses(AbstractDataset image, IDiffractionMetadata meta, int maxRings, IProgressMonitor monitor) {
+	protected EllipseFindingStructure getResolutionEllipses(AbstractDataset image, IDiffractionMetadata meta, SimpleCalibrationParameterModel params, IProgressMonitor monitor) {
 		int[] shape = image.getShape();
 		monitor.beginTask("Finding approximate centre...", IProgressMonitor.UNKNOWN);
 		double[] approxCentre = CentreGuess.guessCentre(image);
@@ -135,13 +139,33 @@ public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 		
 		List<HKL> spacings = CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs();
 		
-		int max = spacings.size() > maxRings ? maxRings : spacings.size();
+		List<Integer> ringList = null;
 		
-		double[] dSpace = new double[max];
+		if (params.isUseRingSet()) {
+			ringList = new ArrayList<Integer>(new TreeSet<Integer>(params.getRingSet()));
+			Iterator<Integer> it = ringList.iterator();
+			while(it.hasNext()) {
+				if (it.next() > spacings.size()) it.remove();
+			}
+		} else {
+			int max = Math.min(params.getNumberOfRings(),spacings.size());
+			
+			ringList = new ArrayList<Integer>(max);
+			for (int i = 1; i<= max;i++) ringList.add(i);
+		}
 		
-		for (int i = 0; i < max; i++) dSpace[i] = spacings.get(i).getDNano()*10;
+		//int max = spacings.size() > maxRings ? maxRings : spacings.size();
+		
+		double[] dSpace = new double[ringList.size()];
+		double[] fullDSpace = new double[spacings.size()];
+		for (int i = 0; i < ringList.size(); i++){
+			dSpace[i] = spacings.get(ringList.get(i)-1).getDNano()*10;
+		}
+		
+		for (int i = 0; i< spacings.size(); i++) fullDSpace[i] = spacings.get(i).getDNano()*10;
+		
 		monitor.beginTask("Matching to standard...", IProgressMonitor.UNKNOWN);
-		final Map<Double,Double> dSpaceRadiusMap = BruteStandardMatcher.bruteForceMatchStandards(x, y, dSpace, meta.getDetector2DProperties().getHPxSize());
+		final Map<Double,Double> dSpaceRadiusMap = BruteStandardMatcher.bruteForceMatchStandards(x, y, fullDSpace, meta.getDetector2DProperties().getHPxSize());
 		
 		if (monitor.isCanceled()) return null;
 		
