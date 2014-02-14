@@ -8,6 +8,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Spinner;
 
 public class RingSelectionGroup {
@@ -19,11 +20,11 @@ public class RingSelectionGroup {
 
 	public RingSelectionGroup(Composite parent, int maximumRingNumber) {
 
-		Composite composite = new Composite(parent, SWT.FILL);
-		composite.setLayout(new GridLayout(2, false));
-		composite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		Group group = new Group(parent, SWT.FILL);
+		group.setLayout(new GridLayout(2, false));
+		group.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
-		spinnerRadio = new Button(composite, SWT.RADIO);
+		spinnerRadio = new Button(group, SWT.RADIO);
 		spinnerRadio.setText("No. of Rings to Use:");
 		spinnerRadio.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -37,12 +38,12 @@ public class RingSelectionGroup {
 			}
 		});
 		spinnerRadio.setSelection(true);
-		ringNumberSpinner = new Spinner(composite, SWT.BORDER);
+		ringNumberSpinner = new Spinner(group, SWT.BORDER);
 		ringNumberSpinner.setMaximum(maximumRingNumber);
 		ringNumberSpinner.setMinimum(2);
 		ringNumberSpinner.setSelection(100);
 
-		textRadio = new Button(composite, SWT.RADIO);
+		textRadio = new Button(group, SWT.RADIO);
 		textRadio.setText("Specify ring numbers:");
 		textRadio.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -56,7 +57,7 @@ public class RingSelectionGroup {
 			}
 		});
 		textRadio.setSelection(false);
-		ringSelectionText = new RingSelectionText(composite, SWT.BORDER);
+		ringSelectionText = new RingSelectionText(group, SWT.BORDER);
 		ringSelectionText.setMaximumRingNumber(ringNumberSpinner.getMaximum());
 		ringSelectionText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		ringSelectionText.setToolTipText("Enter unique ring numbers separated by commas");

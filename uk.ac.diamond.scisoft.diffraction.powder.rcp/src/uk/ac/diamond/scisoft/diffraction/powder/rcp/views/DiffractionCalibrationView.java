@@ -610,7 +610,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		Button goBabyGoButton = new Button(composite, SWT.PUSH);
 		goBabyGoButton.setImage(Activator.getImage("icons/CalibrationRun.png"));
 		goBabyGoButton.setText("Run Auto Calibration");
-		goBabyGoButton.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, true, true));
+		goBabyGoButton.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
 		goBabyGoButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
