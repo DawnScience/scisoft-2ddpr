@@ -1,5 +1,7 @@
 package uk.ac.diamond.scisoft.diffraction.powder;
 
+import java.util.Set;
+
 import uk.ac.diamond.scisoft.analysis.diffraction.DetectorProperties;
 import uk.ac.diamond.scisoft.analysis.diffraction.DiffractionCrystalEnvironment;
 import uk.ac.diamond.scisoft.analysis.io.DiffractionMetadata;
@@ -9,6 +11,19 @@ public class CalibratePointsParameterModel extends SimpleCalibrationParameterMod
 	
 	boolean floatBeamCentre = true;
 	boolean floatTilt = true;
+	
+	public CalibratePointsParameterModel() {
+		
+	}
+	
+	public CalibratePointsParameterModel(SimpleCalibrationParameterModel simple) {
+		this.floatEnergy = simple.isFloatEnergy();
+		this.floatDistance = simple.isFloatDistance();
+		this.useRingSet = simple.isUseRingSet();
+		this.finalGlobalOptimisation = simple.isFinalGlobalOptimisation();
+		this.nRings = simple.getNumberOfRings();
+		this.ringSet = simple.getRingSet();
+	}
 	
 	public IDiffractionMetadata getMetadata(double[] params, IDiffractionMetadata md) {
 		

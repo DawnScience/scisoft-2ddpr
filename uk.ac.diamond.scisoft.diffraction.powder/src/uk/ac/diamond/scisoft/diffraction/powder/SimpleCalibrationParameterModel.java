@@ -7,6 +7,7 @@ public class SimpleCalibrationParameterModel {
 	boolean floatEnergy = true;
 	boolean floatDistance = true;
 	boolean useRingSet = false;
+	boolean finalGlobalOptimisation = false;
 	int nRings;
 	Set<Integer> ringSet;
 	
@@ -49,5 +50,12 @@ public class SimpleCalibrationParameterModel {
 	public void setUseRingSet(boolean useRingSet) {
 		this.useRingSet = useRingSet;
 	}
+	
+	public boolean isFinalGlobalOptimisation() {
+		return finalGlobalOptimisation;
+	}
 
+	public void setFinalGlobalOptimisation(boolean optimise) {
+		finalGlobalOptimisation = optimise;
+	}
 }

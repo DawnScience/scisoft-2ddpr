@@ -106,6 +106,7 @@ public class DiffractionCalibrationView extends ViewPart {
 	private CalibrantPositioningWidget calibrantPositioning;
 	private Label residualLabel;
 	private Button usePointCalibration;
+	private Button optimiseAfter;
 	private RadioGroupWidget calibEllipseParamRadios;
 	private POIFindingRun ringFindJob;
 	private DiffractionImageAugmenter augmenter;
@@ -391,6 +392,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		model.setNumberOfRings(ringSelection.getRingSpinnerSelection());
 		model.setRingSet(ringSelection.getRingSelectionText().getUniqueRingNumbers());
 		model.setUseRingSet(!ringSelection.isUsingRingSpinner());
+		model.setFinalGlobalOptimisation(optimiseAfter.getSelection());
 	}
 	
 	protected void updateSelection(boolean force) {
@@ -637,6 +639,11 @@ public class DiffractionCalibrationView extends ViewPart {
 				
 			}
 		});
+		
+		optimiseAfter = new Button(composite, SWT.CHECK);
+		optimiseAfter.setLayoutData(new GridData(SWT.LEFT, SWT.BOTTOM, false, false));
+		optimiseAfter.setText("Finish with point calibration optimisation");
+		
 		return composite;
 	}
 
