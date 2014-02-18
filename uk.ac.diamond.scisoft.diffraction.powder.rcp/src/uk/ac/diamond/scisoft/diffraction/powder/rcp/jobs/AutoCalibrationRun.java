@@ -2,6 +2,7 @@ package uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListResourceBundle;
 
 import org.dawb.workbench.ui.diffraction.table.DiffractionTableData;
 import org.dawnsci.plotting.api.IPlottingSystem;
@@ -12,9 +13,13 @@ import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
 import uk.ac.diamond.scisoft.analysis.dataset.DoubleDataset;
 import uk.ac.diamond.scisoft.analysis.diffraction.ResolutionEllipseROI;
 import uk.ac.diamond.scisoft.analysis.io.IDiffractionMetadata;
+import uk.ac.diamond.scisoft.analysis.roi.EllipticalFitROI;
 import uk.ac.diamond.scisoft.analysis.roi.EllipticalROI;
+import uk.ac.diamond.scisoft.analysis.roi.PolylineROI;
 
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrateEllipses;
+import uk.ac.diamond.scisoft.diffraction.powder.CalibratePoints;
+import uk.ac.diamond.scisoft.diffraction.powder.CalibratePointsParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 
@@ -76,8 +81,24 @@ public class AutoCalibrationRun extends AbstractCalibrationRun {
 		
 		monitor.beginTask("Calibrating", IProgressMonitor.UNKNOWN);
 		//TODO make sure fix wavelength/distance ignored for multiple images
-		final CalibrationOutput output =  CalibrateEllipses.run(allEllipses, allDSpacings,ddist,currentData.md, params);
+		CalibrationOutput output =  CalibrateEllipses.run(allEllipses, allDSpacings,ddist,currentData.md, params);
 
+		if (allEllipses.size() == 1 && params.isFinalGlobalOptimisation()) {
+			
+			updateMetaData(currentData.md, output, 0);
+			
+			CalibratePointsParameterModel paramModel = new CalibratePointsParameterModel(params);
+			
+			List<PolylineROI> lineROIList = new ArrayList<PolylineROI>();
+			
+			for (EllipticalROI roi : allEllipses.get(0)) {
+				if (roi instanceof ResolutionEllipseROI && ((ResolutionEllipseROI)roi).getPoints() != null) {
+					lineROIList.add(((ResolutionEllipseROI)roi).getPoints());
+				}
+			}
+			
+			output = CalibratePoints.run(lineROIList, allDSpacings.get(0), currentData.md, paramModel);
+		}
 		
 		updateOnFinish(output);
 

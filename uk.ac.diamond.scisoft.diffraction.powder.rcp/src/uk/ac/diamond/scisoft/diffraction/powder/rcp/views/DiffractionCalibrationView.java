@@ -106,6 +106,7 @@ public class DiffractionCalibrationView extends ViewPart {
 	private CalibrantPositioningWidget calibrantPositioning;
 	private Label residualLabel;
 	private Button usePointCalibration;
+	private Button optimiseAfter;
 	private RadioGroupWidget calibEllipseParamRadios;
 	private POIFindingRun ringFindJob;
 	private DiffractionImageAugmenter augmenter;
@@ -391,6 +392,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		model.setNumberOfRings(ringSelection.getRingSpinnerSelection());
 		model.setRingSet(ringSelection.getRingSelectionText().getUniqueRingNumbers());
 		model.setUseRingSet(!ringSelection.isUsingRingSpinner());
+		model.setFinalGlobalOptimisation(optimiseAfter.getSelection());
 	}
 	
 	protected void updateSelection(boolean force) {
@@ -637,6 +639,11 @@ public class DiffractionCalibrationView extends ViewPart {
 				
 			}
 		});
+		
+		optimiseAfter = new Button(composite, SWT.CHECK);
+		optimiseAfter.setLayoutData(new GridData(SWT.LEFT, SWT.BOTTOM, false, false));
+		optimiseAfter.setText("Finish with point calibration optimisation");
+		
 		return composite;
 	}
 
@@ -686,6 +693,12 @@ public class DiffractionCalibrationView extends ViewPart {
 			}
 		});
 		calibrateImagesButton.setEnabled(false);
+		
+		usePointCalibration = new Button(composite, SWT.CHECK | SWT.WRAP);
+		usePointCalibration.setLayoutData(new GridData(SWT.LEFT, SWT.BOTTOM, false, false, 2, 1));
+		usePointCalibration.setText("Manual calibration uses points not ellipse parameters");
+		usePointCalibration.setSelection(false);
+		
 		return composite;
 	}
 	
@@ -707,12 +720,6 @@ public class DiffractionCalibrationView extends ViewPart {
 	private Control getSettingTabControl(TabFolder tabFolder, CalibrationStandards standards) {
 		Composite composite = new Composite(tabFolder, SWT.FILL);
 		composite.setLayout(new GridLayout(2, false));
-
-		usePointCalibration = new Button(composite, SWT.CHECK | SWT.WRAP);
-		usePointCalibration.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 2, 1));
-		usePointCalibration.setText("Manual calibration uses points not ellipse parameters");
-		usePointCalibration.setSelection(false);
-		
 
 		Group ellipseParamGroup = new Group(composite, SWT.FILL);
 		ellipseParamGroup.setText("Ellipse Parameters");

@@ -26,6 +26,7 @@ import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
 import uk.ac.diamond.scisoft.analysis.diffraction.DetectorProperties;
 import uk.ac.diamond.scisoft.analysis.diffraction.ResolutionEllipseROI;
 import uk.ac.diamond.scisoft.analysis.io.IDiffractionMetadata;
+import uk.ac.diamond.scisoft.analysis.roi.EllipticalFitROI;
 import uk.ac.diamond.scisoft.analysis.roi.EllipticalROI;
 import uk.ac.diamond.scisoft.analysis.roi.IROI;
 import uk.ac.diamond.scisoft.analysis.roi.ROIProfile;
@@ -102,7 +103,9 @@ public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 			} 
 			if (monitor.isCanceled()) return null;
 			if (roi != null) {
-				foundEllipses.add(new ResolutionEllipseROI((EllipticalROI)roi, e.getResolution()));
+				ResolutionEllipseROI r = new ResolutionEllipseROI((EllipticalROI)roi, e.getResolution());
+				r.setPoints(((EllipticalFitROI)roi).getPoints());
+				foundEllipses.add(r);
 				corFact = ((EllipticalROI)roi).getSemiAxis(0) - startSemi;
 				lastAspect = ((EllipticalROI) roi).getAspectRatio();
 				lastAngle = ((EllipticalROI) roi).getAngle();
@@ -218,21 +221,47 @@ public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 			public void run() {
 				int i = 0;
 				for (DiffractionTableData data : model) {
-					DetectorProperties dp = data.md.getDetector2DProperties();
-
-					dp.setBeamCentreDistance(output.getDistance().getDouble(i));
-					double[] bc = new double[] {output.getBeamCentreX().getDouble(i),output.getBeamCentreY().getDouble(i) };
-					dp.setBeamCentreCoords(bc);
-
-					dp.setNormalAnglesInDegrees(output.getTilt().getDouble(i)*-1, 0, output.getTiltAngle().getDouble(i)*-1);
+//					DetectorProperties dp = data.md.getDetector2DProperties();
+//
+//					dp.setBeamCentreDistance(output.getDistance().getDouble(i));
+//					double[] bc = new double[] {output.getBeamCentreX().getDouble(i),output.getBeamCentreY().getDouble(i) };
+//					dp.setBeamCentreCoords(bc);
+//
+//					dp.setNormalAnglesInDegrees(output.getTilt().getDouble(i)*-1, 0, output.getTiltAngle().getDouble(i)*-1);
+//					data.md.getDiffractionCrystalEnvironment().setWavelength(output.getWavelength());
+					updateMetaData(data.md, output, i);
 					data.residual = output.getResidual();
-					data.md.getDiffractionCrystalEnvironment().setWavelength(output.getWavelength());
 					i++;
 				}
 
 				removeFoundRings(plottingSystem);
 			}
 		});
+	}
+	
+	protected void updateMetaData(final IDiffractionMetadata md , final CalibrationOutput output, final int i) {
+		
+		if (display.getThread()!=Thread.currentThread()) {
+			display.syncExec(new Runnable() {
+
+				@Override
+				public void run() {
+					updateMetaData(md, output, i);
+
+				}
+			});
+		} else {
+
+			DetectorProperties dp = md.getDetector2DProperties();
+
+			dp.setBeamCentreDistance(output.getDistance().getDouble(i));
+			double[] bc = new double[] {output.getBeamCentreX().getDouble(i),output.getBeamCentreY().getDouble(i) };
+			dp.setBeamCentreCoords(bc);
+
+			dp.setNormalAnglesInDegrees(output.getTilt().getDouble(i)*-1, 0, output.getTiltAngle().getDouble(i)*-1);
+			md.getDiffractionCrystalEnvironment().setWavelength(output.getWavelength());
+		}
+		
 	}
 
 }
