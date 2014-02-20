@@ -36,6 +36,8 @@ import uk.ac.diamond.scisoft.diffraction.powder.BruteStandardMatcher;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
 import uk.ac.diamond.scisoft.diffraction.powder.CentreGuess;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.Activator;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.preferences.DiffractionCalibrationConstants;
 
 public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 
@@ -45,7 +47,6 @@ public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 	DiffractionTableData currentData;
 	SimpleCalibrationParameterModel params;
 
-	private static final int CENTRE_MASK_RADIUS = 50;
 	private static String REGION_PREFIX = "Pixel peaks";
 	
 	private static Logger logger = LoggerFactory.getLogger(AbstractCalibrationRun.class);
@@ -82,11 +83,17 @@ public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 		final List<ResolutionEllipseROI> foundEllipses = new ArrayList<ResolutionEllipseROI>();
 		if (monitor.isCanceled()) return null;
 		IROI roi = null;
+		
+		int minSpacing = Activator.getDefault().getPreferenceStore().getInt(DiffractionCalibrationConstants.MINIMUM_SPACING);
+		int nPoints = Activator.getDefault().getPreferenceStore().getInt(DiffractionCalibrationConstants.NUMBER_OF_POINTS);
+		
 		double corFact = 0;
 		double lastAspect = 1;
 		double lastAngle = 0;
 		int i = 0;
 		for (ResolutionEllipseROI e : efs.ellipses) {
+			
+			if (efs.innerSearch[i] < minSpacing || efs.outerSearch[i] < minSpacing) continue;
 			
 			double startSemi = e.getSemiAxis(0);
 			e.setSemiAxis(0, startSemi+corFact);
@@ -96,7 +103,7 @@ public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 			
 			IImageTrace t = DiffractionCalibrationUtils.getImageTrace(plottingSystem);
 			try {
-				roi = DiffractionUtils.runEllipsePeakFit(monitor, display, plottingSystem, t, e, efs.innerSearch[i], efs.outerSearch[i],256);
+				roi = DiffractionUtils.runEllipsePeakFit(monitor, display, plottingSystem, t, e, efs.innerSearch[i], efs.outerSearch[i],nPoints);
 			} catch (Exception ex) {
 				logger.debug(ex.getMessage());
 				roi = null;
@@ -134,7 +141,9 @@ public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 		if (monitor.isCanceled()) return null;
 		final AbstractDataset y = profile[0];
 		
-		for (int i = 0 ; i < CENTRE_MASK_RADIUS ; i++) {
+		int centreMaskRadius = Activator.getDefault().getPreferenceStore().getInt(DiffractionCalibrationConstants.CENTRE_MASK_RADIUS);
+		
+		for (int i = 0 ; i < centreMaskRadius ; i++) {
 			y.set(0, i);
 		}
 		

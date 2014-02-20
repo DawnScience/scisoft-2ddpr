@@ -11,8 +11,9 @@ public class DiffractionCalibrationPreferenceInitializer extends
 	@Override
 	public void initializeDefaultPreferences() {
 		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
-		store.setDefault(DiffractionCalibrationConstants.CENTRE_MASK_RADIUS,  100);
+		store.setDefault(DiffractionCalibrationConstants.CENTRE_MASK_RADIUS,  50);
 		store.setDefault(DiffractionCalibrationConstants.MINIMUM_SPACING, 10);
+		store.setDefault(DiffractionCalibrationConstants.NUMBER_OF_POINTS, 256);
 	}
 
 }

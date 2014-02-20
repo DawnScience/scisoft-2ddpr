@@ -22,6 +22,7 @@ public class DiffractionCalibrationPreferencePage extends PreferencePage
 	
 	private Spinner radius;
 	private Spinner spacing;
+	private Spinner nPoints;
 
 	@Override
 	public void init(IWorkbench workbench) {
@@ -71,6 +72,21 @@ public class DiffractionCalibrationPreferencePage extends PreferencePage
 			}			
 		});
 		
+		Label pointsLab = new Label(group, SWT.NONE);
+		pointsLab.setText("Number of points to find on each ring");
+		pointsLab.setToolTipText("More points give more accurate parameters but take longer");
+
+		nPoints = new Spinner(group, SWT.BORDER);
+		nPoints.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, true, false));
+		nPoints.setDigits(0);
+		nPoints.setMinimum(10);
+		nPoints.setMaximum(5000);
+		nPoints.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				storePreferences();
+			}			
+		});
+		
 		initializePage();
 		
 		return comp;
@@ -85,16 +101,19 @@ public class DiffractionCalibrationPreferencePage extends PreferencePage
 	protected void performDefaults() {
 		radius.setSelection(getDefaultRadius());
 		spacing.setSelection(getDefaultSpacing());
+		nPoints.setSelection(getDefaultNumberOfPoints());
 	}
 	
 	private void initializePage() {
 		radius.setSelection(getRadius());
 		spacing.setSelection(getSpacing());
+		nPoints.setSelection(getNumberOfPoints());
 	}
 
 	private boolean storePreferences() {
 		setRadius(radius.getSelection());
 		setSpacing(spacing.getSelection());
+		setNumberOfPoints(nPoints.getSelection());
 		return true;
 	}
 	
@@ -106,6 +125,10 @@ public class DiffractionCalibrationPreferencePage extends PreferencePage
 		getPreferenceStore().setValue(DiffractionCalibrationConstants.MINIMUM_SPACING, spacing);
 	}
 	
+	public void setNumberOfPoints(int nPoints) {
+		getPreferenceStore().setValue(DiffractionCalibrationConstants.NUMBER_OF_POINTS, nPoints);
+	}
+	
 	public int getRadius() {
 		return getPreferenceStore().getInt(DiffractionCalibrationConstants.CENTRE_MASK_RADIUS);
 	}
@@ -114,12 +137,20 @@ public class DiffractionCalibrationPreferencePage extends PreferencePage
 		return getPreferenceStore().getInt(DiffractionCalibrationConstants.MINIMUM_SPACING);
 	}
 	
+	public int getNumberOfPoints() {
+		return getPreferenceStore().getInt(DiffractionCalibrationConstants.NUMBER_OF_POINTS);
+	}
+	
 	public int getDefaultRadius() {
 		return getPreferenceStore().getDefaultInt(DiffractionCalibrationConstants.CENTRE_MASK_RADIUS);
 	}
 	
 	public int getDefaultSpacing() {
 		return getPreferenceStore().getDefaultInt(DiffractionCalibrationConstants.MINIMUM_SPACING);
+	}
+	
+	public int getDefaultNumberOfPoints() {
+		return getPreferenceStore().getDefaultInt(DiffractionCalibrationConstants.NUMBER_OF_POINTS);
 	}
 
 }

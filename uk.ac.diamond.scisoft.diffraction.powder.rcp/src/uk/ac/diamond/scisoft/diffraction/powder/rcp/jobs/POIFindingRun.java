@@ -27,7 +27,9 @@ import uk.ac.diamond.scisoft.analysis.roi.IROI;
 import uk.ac.diamond.scisoft.analysis.roi.PointROI;
 import uk.ac.diamond.scisoft.analysis.roi.PolylineROI;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.Activator;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.PowderCalibrationUtils;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.preferences.DiffractionCalibrationConstants;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.RingSelectionGroup;
 
 public class POIFindingRun implements IRunnableWithProgress {
@@ -82,6 +84,8 @@ public class POIFindingRun implements IRunnableWithProgress {
 			numberToFit = Math.min(resROIs.size(), model.getNumberOfRings());
 		}
 		
+		int minSpacing = Activator.getDefault().getPreferenceStore().getInt(DiffractionCalibrationConstants.MINIMUM_SPACING);
+		int nPoints = Activator.getDefault().getPreferenceStore().getInt(DiffractionCalibrationConstants.NUMBER_OF_POINTS);
 		int n = 0;
 		for (int i = 0; i < resROIs.size(); i++) {
 			IROI r = resROIs.get(i);
@@ -116,9 +120,10 @@ public class POIFindingRun implements IRunnableWithProgress {
 					}
 				}
 				
-
+				if (deltalow < minSpacing || deltahigh < minSpacing) continue;
+				
 				try {
-					roi = DiffractionUtils.runEllipsePeakFit(monitor, Display.getDefault(), plottingSystem, image, e, deltalow, deltahigh,256);
+					roi = DiffractionUtils.runEllipsePeakFit(monitor, Display.getDefault(), plottingSystem, image, e, deltalow, deltahigh,nPoints);
 				} catch (NullPointerException ex) {
 					stat = Status.CANCEL_STATUS;
 					n = -1; // indicate, to finally clause, problem with getting image or other issues
