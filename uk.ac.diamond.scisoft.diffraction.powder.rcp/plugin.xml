@@ -154,5 +154,20 @@
          </action>
       </actionSet>
    </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            category="org.dawnsci.preferences.diffraction"
+            class="uk.ac.diamond.scisoft.diffraction.powder.rcp.preferences.DiffractionCalibrationPreferencePage"
+            id="uk.ac.diamond.scisoft.diffraction.powder.rcp.calibrationPreferencePage"
+            name="Powder Calibration Preferences">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="uk.ac.diamond.scisoft.diffraction.powder.rcp.preferences.DiffractionCalibrationPreferenceInitializer">
+      </initializer>
+   </extension>
 
 </plugin>
