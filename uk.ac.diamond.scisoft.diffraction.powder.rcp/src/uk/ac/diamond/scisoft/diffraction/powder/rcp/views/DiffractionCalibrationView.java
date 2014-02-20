@@ -82,6 +82,7 @@ import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.AutoCalibrationRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.FromPointsCalibrationRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.FromRingsCalibrationRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.POIFindingRun;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.preferences.DiffractionCalibrationPreferencePage;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.RingSelectionGroup;
 
 public class DiffractionCalibrationView extends ViewPart {
@@ -774,6 +775,22 @@ public class DiffractionCalibrationView extends ViewPart {
 			public void widgetSelected(SelectionEvent e) {
 				boolean isManual = usePointCalibration.getSelection();
 				enableControl(pointCalibrateGroup, isManual);
+			}
+		});
+		
+		Button advanced = new Button(composite, SWT.NONE);
+		advanced.setText("Advanced...");
+		advanced.setToolTipText("Open preference page for advanced settings");
+		advanced.setLayoutData(new GridData(SWT.LEFT, SWT.BOTTOM, true, false));
+		advanced.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				PreferenceDialog pref = PreferencesUtil
+						.createPreferenceDialogOn(PlatformUI.getWorkbench()
+								.getActiveWorkbenchWindow().getShell(),
+								DiffractionCalibrationPreferencePage.ID, null, null);
+				if (pref != null)
+					pref.open();
 			}
 		});
 		

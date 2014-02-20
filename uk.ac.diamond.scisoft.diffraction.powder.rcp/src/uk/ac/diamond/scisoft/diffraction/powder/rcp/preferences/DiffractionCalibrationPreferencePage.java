@@ -23,6 +23,8 @@ public class DiffractionCalibrationPreferencePage extends PreferencePage
 	private Spinner radius;
 	private Spinner spacing;
 	private Spinner nPoints;
+	
+	public static final String ID = "uk.ac.diamond.scisoft.diffraction.powder.rcp.calibrationPreferencePage";
 
 	@Override
 	public void init(IWorkbench workbench) {
