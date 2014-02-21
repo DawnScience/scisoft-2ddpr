@@ -55,12 +55,13 @@ public class AutoCalibrationRun extends AbstractCalibrationRun {
 			
 			if (monitor.isCanceled()) return;
 			
-			if (efs == null) return;
+			if (efs == null) throw new IllegalArgumentException("No rings found!");
 			
 			List<ResolutionEllipseROI> foundEllipses = getFittedResolutionROIs(plottingSystem, efs, display, monitor);
 			
-			if (monitor.isCanceled() || foundEllipses == null) return;
+			if (monitor.isCanceled()) return;
 			
+			if (foundEllipses == null || foundEllipses.size() < 2) throw new IllegalArgumentException("No rings found!");
 			
 			double[] dSpaceArray = new double[foundEllipses.size()];
 			

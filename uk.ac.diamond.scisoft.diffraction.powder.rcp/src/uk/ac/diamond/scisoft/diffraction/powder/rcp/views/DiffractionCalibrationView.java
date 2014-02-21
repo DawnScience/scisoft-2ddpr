@@ -25,6 +25,7 @@ import org.dawnsci.plotting.tools.preference.diffraction.DiffractionPreferencePa
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.PreferenceDialog;
@@ -108,6 +109,8 @@ public class DiffractionCalibrationView extends ViewPart {
 	private Label residualLabel;
 	private Button usePointCalibration;
 	private Button optimiseAfter;
+	private Group pointCalibrateGroup;
+	private Group ellipseParamGroup;
 	private RadioGroupWidget calibEllipseParamRadios;
 	private POIFindingRun ringFindJob;
 	private DiffractionImageAugmenter augmenter;
@@ -347,6 +350,8 @@ public class DiffractionCalibrationView extends ViewPart {
 					residualLabel.setText(RESIDUAL);
 					residualLabel.getParent().layout();
 				}
+				
+				setSingleImageOptionsEnabled(manager.getModel().size() < 2);
 			}
 		};
 
@@ -381,6 +386,14 @@ public class DiffractionCalibrationView extends ViewPart {
 		this.getViewSite().getPage().addPartListener(partListener);
 	}
 
+	private void setSingleImageOptionsEnabled(boolean enabled) {
+		usePointCalibration.setEnabled(enabled);
+		optimiseAfter.setEnabled(enabled);
+		enableControl(ellipseParamGroup, enabled);
+		
+		if (usePointCalibration.getSelection()) enableControl(pointCalibrateGroup, enabled);
+	}
+	
 	private void setCalibrantChoice() {
 		final List<String> cl = standards.getCalibrantList();
 		calibrantCombo.setItems(cl.toArray(new String[cl.size()]));
@@ -630,7 +643,7 @@ public class DiffractionCalibrationView extends ViewPart {
 					dia.run(true, true, job);
 				} catch (InvocationTargetException e1) {
 					e1.printStackTrace();
-					logger.error("Error running Job:" + e1.getMessage());
+					MessageDialog.openError(Display.getCurrent().getActiveShell(), "Calibration Error", "An error occured: " + e1.getTargetException().getMessage());
 				} catch (InterruptedException e1) {
 					e1.printStackTrace();
 					logger.error("Error running Job:" + e1.getMessage());
@@ -685,7 +698,7 @@ public class DiffractionCalibrationView extends ViewPart {
 					dia.run(true, true, job);
 				} catch (InvocationTargetException e1) {
 					e1.printStackTrace();
-					logger.error("Error running Job:" + e1.getMessage());
+					MessageDialog.openError(Display.getCurrent().getActiveShell(), "Calibration Error", "An error occured: " + e1.getTargetException().getMessage());
 				} catch (InterruptedException e1) {
 					e1.printStackTrace();
 					logger.error("Error running Job:" + e1.getMessage());
@@ -722,7 +735,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		Composite composite = new Composite(tabFolder, SWT.FILL);
 		composite.setLayout(new GridLayout(2, false));
 
-		Group ellipseParamGroup = new Group(composite, SWT.FILL);
+		ellipseParamGroup = new Group(composite, SWT.FILL);
 		ellipseParamGroup.setText("Ellipse Parameters");
 		ellipseParamGroup.setToolTipText("Set the Ellipse Parameters");
 		ellipseParamGroup.setLayout(new GridLayout());
@@ -731,7 +744,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		calibEllipseParamRadios = new RadioGroupWidget(ellipseParamGroup);
 		calibEllipseParamRadios.setActions(getEllipseParamActions());
 
-		final Group pointCalibrateGroup = new Group(composite, SWT.FILL);
+		pointCalibrateGroup = new Group(composite, SWT.FILL);
 		pointCalibrateGroup.setText("Point Calibrate");
 		pointCalibrateGroup.setToolTipText("Set the Point Parameters");
 		pointCalibrateGroup.setLayout(new GridLayout());
