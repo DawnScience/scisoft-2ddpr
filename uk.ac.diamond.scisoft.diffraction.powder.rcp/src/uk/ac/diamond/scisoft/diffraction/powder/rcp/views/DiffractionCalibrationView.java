@@ -892,18 +892,6 @@ public class DiffractionCalibrationView extends ViewPart {
 		
 	}
 
-	@SuppressWarnings("unused")
-	private void setCalibrateButtons() {
-		// enable/disable calibrate button according to use column
-		int used = 0;
-		for (DiffractionTableData d : manager.getModel()) {
-			if (d.use && d.nrois > 0) {
-				used++;
-			}
-		}
-		calibrateImagesButton.setEnabled(used > 0);
-	}
-
 	private void removeListeners() {
 		if(diffractionTableViewer != null) {
 			diffractionTableViewer.removeSelectionChangedListener(selectionChangeListener);
