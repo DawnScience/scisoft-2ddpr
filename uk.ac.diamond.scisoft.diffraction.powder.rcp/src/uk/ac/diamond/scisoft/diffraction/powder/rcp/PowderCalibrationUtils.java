@@ -5,6 +5,14 @@ import java.util.List;
 
 import javax.measure.unit.NonSI;
 
+import org.dawnsci.plotting.api.IPlottingSystem;
+import org.dawnsci.plotting.api.region.IRegion;
+import org.dawnsci.plotting.api.region.RegionUtils;
+import org.dawnsci.plotting.api.region.IRegion.RegionType;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.draw2d.ColorConstants;
+import org.eclipse.swt.widgets.Display;
+
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrantSpacing;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.HKL;
@@ -12,116 +20,66 @@ import uk.ac.diamond.scisoft.analysis.diffraction.DSpacing;
 import uk.ac.diamond.scisoft.analysis.diffraction.DetectorProperties;
 import uk.ac.diamond.scisoft.analysis.diffraction.DiffractionCrystalEnvironment;
 import uk.ac.diamond.scisoft.analysis.io.IDiffractionMetadata;
+import uk.ac.diamond.scisoft.analysis.monitor.IMonitor;
+import uk.ac.diamond.scisoft.analysis.roi.EllipticalFitROI;
 import uk.ac.diamond.scisoft.analysis.roi.IROI;
+import uk.ac.diamond.scisoft.analysis.roi.PointROI;
+import uk.ac.diamond.scisoft.analysis.roi.PolylineROI;
 
 public class PowderCalibrationUtils {
 	
-//	/**
-//	 * Create a job to calibrate images 
-//	 * @param display
-//	 * @param plottingSystem
-//	 * @param model
-//	 * @param currentData
-//	 * @param useFixedWavelength if true then fit using a fixed global wavelength
-//	 * @param postFixedWavelengthFit if true and useFixedWavelength true then fit wavelength afterwards
-//	 * @return job that needs to be scheduled
-//	 */
-//	public static Job calibrateImages(final Display display,
-//									   final IPlottingSystem plottingSystem,
-//									   final List<DiffractionTableData> model,
-//									   final DiffractionTableData currentData,
-//									   final boolean useFixedWavelength,
-//									   final boolean postFixedWavelengthFit) {
-//		Job job = new Job("Calibrate detector") {
-//			@Override
-//			protected IStatus run(final IProgressMonitor monitor) {
-//				IStatus stat = Status.OK_STATUS;
-//				final ProgressMonitorWrapper mon = new ProgressMonitorWrapper(monitor);
-//				monitor.beginTask("Calibrate detector", IProgressMonitor.UNKNOWN);
-//				List<HKL> spacings = CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs();
-//				List<List<? extends IROI>> lROIs = new ArrayList<List<? extends IROI>>();
-//				List<DetectorProperties> dps = new ArrayList<DetectorProperties>();
-//				DiffractionCrystalEnvironment env = null;
-//				for (DiffractionTableData data : model) {
-//					IDiffractionMetadata md = data.md;
-//					if (!data.use || data.nrois <= 0 || md == null) {
-//						continue;
-//					}
-//					if (env == null) {
-//						env = md.getDiffractionCrystalEnvironment();
-//					}
-//					data.q = null;
-//
-//					DetectorProperties dp = md.getDetector2DProperties();
-//					if (dp == null) {
-//						continue;
-//					}
-//					dps.add(dp);
-//					lROIs.add(data.rois);
-//				}
-//				List<QSpace> qs = null;
-//				if (useFixedWavelength) {
-//					monitor.subTask("Fitting all rings");
-//					try {
-//						qs = PowderRingsUtils.fitAllEllipsesToAllQSpacesAtFixedWavelength(mon, dps, env, lROIs, spacings, postFixedWavelengthFit);
-//					} catch (IllegalArgumentException e) {
-//						logger.debug("Problem in calibrating all image: {}", e);
-//					}
-//				} else {
-//					try {
-//						qs = PowderRingsUtils.fitAllEllipsesToAllQSpaces(mon, dps, env, lROIs, spacings);
-//					} catch (IllegalArgumentException e) {
-//						logger.debug("Problem in calibrating all image: {}", e);
-//					}
-//				}
-//
-//				int i = 0;
-//				for (DiffractionTableData data : model) {
-//					IDiffractionMetadata md = data.md;
-//					if (!data.use || data.nrois <= 0 || md == null) {
-//						continue;
-//					}
-//
-//					DetectorProperties dp = md.getDetector2DProperties();
-//					if (dp == null) {
-//						continue;
-//					}
-//					data.q = qs.get(i++);
-//					logger.debug("Q-space = {}", data.q);
-//				}
-//
-//				display.syncExec(new Runnable() {
-//					@Override
-//					public void run() {
-//						for (DiffractionTableData data : model) {
-//							IDiffractionMetadata md = data.md;
-//							if (data.q == null || !data.use || data.nrois <= 0 || md == null) {
-//								continue;
-//							}
-//							DetectorProperties dp = md.getDetector2DProperties();
-//							DiffractionCrystalEnvironment ce = md.getDiffractionCrystalEnvironment();
-//							if (dp == null || ce == null) {
-//								continue;
-//							}
-//
-//							DetectorProperties fp = data.q.getDetectorProperties();
-//							dp.setGeometry(fp);
-//							ce.setWavelength(data.q.getWavelength());
-//						}
-//
-//						if (currentData == null || currentData.md == null || currentData.q == null)
-//							return;
-//
-//						hideFoundRings(plottingSystem);
-//						//drawCalibrantRings(currentData.augmenter);
-//					}
-//				});
-//				return stat;
-//			}
-//		};
-//		job.setPriority(Job.SHORT);
-//		return job;
-//	}
+
+	public static String REGION_PREFIX = "Pixel peaks";
+	
+	public static void clearFoundRings(IPlottingSystem plottingSystem) {
+		for (IRegion r : plottingSystem.getRegions()) {
+			String n = r.getName();
+			if (n.startsWith(REGION_PREFIX)) {
+				plottingSystem.removeRegion(r);
+			}
+		}
+	}
+	
+	public static boolean drawFoundRing(final IPlottingSystem plotter, final IROI froi, final IProgressMonitor monitor) {
+		final boolean[] status = {true};
+		
+		IROI roi = null;
+		EllipticalFitROI ef = null;
+		if (froi instanceof EllipticalFitROI) {
+			ef = (EllipticalFitROI)froi.copy();
+			PolylineROI points = ef.getPoints();
+			for (int i = 0; i< points.getNumberOfPoints(); i++) {
+				PointROI proi = points.getPoint(i);
+				double[] point = proi.getPoint();
+				point[1] += 0.5;
+				point[0] += 0.5;
+				proi.setPoint(point);
+			}
+		}
+		
+		if (ef != null)  roi = ef;
+		else roi = froi;
+		
+		final IROI fr = roi;
+		
+		Display.getDefault().syncExec(new Runnable() {
+
+			public void run() {
+				try {
+					IRegion region = plotter.createRegion(RegionUtils.getUniqueName(REGION_PREFIX, plotter), RegionType.ELLIPSEFIT);
+					region.setROI(fr);
+					region.setRegionColor(ColorConstants.orange);
+					if (monitor != null) monitor.subTask("Add region");
+					region.setUserRegion(false);
+					plotter.addRegion(region);
+					if (monitor != null) monitor.worked(1);
+				} catch (Exception e) {
+					status[0] = false;
+				}
+			}
+		});
+		return status[0];
+	}
 	
 	public static List<IROI> getResolutionRings(IDiffractionMetadata metadata) {
 		

@@ -79,6 +79,7 @@ import uk.ac.diamond.scisoft.analysis.diffraction.DiffractionCrystalEnvironment;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibratePointsParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.Activator;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.PowderCalibrationUtils;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.AutoCalibrationRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.FromPointsCalibrationRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.FromRingsCalibrationRun;
@@ -587,6 +588,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		IAction resetRingsAction = new Action("Remove found rings") {
 			@Override
 			public void run() {
+				//PowderCalibrationUtils.clearFoundRings(plottingSystem);
 				DiffractionCalibrationUtils.hideFoundRings(plottingSystem);
 			}
 		};

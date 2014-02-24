@@ -74,7 +74,7 @@ public class POIFindingRun implements IRunnableWithProgress {
 			
 			@Override
 			public void run() {
-				clearFoundRings(plottingSystem);
+				PowderCalibrationUtils.clearFoundRings(plottingSystem);
 			}
 		});
 		
@@ -132,7 +132,7 @@ public class POIFindingRun implements IRunnableWithProgress {
 				
 				if (roi != null) {
 					n++;
-					stat = drawFoundRing(monitor, Display.getDefault(), plottingSystem, roi);
+					stat = PowderCalibrationUtils.drawFoundRing(plottingSystem, roi,monitor) ? Status.OK_STATUS : Status.CANCEL_STATUS;
 				}
 
 				if (!stat.isOK())
@@ -173,15 +173,6 @@ public class POIFindingRun implements IRunnableWithProgress {
 		return null;
 	}
 	
-	protected void clearFoundRings(IPlottingSystem plottingSystem) {
-		for (IRegion r : plottingSystem.getRegions()) {
-			String n = r.getName();
-			if (n.startsWith(REGION_PREFIX)) {
-				plottingSystem.removeRegion(r);
-			}
-		}
-	}
-	
 	private SimpleCalibrationParameterModel extractModelFromWidget(final RingSelectionGroup ringSelection) {
 		
 		final SimpleCalibrationParameterModel model = new SimpleCalibrationParameterModel();
@@ -197,46 +188,5 @@ public class POIFindingRun implements IRunnableWithProgress {
 		});
 		
 		return model;
-	}
-	
-	private IStatus drawFoundRing(final IProgressMonitor monitor, Display display, final IPlottingSystem plotter, final IROI froi) {
-		final boolean[] status = {true};
-		
-		IROI roi = null;
-		EllipticalFitROI ef = null;
-		if (froi instanceof EllipticalFitROI) {
-			ef = (EllipticalFitROI)froi.copy();
-			PolylineROI points = ef.getPoints();
-			for (int i = 0; i< points.getNumberOfPoints(); i++) {
-				PointROI proi = points.getPoint(i);
-				double[] point = proi.getPoint();
-				point[1] += 0.5;
-				point[0] += 0.5;
-				proi.setPoint(point);
-			}
-		}
-		
-		if (ef != null)  roi = ef;
-		else roi = froi;
-		
-		final IROI fr = roi;
-		
-		display.syncExec(new Runnable() {
-
-			public void run() {
-				try {
-					IRegion region = plotter.createRegion(RegionUtils.getUniqueName(REGION_PREFIX, plotter), RegionType.ELLIPSEFIT);
-					region.setROI(fr);
-					region.setRegionColor(ColorConstants.orange);
-					monitor.subTask("Add region");
-					region.setUserRegion(false);
-					plotter.addRegion(region);
-					monitor.worked(1);
-				} catch (Exception e) {
-					status[0] = false;
-				}
-			}
-		});
-		return status[0] ? Status.OK_STATUS : Status.CANCEL_STATUS;
 	}
 }

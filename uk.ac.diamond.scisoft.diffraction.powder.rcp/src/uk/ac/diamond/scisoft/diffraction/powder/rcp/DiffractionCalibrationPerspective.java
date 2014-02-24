@@ -25,15 +25,17 @@ public class DiffractionCalibrationPerspective implements IPerspectiveFactory {
 		// Top left: Diffraction calibration view
 		IFolderLayout left = layout.createFolder("diffCalibrationView", IPageLayout.LEFT, 0.30f, editorArea);
 		left.addView(DiffractionCalibrationView.ID);
+		
+		// Top right: Diffraction plotting view
+		IFolderLayout top = layout.createFolder("diffractionPlotting", IPageLayout.LEFT, 0.50f, editorArea);
+		top.addView(DiffractionPlotView.ID);
 
 		// Bottom Right: Powder diffraction tool
-		IFolderLayout bottomRight = layout.createFolder("powderCalibration", IPageLayout.RIGHT, 0.30f, "diffCalibrationView");
+		IFolderLayout bottomRight = layout.createFolder("powderCalibration", IPageLayout.BOTTOM, 0.50f, "diffractionPlotting");
 		// open the tool as a fixed view
 		bottomRight.addView(fixed + powderCheckID);
 
-		// Top right: Diffraction plotting view
-		IFolderLayout top = layout.createFolder("diffractionPlotting", IPageLayout.TOP, 0.50f, "powderCalibration");
-		top.addView(DiffractionPlotView.ID);
+		
 
 		// Bottom left: Diffraction tool view
 		IFolderLayout topRight = layout.createFolder("powderDiffraction", IPageLayout.RIGHT, 0.50f, "diffractionPlotting");

@@ -14,7 +14,7 @@
             class="uk.ac.diamond.scisoft.diffraction.powder.rcp.views.DiffractionPlotView"
             id="uk.ac.diamond.scisoft.diffraction.powder.rcp.plottingView"
             name="Diffraction Plotting"
-            restorable="false">
+            restorable="true">
       </view>
       <view
             category="org.dawb.workbench.ui.beta.views.category"
