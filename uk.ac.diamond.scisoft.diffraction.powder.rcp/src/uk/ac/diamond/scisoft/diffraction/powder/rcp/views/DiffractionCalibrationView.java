@@ -588,8 +588,8 @@ public class DiffractionCalibrationView extends ViewPart {
 		IAction resetRingsAction = new Action("Remove found rings") {
 			@Override
 			public void run() {
-				//PowderCalibrationUtils.clearFoundRings(plottingSystem);
-				DiffractionCalibrationUtils.hideFoundRings(plottingSystem);
+				PowderCalibrationUtils.clearFoundRings(plottingSystem);
+				//DiffractionCalibrationUtils.hideFoundRings(plottingSystem);
 			}
 		};
 		resetRingsAction.setImageDescriptor(Activator.getImageDescriptor("icons/reset_rings.png"));
