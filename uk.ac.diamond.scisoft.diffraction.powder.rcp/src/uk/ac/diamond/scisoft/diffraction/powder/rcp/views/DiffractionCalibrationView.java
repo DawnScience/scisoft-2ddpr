@@ -884,7 +884,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		diffractionTableViewer.addDetectorPropertyListener(data);
 		}
 		
-		DiffractionCalibrationUtils.hideFoundRings(plottingSystem);
+		PowderCalibrationUtils.clearFoundRings(plottingSystem);
 		
 	}
 	
