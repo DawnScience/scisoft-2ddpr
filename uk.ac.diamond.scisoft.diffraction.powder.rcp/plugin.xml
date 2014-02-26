@@ -12,6 +12,7 @@
       <view
             category="org.dawb.workbench.ui.beta.views.category"
             class="uk.ac.diamond.scisoft.diffraction.powder.rcp.views.DiffractionPlotView"
+            icon="icons/powderplot.png"
             id="uk.ac.diamond.scisoft.diffraction.powder.rcp.plottingView"
             name="Diffraction Plotting"
             restorable="true">
@@ -19,6 +20,7 @@
       <view
             category="org.dawb.workbench.ui.beta.views.category"
             class="uk.ac.diamond.scisoft.diffraction.powder.rcp.views.DiffractionCalibrationView"
+            icon="icons/CalibrationView.png"
             id="uk.ac.diamond.scisoft.diffraction.powder.rcp.diffractionCalibrationView"
             name="Diffraction Calibration Controls"
             restorable="true">
