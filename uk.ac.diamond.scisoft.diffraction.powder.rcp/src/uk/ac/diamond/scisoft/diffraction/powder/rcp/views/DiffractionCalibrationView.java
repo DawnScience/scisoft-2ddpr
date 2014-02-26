@@ -333,6 +333,10 @@ public class DiffractionCalibrationView extends ViewPart {
 		}
 		augmenter = new DiffractionImageAugmenter(plottingSystem);
 		augmenter.activate();
+		augmenter.drawBeamCentre(true);
+		CalibrationStandards standards = CalibrationFactory.getCalibrationStandards();
+		augmenter.drawCalibrantRings(true, standards.getCalibrant());
+		
 		ringFindJob = new POIFindingRun(plottingSystem, manager.getCurrentData(), ringSelection);
 		calibrantPositioning.setRingFinder(ringFindJob);
 	}
@@ -378,7 +382,7 @@ public class DiffractionCalibrationView extends ViewPart {
 						if (part != null) {
 							part.getSite().getPage().activate(part);
 						}
-						if (augmenter != null) augmenter.activate();
+						if (augmenter != null && !augmenter.isActive()) augmenter.activate();
 					}
 				}
 			}
@@ -419,19 +423,13 @@ public class DiffractionCalibrationView extends ViewPart {
 			if (augmenter != null) {
 				if (structSelection.isEmpty()) 
 					augmenter.deactivate(false);
-				else
-					augmenter.activate();
-			}
-			
-			if (selectedData == null) {
-				
 			}
 			
 			if (selectedData == null || (!force && selectedData == manager.getCurrentData())) {
 				return;
 			}
 			drawSelectedData(selectedData);
-			showCalibrantAndBeamCentre(checked);
+			//showCalibrantAndBeamCentre(checked);
 		}
 	}
 
@@ -442,9 +440,9 @@ public class DiffractionCalibrationView extends ViewPart {
 	 */
 	private void showCalibrantAndBeamCentre(boolean show) {
 		if (augmenter == null) return;
-		if (show) {
+		if (show && !augmenter.isActive()) {
 			augmenter.activate();
-			augmenter.drawBeamCentre(show);
+			augmenter.drawBeamCentre(true);
 			CalibrationStandards standards = CalibrationFactory.getCalibrationStandards();
 			augmenter.drawCalibrantRings(true, standards.getCalibrant());
 		} else {
@@ -881,6 +879,9 @@ public class DiffractionCalibrationView extends ViewPart {
 		calibrantPositioning.setDiffractionData(manager.getCurrentData());
 		if (data.md != null) {
 		augmenter.setDiffractionMetadata(manager.getCurrentData().md);
+		
+		if (!augmenter.isActive() && checked) augmenter.activate();
+		
 		diffractionTableViewer.addDetectorPropertyListener(data);
 		}
 		
