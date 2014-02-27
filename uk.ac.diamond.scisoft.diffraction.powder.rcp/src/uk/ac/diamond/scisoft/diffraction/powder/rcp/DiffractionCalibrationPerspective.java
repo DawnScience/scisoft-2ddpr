@@ -16,7 +16,7 @@ public class DiffractionCalibrationPerspective implements IPerspectiveFactory {
 	
 		IFolderLayout navigatorFolder = layout.createFolder("navigator-folder", IPageLayout.LEFT, 0.15f, editorArea);
 		navigatorFolder.addView("org.eclipse.ui.navigator.ProjectExplorer");
-		navigatorFolder.addView("uk.ac.diamond.sda.navigator.views.FileView");
+		navigatorFolder.addView("uk.ac.diamond.scisoft.diffraction.powder.rcp.views.PowderFileView");
 
 		String fixed = "org.dawb.workbench.plotting.views.toolPageView.fixed:";
 		String powderCheckID = "org.dawnsci.plotting.tools.powdercheck";

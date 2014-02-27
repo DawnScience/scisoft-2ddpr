@@ -25,6 +25,13 @@
             name="Diffraction Calibration Controls"
             restorable="true">
       </view>
+      <view
+            class="uk.ac.diamond.scisoft.diffraction.powder.rcp.views.PowderFileView"
+            icon="icons/powderfile.png"
+            id="uk.ac.diamond.scisoft.diffraction.powder.rcp.views.PowderFileView"
+            name="File Navigator"
+            restorable="true">
+      </view>
    </extension>
    <extension
          point="org.eclipse.ui.perspectives">
