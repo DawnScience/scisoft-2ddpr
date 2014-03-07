@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<introContent>
+  	<extensionContent id="powder-calibration-perspective-extension" style="style.css" name="Powder Diffraction Calibration" path="perspectives/@">
+		<group id="powder-calibration-perspective-group" style-id="content-group">
+       		<link label="Powder Diffraction Calibration" url="http://org.eclipse.ui.intro/runAction?pluginId=org.dawnsci.intro&amp;class=org.dawnsci.intro.actions.OpenPerspectiveAction&amp;name=uk.ac.diamond.scisoft.diffraction.powder.rcp.DiffractionCalibrationPerspectiveLaunch" id="powder calibration" style-id="content-link">
+          		<text>For calibrating 2D powder diffraction images</text>
+       		</link>
+       	</group>
+  	</extensionContent>
+</introContent>

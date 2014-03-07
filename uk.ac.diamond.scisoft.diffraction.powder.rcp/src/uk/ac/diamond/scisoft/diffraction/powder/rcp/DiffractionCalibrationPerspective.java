@@ -9,6 +9,8 @@ import uk.ac.diamond.scisoft.diffraction.powder.rcp.views.DiffractionPlotView;
 
 public class DiffractionCalibrationPerspective implements IPerspectiveFactory {
 
+	public static final String ID = "uk.ac.diamond.scisoft.diffraction.powder.rcp.calibrationPerspective";
+	
 	@Override
 	public void createInitialLayout(IPageLayout layout) {
 		String editorArea = layout.getEditorArea();
