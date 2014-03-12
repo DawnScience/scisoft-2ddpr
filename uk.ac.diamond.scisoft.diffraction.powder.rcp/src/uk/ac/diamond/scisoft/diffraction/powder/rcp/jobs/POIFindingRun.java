@@ -23,7 +23,10 @@ import org.slf4j.LoggerFactory;
 
 import uk.ac.diamond.scisoft.analysis.roi.EllipticalFitROI;
 import uk.ac.diamond.scisoft.analysis.roi.EllipticalROI;
+import uk.ac.diamond.scisoft.analysis.roi.HyperbolicROI;
+import uk.ac.diamond.scisoft.analysis.roi.IParametricROI;
 import uk.ac.diamond.scisoft.analysis.roi.IROI;
+import uk.ac.diamond.scisoft.analysis.roi.ParabolicROI;
 import uk.ac.diamond.scisoft.analysis.roi.PointROI;
 import uk.ac.diamond.scisoft.analysis.roi.PolylineROI;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
@@ -91,43 +94,18 @@ public class POIFindingRun implements IRunnableWithProgress {
 			IROI r = resROIs.get(i);
 			IROI roi = null;
 			try {
-				if (!(r instanceof EllipticalROI)) { // cannot cope with other conic sections for now
-					continue;
-				}
-				
 				if (i >= numberToFit) continue;
 				
 				if (model.isUseRingSet() && !model.getRingSet().contains(i+1)) continue;
 				
-				EllipticalROI e = (EllipticalROI) r;
-				double major = e.getSemiAxis(0);
-				
-				double deltalow = major > 50 ? 50 : major;
-				double deltahigh = 50;
-				
-				if (i != 0) {
-					
-					if (resROIs.get(i-1) instanceof EllipticalROI) {
-						deltalow = 0.5*(major - ((EllipticalROI)resROIs.get(i-1)).getSemiAxis(0));
-						deltalow = deltalow > 50 ? 50 : deltalow;
+				if (r instanceof IParametricROI) {
+					try {
+					roi = fitParametricROI(resROIs,(IParametricROI)r, image, i, minSpacing, nPoints, monitor);
+					} catch (NullPointerException ex) {
+						stat = Status.CANCEL_STATUS;
+						n = -1; // indicate, to finally clause, problem with getting image or other issues
+						return;
 					}
-				}
-				
-				if (i < resROIs.size()-1) {
-					if (resROIs.get(i+1) instanceof EllipticalROI) {
-					deltahigh = 0.5*(((EllipticalROI)resROIs.get(i+1)).getSemiAxis(0) - major);
-					deltahigh = deltahigh > 50 ? 50 : deltahigh;
-					}
-				}
-				
-				if (deltalow < minSpacing || deltahigh < minSpacing) continue;
-				
-				try {
-					roi = DiffractionUtils.runEllipsePeakFit(monitor, Display.getDefault(), plottingSystem, image, e, deltalow, deltahigh,nPoints);
-				} catch (NullPointerException ex) {
-					stat = Status.CANCEL_STATUS;
-					n = -1; // indicate, to finally clause, problem with getting image or other issues
-					return;
 				}
 				
 				if (roi != null) {
@@ -171,6 +149,83 @@ public class POIFindingRun implements IRunnableWithProgress {
 			}
 		}
 		return null;
+	}
+	
+	private IROI fitParametricROI(List<IROI> resROIs, IParametricROI r, IImageTrace image, int i, int minSpacing, int nPoints, IProgressMonitor monitor) {
+		
+		IParametricROI[] inOut = getInnerAndOuterRangeROIs(resROIs, r,i,minSpacing);
+		
+		return DiffractionUtils.runConicPeakFit(monitor, Display.getDefault(), plottingSystem, image, r,inOut,nPoints);
+	}
+	
+	private IParametricROI[] getInnerAndOuterRangeROIs(List<IROI> resROIs, IParametricROI r, int i, int minSpacing) {
+		IParametricROI[] inOut = new IParametricROI[2];
+		//TODO min spacing for non-elliptical
+		if (r instanceof HyperbolicROI) {
+			HyperbolicROI h = (HyperbolicROI)r;
+			double slr = h.getSemilatusRectum();
+			double deltalow = slr > 50 ? 50 : slr;
+			double deltahigh = 50;
+			
+			if (i != 0) {
+				
+				if (resROIs.get(i-1) instanceof HyperbolicROI) {
+					HyperbolicROI inner =  (HyperbolicROI)resROIs.get(i-1);
+					double semi = (slr-inner.getSemilatusRectum())/2+inner.getSemilatusRectum();
+					double px = (h.getPointX() - inner.getPointX())/2 + inner.getPointX();
+					double py = (h.getPointY() - inner.getPointY())/2 + inner.getPointY();
+					inOut[0] = new HyperbolicROI(semi, inner.getEccentricity(), inner.getAngle(), px, py);
+				}
+			}
+			
+			if (i < resROIs.size()-1) {
+				if (resROIs.get(i+1) instanceof HyperbolicROI) {
+					HyperbolicROI outer =  (HyperbolicROI)resROIs.get(i+1);
+					double semi = (outer.getSemilatusRectum()-slr)/2+h.getSemilatusRectum();
+					double px = (outer.getPointX() - h.getPointX())/2 + h.getPointX();
+					double py = (outer.getPointY() - h.getPointY())/2 + h.getPointY();
+					inOut[1] = new HyperbolicROI(semi, outer.getEccentricity(), outer.getAngle(), px, py);
+				}
+			}
+			
+			
+		} else if (r instanceof EllipticalROI) {
+			EllipticalROI e = (EllipticalROI) r;
+			double major = e.getSemiAxis(0);
+			
+			double deltalow = major > 50 ? 50 : major;
+			double deltahigh = 50;
+			
+			if (i != 0) {
+				
+				if (resROIs.get(i-1) instanceof EllipticalROI) {
+					deltalow = 0.5*(major - ((EllipticalROI)resROIs.get(i-1)).getSemiAxis(0));
+					deltalow = deltalow > 50 ? 50 : deltalow;
+				}
+			}
+			
+			if (i < resROIs.size()-1) {
+				if (resROIs.get(i+1) instanceof EllipticalROI) {
+				deltahigh = 0.5*(((EllipticalROI)resROIs.get(i+1)).getSemiAxis(0) - major);
+				deltahigh = deltahigh > 50 ? 50 : deltahigh;
+				}
+			}
+			
+			if (deltalow < minSpacing || deltahigh < minSpacing) return null;
+			
+			EllipticalROI in = e.copy();
+			in.setSemiAxis(0, e.getSemiAxis(0)-deltalow);
+			in.setSemiAxis(1, e.getSemiAxis(1)-deltalow);
+			inOut[0] = in;
+			
+			EllipticalROI out = e.copy();
+			out.setSemiAxis(0, e.getSemiAxis(0)+deltahigh);
+			out.setSemiAxis(1, e.getSemiAxis(1)+deltahigh);
+		}
+		
+		if (inOut[0] == null || inOut[1] == null) return null;
+		
+		return inOut;
 	}
 	
 	private SimpleCalibrationParameterModel extractModelFromWidget(final RingSelectionGroup ringSelection) {

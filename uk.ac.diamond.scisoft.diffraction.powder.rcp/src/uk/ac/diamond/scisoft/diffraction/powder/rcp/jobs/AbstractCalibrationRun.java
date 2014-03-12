@@ -90,9 +90,9 @@ public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 		double corFact = 0;
 		double lastAspect = 1;
 		double lastAngle = 0;
-		int i = 0;
+		int i = -1;
 		for (ResolutionEllipseROI e : efs.ellipses) {
-			
+			i++;
 			if (efs.innerSearch[i] < minSpacing || efs.outerSearch[i] < minSpacing) continue;
 			
 			double startSemi = e.getSemiAxis(0);
@@ -103,7 +103,16 @@ public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 			
 			IImageTrace t = DiffractionCalibrationUtils.getImageTrace(plottingSystem);
 			try {
-				roi = DiffractionUtils.runEllipsePeakFit(monitor, display, plottingSystem, t, e, efs.innerSearch[i], efs.outerSearch[i],nPoints);
+				EllipticalROI[] inOut = new EllipticalROI[2];
+				inOut[0] = e.copy();
+				inOut[0].setSemiAxis(0, e.getSemiAxis(0)-efs.innerSearch[i]);
+				inOut[0].setSemiAxis(1, e.getSemiAxis(1)-efs.innerSearch[i]);
+				
+				inOut[1] = e.copy();
+				inOut[1].setSemiAxis(0, e.getSemiAxis(0)+efs.outerSearch[i]);
+				inOut[1].setSemiAxis(1, e.getSemiAxis(1)+efs.outerSearch[i]);
+				
+				roi = DiffractionUtils.runConicPeakFit(monitor, display, plottingSystem, t, e, inOut,nPoints);
 			} catch (Exception ex) {
 				logger.debug(ex.getMessage());
 				roi = null;
@@ -118,7 +127,6 @@ public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 				lastAngle = ((EllipticalROI) roi).getAngle();
 				DiffractionCalibrationUtils.drawFoundRing(monitor, display, plottingSystem, roi, false);
 			}
-			i++;
 		}
 		
 		if (foundEllipses.size() < 2) return null;

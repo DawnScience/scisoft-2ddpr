@@ -15,6 +15,7 @@ import uk.ac.diamond.scisoft.analysis.diffraction.PowderRingsUtils;
 import uk.ac.diamond.scisoft.analysis.diffraction.ResolutionEllipseROI;
 import uk.ac.diamond.scisoft.analysis.roi.EllipticalFitROI;
 import uk.ac.diamond.scisoft.analysis.roi.EllipticalROI;
+import uk.ac.diamond.scisoft.analysis.roi.IParametricROI;
 import uk.ac.diamond.scisoft.analysis.roi.PolylineROI;
 import uk.ac.diamond.scisoft.analysis.roi.ROIProfile;
 import uk.ac.diamond.scisoft.analysis.roi.SectorROI;
@@ -147,7 +148,17 @@ public class PowderCalibration {
 		PolylineROI points;
 		EllipticalFitROI efroi;
 		
-		points = PeakFittingEllipseFinder.findPointsOnEllipse(image, mask, (EllipticalROI) roi, innerDelta, outerDelta,386,null);
+		EllipticalROI[] inOut = new EllipticalROI[2];
+
+		inOut[0] = roi.copy();
+		inOut[0].setSemiAxis(0, roi.getSemiAxis(0)-innerDelta);
+		inOut[0].setSemiAxis(1, roi.getSemiAxis(1)-innerDelta);
+
+		inOut[1] = roi.copy();
+		inOut[1].setSemiAxis(0, roi.getSemiAxis(0)+outerDelta);
+		inOut[1].setSemiAxis(1, roi.getSemiAxis(1)+outerDelta);
+		
+		points = PeakFittingEllipseFinder.findPointsOnConic(image, mask, roi, inOut,386,null);
 		
 		if (points.getNumberOfPoints() < 3) {
 			throw new IllegalArgumentException("Could not find enough points to trim");
