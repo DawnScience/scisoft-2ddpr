@@ -23,9 +23,10 @@ public class RingSelectionGroup {
 		Group group = new Group(parent, SWT.FILL);
 		group.setLayout(new GridLayout(2, false));
 		group.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		group.setText("Select rings to use for calibration:");
 
 		spinnerRadio = new Button(group, SWT.RADIO);
-		spinnerRadio.setText("No. of Rings to Use:");
+		spinnerRadio.setText("Rings to use (from inner):");
 		spinnerRadio.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -44,7 +45,7 @@ public class RingSelectionGroup {
 		ringNumberSpinner.setSelection(100);
 
 		textRadio = new Button(group, SWT.RADIO);
-		textRadio.setText("Specify ring numbers:");
+		textRadio.setText("Select specific ring numbers:");
 		textRadio.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {

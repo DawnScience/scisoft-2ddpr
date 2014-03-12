@@ -184,9 +184,9 @@ public class DiffractionCalibrationView extends ViewPart {
 
 		Label instructionLabel = new Label(controlComp, SWT.WRAP);
 		instructionLabel.setText("Drag/drop a file/data to the table below, " +
-				"choose a type of calibrant, " +
-				"select the auto mode and the number of rings through the settings tab " +
-				"and finally run the auto calibration.");
+				"choose the calibrant, " +
+				"select the rings to use " +
+				"and finally run the calibration.");
 		instructionLabel.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, true, false));
 		Point pt = instructionLabel.getSize(); pt.x +=4; pt.y += 4; instructionLabel.setSize(pt);
 
@@ -215,6 +215,21 @@ public class DiffractionCalibrationView extends ViewPart {
 		topComp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		createCalibrantGroup(topComp);
 
+		ringSelection = new RingSelectionGroup(mainHolder, standards.getCalibrant().getHKLs().size());
+		ringSelection.addRingNumberSpinnerListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				int ringNumber = ringSelection.getRingSpinnerSelection();
+				// Fill the Map with ring number for the selected calibrant
+				calibrantRingsMap.put(calibrantName, ringNumber);
+			}
+		});
+		
+//		instructionLabel = new Label(mainHolder, SWT.WRAP);
+//		instructionLabel.setText("Use auto calibration when images have complete rings" +
+//				" and only small tilts - for all other data use manual");
+//		instructionLabel.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false));
+		
 		//TabFolder
 		final TabFolder tabFolder = new TabFolder(mainHolder, SWT.BORDER | SWT.FILL);
 		tabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
@@ -256,16 +271,6 @@ public class DiffractionCalibrationView extends ViewPart {
 		settingTabItem.setText("Settings");
 		settingTabItem.setToolTipText("Calibration settings");
 		settingTabItem.setControl(getSettingTabControl(tabFolder, standards));
-
-		ringSelection = new RingSelectionGroup(mainHolder, standards.getCalibrant().getHKLs().size());
-		ringSelection.addRingNumberSpinnerListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				int ringNumber = ringSelection.getRingSpinnerSelection();
-				// Fill the Map with ring number for the selected calibrant
-				calibrantRingsMap.put(calibrantName, ringNumber);
-			}
-		});
 
 		residualLabel = new Label(mainHolder, SWT.NONE);
 		residualLabel.setText(RESIDUAL);
@@ -462,8 +467,8 @@ public class DiffractionCalibrationView extends ViewPart {
 	}
 
 	private void createCalibrantGroup(Composite composite) {
-		Group selectCalibComp = new Group(composite, SWT.NONE);
-		selectCalibComp.setText("Calibrant");
+		Group selectCalibComp = new Group(composite, SWT.FILL);
+		selectCalibComp.setText("Select calibrant:");
 		selectCalibComp.setLayout(new GridLayout(1, false));
 		selectCalibComp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
@@ -628,6 +633,7 @@ public class DiffractionCalibrationView extends ViewPart {
 	private Control getAutoTabControl(TabFolder tabFolder) {
 		Composite composite = new Composite(tabFolder, SWT.FILL);
 		composite.setLayout(new GridLayout(1, false));
+		
 		Button goBabyGoButton = new Button(composite, SWT.PUSH);
 		goBabyGoButton.setImage(Activator.getImage("icons/CalibrationRun.png"));
 		goBabyGoButton.setText("Run Auto Calibration");
