@@ -238,14 +238,6 @@ public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 			public void run() {
 				int i = 0;
 				for (DiffractionTableData data : model) {
-//					DetectorProperties dp = data.md.getDetector2DProperties();
-//
-//					dp.setBeamCentreDistance(output.getDistance().getDouble(i));
-//					double[] bc = new double[] {output.getBeamCentreX().getDouble(i),output.getBeamCentreY().getDouble(i) };
-//					dp.setBeamCentreCoords(bc);
-//
-//					dp.setNormalAnglesInDegrees(output.getTilt().getDouble(i)*-1, 0, output.getTiltAngle().getDouble(i)*-1);
-//					data.md.getDiffractionCrystalEnvironment().setWavelength(output.getWavelength());
 					updateMetaData(data.md, output, i);
 					data.residual = output.getResidual();
 					i++;

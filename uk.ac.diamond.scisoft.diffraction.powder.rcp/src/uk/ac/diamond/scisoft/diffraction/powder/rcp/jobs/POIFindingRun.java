@@ -155,17 +155,18 @@ public class POIFindingRun implements IRunnableWithProgress {
 		
 		IParametricROI[] inOut = getInnerAndOuterRangeROIs(resROIs, r,i,minSpacing);
 		
+		if (inOut == null) return null;
+		
 		return DiffractionUtils.runConicPeakFit(monitor, Display.getDefault(), plottingSystem, image, r,inOut,nPoints);
 	}
 	
 	private IParametricROI[] getInnerAndOuterRangeROIs(List<IROI> resROIs, IParametricROI r, int i, int minSpacing) {
 		IParametricROI[] inOut = new IParametricROI[2];
 		//TODO min spacing for non-elliptical
+		//TODO include parabolic case
 		if (r instanceof HyperbolicROI) {
 			HyperbolicROI h = (HyperbolicROI)r;
 			double slr = h.getSemilatusRectum();
-			double deltalow = slr > 50 ? 50 : slr;
-			double deltahigh = 50;
 			
 			if (i != 0) {
 				
@@ -181,10 +182,17 @@ public class POIFindingRun implements IRunnableWithProgress {
 			if (i < resROIs.size()-1) {
 				if (resROIs.get(i+1) instanceof HyperbolicROI) {
 					HyperbolicROI outer =  (HyperbolicROI)resROIs.get(i+1);
-					double semi = (outer.getSemilatusRectum()-slr)/2+h.getSemilatusRectum();
-					double px = (outer.getPointX() - h.getPointX())/2 + h.getPointX();
-					double py = (outer.getPointY() - h.getPointY())/2 + h.getPointY();
-					inOut[1] = new HyperbolicROI(semi, outer.getEccentricity(), outer.getAngle(), px, py);
+					double sd = (outer.getSemilatusRectum()-slr)/2;
+					double pxd = (outer.getPointX() - h.getPointX())/2;
+					double pyd = (outer.getPointY() - h.getPointY())/2;
+					inOut[1] = new HyperbolicROI(h.getSemilatusRectum()+sd,
+							outer.getEccentricity(), outer.getAngle(), h.getPointX()+pxd, h.getPointY()+pyd);
+					
+					
+					if (inOut[0] == null) {
+						inOut[0] = new HyperbolicROI(h.getSemilatusRectum()-sd,
+								outer.getEccentricity(), outer.getAngle(), h.getPointX()-pxd, h.getPointY()-pyd);
+					}
 				}
 			}
 			
@@ -221,6 +229,7 @@ public class POIFindingRun implements IRunnableWithProgress {
 			EllipticalROI out = e.copy();
 			out.setSemiAxis(0, e.getSemiAxis(0)+deltahigh);
 			out.setSemiAxis(1, e.getSemiAxis(1)+deltahigh);
+			inOut[1] = out;
 		}
 		
 		if (inOut[0] == null || inOut[1] == null) return null;
