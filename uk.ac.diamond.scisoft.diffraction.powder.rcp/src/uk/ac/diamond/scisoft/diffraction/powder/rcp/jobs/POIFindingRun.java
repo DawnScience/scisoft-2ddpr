@@ -168,7 +168,6 @@ public class POIFindingRun implements IRunnableWithProgress {
 				
 				if (resROIs.get(i-1) instanceof HyperbolicROI) {
 					HyperbolicROI inner =  (HyperbolicROI)resROIs.get(i-1);
-					logger.debug("Inner delta :" + (slr-inner.getSemilatusRectum()));
 					double sd = (slr-inner.getSemilatusRectum())/4;
 					sd = sd > MAX_SIZE ? MAX_SIZE : sd;
 					double semi = slr - sd;
@@ -183,7 +182,6 @@ public class POIFindingRun implements IRunnableWithProgress {
 					HyperbolicROI outer =  (HyperbolicROI)resROIs.get(i+1);
 					double sd = (outer.getSemilatusRectum()-slr)/4;
 					sd = sd > MAX_SIZE ? MAX_SIZE : sd;
-					logger.debug("Outer delta :" +sd);
 					double pxd = (outer.getPointX() - h.getPointX())/4;
 					double pyd = (outer.getPointY() - h.getPointY())/4;
 					inOut[1] = new HyperbolicROI(h.getSemilatusRectum()+sd,
