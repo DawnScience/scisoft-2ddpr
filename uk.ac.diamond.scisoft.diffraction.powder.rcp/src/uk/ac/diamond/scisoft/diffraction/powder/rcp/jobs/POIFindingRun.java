@@ -6,29 +6,21 @@ import java.util.List;
 
 import org.dawb.workbench.ui.diffraction.table.DiffractionTableData;
 import org.dawnsci.plotting.api.IPlottingSystem;
-import org.dawnsci.plotting.api.region.IRegion;
-import org.dawnsci.plotting.api.region.RegionUtils;
-import org.dawnsci.plotting.api.region.IRegion.RegionType;
 import org.dawnsci.plotting.api.trace.IImageTrace;
 import org.dawnsci.plotting.api.trace.ITrace;
 import org.dawnsci.plotting.tools.diffraction.DiffractionUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Display;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.ac.diamond.scisoft.analysis.roi.EllipticalFitROI;
 import uk.ac.diamond.scisoft.analysis.roi.EllipticalROI;
 import uk.ac.diamond.scisoft.analysis.roi.HyperbolicROI;
 import uk.ac.diamond.scisoft.analysis.roi.IParametricROI;
 import uk.ac.diamond.scisoft.analysis.roi.IROI;
-import uk.ac.diamond.scisoft.analysis.roi.ParabolicROI;
-import uk.ac.diamond.scisoft.analysis.roi.PointROI;
-import uk.ac.diamond.scisoft.analysis.roi.PolylineROI;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.Activator;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.PowderCalibrationUtils;
@@ -40,6 +32,8 @@ public class POIFindingRun implements IRunnableWithProgress {
 	IPlottingSystem plottingSystem;
 	DiffractionTableData currentData;
 	RingSelectionGroup param;
+	
+	private static final int MAX_SIZE = 50;
 	
 	private static Logger logger = LoggerFactory.getLogger(POIFindingRun.class);
 	
@@ -55,6 +49,8 @@ public class POIFindingRun implements IRunnableWithProgress {
 	
 	@Override
 	public void run(IProgressMonitor monitor) {
+		
+		monitor.beginTask("Finding Points of Interest...", IProgressMonitor.UNKNOWN);
 		
 		SimpleCalibrationParameterModel model = extractModelFromWidget(param);
 		
@@ -172,21 +168,26 @@ public class POIFindingRun implements IRunnableWithProgress {
 				
 				if (resROIs.get(i-1) instanceof HyperbolicROI) {
 					HyperbolicROI inner =  (HyperbolicROI)resROIs.get(i-1);
-					double semi = (slr-inner.getSemilatusRectum())/2+inner.getSemilatusRectum();
-					double px = (h.getPointX() - inner.getPointX())/2 + inner.getPointX();
-					double py = (h.getPointY() - inner.getPointY())/2 + inner.getPointY();
-					inOut[0] = new HyperbolicROI(semi, inner.getEccentricity(), inner.getAngle(), px, py);
+					logger.debug("Inner delta :" + (slr-inner.getSemilatusRectum()));
+					double sd = (slr-inner.getSemilatusRectum())/4;
+					sd = sd > MAX_SIZE ? MAX_SIZE : sd;
+					double semi = slr - sd;
+					double px = h.getPointX() - (h.getPointX() - inner.getPointX())/4;
+					double py = h.getPointY() - (h.getPointY() - inner.getPointY())/4;
+					inOut[0] = new HyperbolicROI(semi, h.getEccentricity(), h.getAngle(), px, py);
 				}
 			}
 			
 			if (i < resROIs.size()-1) {
 				if (resROIs.get(i+1) instanceof HyperbolicROI) {
 					HyperbolicROI outer =  (HyperbolicROI)resROIs.get(i+1);
-					double sd = (outer.getSemilatusRectum()-slr)/2;
-					double pxd = (outer.getPointX() - h.getPointX())/2;
-					double pyd = (outer.getPointY() - h.getPointY())/2;
+					double sd = (outer.getSemilatusRectum()-slr)/4;
+					sd = sd > MAX_SIZE ? MAX_SIZE : sd;
+					logger.debug("Outer delta :" +sd);
+					double pxd = (outer.getPointX() - h.getPointX())/4;
+					double pyd = (outer.getPointY() - h.getPointY())/4;
 					inOut[1] = new HyperbolicROI(h.getSemilatusRectum()+sd,
-							outer.getEccentricity(), outer.getAngle(), h.getPointX()+pxd, h.getPointY()+pyd);
+							h.getEccentricity(), h.getAngle(), h.getPointX()+pxd, h.getPointY()+pyd);
 					
 					
 					if (inOut[0] == null) {
@@ -201,21 +202,21 @@ public class POIFindingRun implements IRunnableWithProgress {
 			EllipticalROI e = (EllipticalROI) r;
 			double major = e.getSemiAxis(0);
 			
-			double deltalow = major > 50 ? 50 : major;
-			double deltahigh = 50;
+			double deltalow = major > MAX_SIZE ? MAX_SIZE : major;
+			double deltahigh = MAX_SIZE;
 			
 			if (i != 0) {
 				
 				if (resROIs.get(i-1) instanceof EllipticalROI) {
 					deltalow = 0.5*(major - ((EllipticalROI)resROIs.get(i-1)).getSemiAxis(0));
-					deltalow = deltalow > 50 ? 50 : deltalow;
+					deltalow = deltalow > MAX_SIZE ? MAX_SIZE : deltalow;
 				}
 			}
 			
 			if (i < resROIs.size()-1) {
 				if (resROIs.get(i+1) instanceof EllipticalROI) {
 				deltahigh = 0.5*(((EllipticalROI)resROIs.get(i+1)).getSemiAxis(0) - major);
-				deltahigh = deltahigh > 50 ? 50 : deltahigh;
+				deltahigh = deltahigh > MAX_SIZE ? MAX_SIZE : deltahigh;
 				}
 			}
 			
