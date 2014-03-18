@@ -53,15 +53,15 @@ public class BruteStandardMatcher {
 			for (double dist = minDistance; dist <= maxDistance ; dist += distanceStep) {
 				dp.setDetectorDistance(dist);
 				ce.setWavelengthFromEnergykeV(en);
-
+				double w = ce.getWavelength();
 				double[] radii = new double[dSpace.length];
-				for (int i = 0; i< radii.length; i++) radii[i] = DSpacing.radiusFromDSpacing(dp, ce, dSpace[i]);
+				for (int i = 0; i< radii.length; i++) {
+					if (w < 2*dSpace[i]) radii[i] = DSpacing.radiusFromDSpacing(dp, ce, dSpace[i]);
+				}
  				
 				AbstractDataset filter = getFilterDataset(radius,radii);
 				AbstractDataset out = Maths.multiply(filter, clean);
 				double ssq = (double)out.sum();
-				
-				//if (en == 130 && dist == 1790) ssq = Double.MAX_VALUE;
 				
 				if (ssq > bestssq) {
 					bestssq = ssq;
