@@ -91,6 +91,8 @@ public class POIFindingRun implements IRunnableWithProgress {
 			IROI roi = null;
 			try {
 				if (i >= numberToFit) continue;
+				if (monitor.isCanceled()) continue;
+				
 				
 				if (model.isUseRingSet() && !model.getRingSet().contains(i+1)) continue;
 				
