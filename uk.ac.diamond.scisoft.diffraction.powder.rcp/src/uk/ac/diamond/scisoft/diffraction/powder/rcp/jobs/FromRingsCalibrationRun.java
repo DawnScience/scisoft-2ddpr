@@ -63,7 +63,7 @@ public class FromRingsCalibrationRun extends AbstractCalibrationRun {
 					} else if(roi instanceof CircularROI) {
 						erois.add(new EllipticalROI((CircularROI)roi));
 					} else {
-						throw new IllegalArgumentException("ROI not elliptical or circular");
+						throw new IllegalArgumentException("ROI not elliptical or circular - try point calibration");
 					}
 
 					count++;

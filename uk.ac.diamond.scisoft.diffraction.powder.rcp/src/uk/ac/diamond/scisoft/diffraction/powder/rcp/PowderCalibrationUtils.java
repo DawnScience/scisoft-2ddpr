@@ -11,6 +11,7 @@ import org.dawnsci.plotting.api.region.RegionUtils;
 import org.dawnsci.plotting.api.region.IRegion.RegionType;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.draw2d.ColorConstants;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
 
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrantSpacing;
@@ -20,7 +21,6 @@ import uk.ac.diamond.scisoft.analysis.diffraction.DSpacing;
 import uk.ac.diamond.scisoft.analysis.diffraction.DetectorProperties;
 import uk.ac.diamond.scisoft.analysis.diffraction.DiffractionCrystalEnvironment;
 import uk.ac.diamond.scisoft.analysis.io.IDiffractionMetadata;
-import uk.ac.diamond.scisoft.analysis.monitor.IMonitor;
 import uk.ac.diamond.scisoft.analysis.roi.EllipticalFitROI;
 import uk.ac.diamond.scisoft.analysis.roi.IROI;
 import uk.ac.diamond.scisoft.analysis.roi.PointROI;
@@ -43,10 +43,14 @@ public class PowderCalibrationUtils {
 	public static boolean drawFoundRing(final IPlottingSystem plotter, final IROI froi, final IProgressMonitor monitor) {
 		final boolean[] status = {true};
 		
+		Color col = ColorConstants.orange;
+		RegionType type = RegionType.ELLIPSEFIT;
+		int lineWidth = 2;
+		
 		IROI roi = null;
-		EllipticalFitROI ef = null;
+		IROI shiftROI = null;
 		if (froi instanceof EllipticalFitROI) {
-			ef = (EllipticalFitROI)froi.copy();
+			EllipticalFitROI ef = (EllipticalFitROI)froi.copy();
 			PolylineROI points = ef.getPoints();
 			for (int i = 0; i< points.getNumberOfPoints(); i++) {
 				PointROI proi = points.getPoint(i);
@@ -55,20 +59,40 @@ public class PowderCalibrationUtils {
 				point[0] += 0.5;
 				proi.setPoint(point);
 			}
+			shiftROI = ef;
 		}
 		
-		if (ef != null)  roi = ef;
+		if (froi instanceof PolylineROI) {
+			PolylineROI points = ((PolylineROI)froi).copy();
+			for (int i = 0; i< points.getNumberOfPoints(); i++) {
+				PointROI proi = points.getPoint(i);
+				double[] point = proi.getPoint();
+				point[1] += 0.5;
+				point[0] += 0.5;
+				proi.setPoint(point);
+			}
+			shiftROI = points;
+			col = ColorConstants.yellow;
+			type = RegionType.POLYLINE;
+			lineWidth = 0;
+		}
+		
+		if (shiftROI != null)  roi = shiftROI;
 		else roi = froi;
 		
 		final IROI fr = roi;
+		final Color fcol = col;
+		final RegionType ftype = type;
+		final int flw = lineWidth;
 		
 		Display.getDefault().syncExec(new Runnable() {
 
 			public void run() {
 				try {
-					IRegion region = plotter.createRegion(RegionUtils.getUniqueName(REGION_PREFIX, plotter), RegionType.ELLIPSEFIT);
+					IRegion region = plotter.createRegion(RegionUtils.getUniqueName(REGION_PREFIX, plotter), ftype);
 					region.setROI(fr);
-					region.setRegionColor(ColorConstants.orange);
+					region.setRegionColor(fcol);
+					region.setLineWidth(flw);
 					if (monitor != null) monitor.subTask("Add region");
 					region.setUserRegion(false);
 					plotter.addRegion(region);
