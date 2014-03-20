@@ -356,6 +356,7 @@ public class DiffractionCalibrationView extends ViewPart {
 					diffractionTableViewer.refresh();
 					updateCurrentData(null); // need to reset this
 					plottingSystem.clear();
+					PowderCalibrationUtils.clearFoundRings(plottingSystem);
 					calibrateImagesButton.setEnabled(false);
 					residualLabel.setText(RESIDUAL);
 					residualLabel.getParent().layout();
