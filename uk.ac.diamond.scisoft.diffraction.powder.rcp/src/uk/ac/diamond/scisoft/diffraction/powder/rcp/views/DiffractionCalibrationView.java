@@ -102,6 +102,7 @@ public class DiffractionCalibrationView extends ViewPart {
 	private CalibrationStandards standards;
 	private Map<String, Integer> calibrantRingsMap = new HashMap<String, Integer>();
 
+	// TODO FIXME - So much member data can lead to bugs
 	private Composite parent;
 	private DiffCalTableViewer diffractionTableViewer;
 	private Button calibrateImagesButton;
@@ -160,7 +161,7 @@ public class DiffractionCalibrationView extends ViewPart {
 	public void saveState(IMemento memento) {
 		if (memento != null) {
 			int i = 0;
-			for (DiffractionTableData data : manager.getModel()) {
+			for (DiffractionTableData data : manager.iterable()) {
 				memento.putString(DATA_PATH + String.valueOf(i++), data.path);
 			}
 			memento.putString(CALIBRANT, calibrantCombo.getItem(calibrantCombo.getSelectionIndex()));
@@ -362,7 +363,7 @@ public class DiffractionCalibrationView extends ViewPart {
 					residualLabel.getParent().layout();
 				}
 				
-				setSingleImageOptionsEnabled(manager.getModel().size() < 2);
+				setSingleImageOptionsEnabled(manager.getSize() < 2);
 			}
 		};
 
@@ -583,7 +584,7 @@ public class DiffractionCalibrationView extends ViewPart {
 				dialog.setOverwrite(true);
 				String savedFilePath = dialog.open();
 				if (savedFilePath != null) {
-					DiffractionCalibrationUtils.saveModelToCSVFile(manager.getModel(), savedFilePath);
+					DiffractionCalibrationUtils.saveModelToCSVFile(manager, savedFilePath);
 				}
 			}
 		};
@@ -602,15 +603,9 @@ public class DiffractionCalibrationView extends ViewPart {
 			@Override
 			public void run() {
 				// select last item in table
-				if (manager.getModel() != null && manager.getModel().size() > 0) {
-					diffractionTableViewer.setSelection(new StructuredSelection(manager.getModel().get(manager.getModel().size() - 1)));
-					for (int i = 0; i < manager.getModel().size(); i++) {
-						// Restore original metadata
-						DetectorProperties originalProps = manager.getModel().get(i).md.getOriginalDetector2DProperties();
-						DiffractionCrystalEnvironment originalEnvironment = manager.getModel().get(i).md.getOriginalDiffractionCrystalEnvironment();
-						manager.getModel().get(i).md.getDetector2DProperties().restore(originalProps);
-						manager.getModel().get(i).md.getDiffractionCrystalEnvironment().restore(originalEnvironment);
-					}
+				if (manager.isValidModel()) {
+					diffractionTableViewer.setSelection(new StructuredSelection(manager.getLast()));
+					manager.reset();
 					diffractionTableViewer.refresh();
 				}
 			}
@@ -643,7 +638,7 @@ public class DiffractionCalibrationView extends ViewPart {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				setUpCalbrationModel(ellipseParameters);
-				IRunnableWithProgress job = new AutoCalibrationRun(Display.getDefault(), plottingSystem, manager.getModel(), manager.getCurrentData(), ellipseParameters);
+				IRunnableWithProgress job = new AutoCalibrationRun(Display.getDefault(), plottingSystem, manager, manager.getCurrentData(), ellipseParameters);
 
 				ProgressMonitorDialog dia = new ProgressMonitorDialog(Display.getCurrent().getActiveShell());
 				try {
@@ -680,7 +675,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		Composite composite = new Composite(tabFolder, SWT.NONE);
 		composite.setLayout(new GridLayout());
 		composite.setLayoutData(new GridData(GridData.FILL_BOTH));
-		calibrantPositioning = new CalibrantPositioningWidget(composite, manager.getModel());
+		calibrantPositioning = new CalibrantPositioningWidget(composite, manager);
 
 		calibrateImagesButton = new Button(composite, SWT.PUSH);
 		calibrateImagesButton.setText("Run Calibration Process");
@@ -692,12 +687,12 @@ public class DiffractionCalibrationView extends ViewPart {
 				
 				IRunnableWithProgress job = null;
 				
-				if (usePointCalibration.getSelection() && manager.getModel().size() == 1) {
+				if (usePointCalibration.getSelection() && manager.getSize() == 1) {
 					setUpCalbrationModel(pointParameters);
-					job = new FromPointsCalibrationRun(Display.getDefault(), plottingSystem, manager.getModel(), manager.getCurrentData(), pointParameters);
+					job = new FromPointsCalibrationRun(Display.getDefault(), plottingSystem, manager, manager.getCurrentData(), pointParameters);
 				} else {
 					setUpCalbrationModel(ellipseParameters);
-					job = new FromRingsCalibrationRun(Display.getDefault(), plottingSystem, manager.getModel(), manager.getCurrentData(), ellipseParameters);
+					job = new FromRingsCalibrationRun(Display.getDefault(), plottingSystem, manager, manager.getCurrentData(), ellipseParameters);
 				}
 				
 				ProgressMonitorDialog dia = new ProgressMonitorDialog(Display.getCurrent().getActiveShell());
@@ -911,12 +906,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		if (augmenter != null)
 			augmenter.deactivate(false);
 		
-		if (manager.getModel() != null) {
-			for (DiffractionTableData d : manager.getModel()) {
-				diffractionTableViewer.removeDetectorPropertyListener(d);
-			}
-			manager.getModel().clear();
-		}
+		manager.clear(diffractionTableViewer.getDetectorPropertyListener());
 		logger.debug("model emptied");
 		
 		this.getViewSite().getPage().removePartListener(partListener);
@@ -925,6 +915,7 @@ public class DiffractionCalibrationView extends ViewPart {
 	@Override
 	public void dispose() {
 		super.dispose();
+		manager.dispose();
 		removeListeners();
 	}
 

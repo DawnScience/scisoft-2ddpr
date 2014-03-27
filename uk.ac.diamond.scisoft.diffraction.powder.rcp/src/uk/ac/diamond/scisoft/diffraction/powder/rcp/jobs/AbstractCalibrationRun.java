@@ -1,14 +1,13 @@
 package uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeSet;
 
 import org.dawb.workbench.ui.diffraction.DiffractionCalibrationUtils;
+import org.dawb.workbench.ui.diffraction.table.DiffractionDataManager;
 import org.dawb.workbench.ui.diffraction.table.DiffractionTableData;
 import org.dawnsci.plotting.api.IPlottingSystem;
 import org.dawnsci.plotting.api.region.IRegion;
@@ -30,8 +29,8 @@ import uk.ac.diamond.scisoft.analysis.roi.EllipticalFitROI;
 import uk.ac.diamond.scisoft.analysis.roi.EllipticalROI;
 import uk.ac.diamond.scisoft.analysis.roi.IROI;
 import uk.ac.diamond.scisoft.analysis.roi.ROIProfile;
-import uk.ac.diamond.scisoft.analysis.roi.SectorROI;
 import uk.ac.diamond.scisoft.analysis.roi.ROIProfile.XAxis;
+import uk.ac.diamond.scisoft.analysis.roi.SectorROI;
 import uk.ac.diamond.scisoft.diffraction.powder.BruteStandardMatcher;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
 import uk.ac.diamond.scisoft.diffraction.powder.CentreGuess;
@@ -43,7 +42,7 @@ public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 
 	Display display;
 	IPlottingSystem plottingSystem;
-	List<DiffractionTableData> model;
+	DiffractionDataManager manager;
 	DiffractionTableData currentData;
 	SimpleCalibrationParameterModel params;
 
@@ -53,13 +52,13 @@ public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 	
 	public AbstractCalibrationRun(Display display,
 			IPlottingSystem plottingSystem,
-			List<DiffractionTableData> model,
+			DiffractionDataManager manager,
 			DiffractionTableData currentData,
 			SimpleCalibrationParameterModel params) {
 		
 		this.display = display;
 		this.plottingSystem = plottingSystem;
-		this.model = model;
+		this.manager = manager;
 		this.params = params;
 		this.currentData = currentData;
 	}
@@ -237,7 +236,7 @@ public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 			@Override
 			public void run() {
 				int i = 0;
-				for (DiffractionTableData data : model) {
+				for (DiffractionTableData data : manager.iterable()) {
 					updateMetaData(data.md, output, i);
 					data.residual = output.getResidual();
 					i++;

@@ -3,6 +3,7 @@ package uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.dawb.workbench.ui.diffraction.table.DiffractionDataManager;
 import org.dawb.workbench.ui.diffraction.table.DiffractionTableData;
 import org.dawnsci.plotting.api.IPlottingSystem;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -21,9 +22,9 @@ import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
 public class FromPointsCalibrationRun extends AbstractCalibrationRun {
 
 	public FromPointsCalibrationRun(Display display,
-			IPlottingSystem plottingSystem, List<DiffractionTableData> model,
+			IPlottingSystem plottingSystem, DiffractionDataManager manager,
 			DiffractionTableData currentData, CalibratePointsParameterModel params) {
-		super(display, plottingSystem, model, currentData, params);
+		super(display, plottingSystem, manager, currentData, params);
 		// TODO Auto-generated constructor stub
 	}
 

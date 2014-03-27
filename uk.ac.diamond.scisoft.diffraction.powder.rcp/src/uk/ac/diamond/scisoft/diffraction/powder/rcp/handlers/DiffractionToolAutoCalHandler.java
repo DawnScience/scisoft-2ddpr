@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.dawb.workbench.ui.diffraction.table.DiffractionDataManager;
 import org.dawb.workbench.ui.diffraction.table.DiffractionTableData;
 import org.dawnsci.plotting.api.IPlottingSystem;
 import org.dawnsci.plotting.api.trace.IImageTrace;
@@ -59,7 +60,7 @@ public class DiffractionToolAutoCalHandler extends AbstractHandler {
 		SimpleCalibrationParameterModel params = new SimpleCalibrationParameterModel();
 		params.setNumberOfRings(10);
 		
-		AutoCalibrationRun job = new AutoCalibrationRun(Display.getDefault(), system, model, dtd, params);
+		AutoCalibrationRun job = new AutoCalibrationRun(Display.getDefault(), system, new DiffractionDataManager(model), dtd, params);
 		
 		ProgressMonitorDialog dia = new ProgressMonitorDialog(Display.getCurrent().getActiveShell());
 		try {

@@ -3,6 +3,7 @@ package uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.dawb.workbench.ui.diffraction.table.DiffractionDataManager;
 import org.dawb.workbench.ui.diffraction.table.DiffractionTableData;
 import org.dawnsci.plotting.api.IPlottingSystem;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -11,7 +12,6 @@ import org.eclipse.swt.widgets.Display;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.HKL;
 import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
-import uk.ac.diamond.scisoft.analysis.dataset.DoubleDataset;
 import uk.ac.diamond.scisoft.analysis.roi.CircularROI;
 import uk.ac.diamond.scisoft.analysis.roi.EllipticalROI;
 import uk.ac.diamond.scisoft.analysis.roi.IROI;
@@ -22,9 +22,9 @@ import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 public class FromRingsCalibrationRun extends AbstractCalibrationRun {
 
 	public FromRingsCalibrationRun(Display display,
-			IPlottingSystem plottingSystem, List<DiffractionTableData> model,
+			IPlottingSystem plottingSystem,DiffractionDataManager manager,
 			DiffractionTableData currentData, SimpleCalibrationParameterModel params) {
-		super(display, plottingSystem, model, currentData, params);
+		super(display, plottingSystem, manager, currentData, params);
 	}
 
 	@Override
@@ -36,7 +36,7 @@ public class FromRingsCalibrationRun extends AbstractCalibrationRun {
 		List<List<EllipticalROI>> allEllipses = new ArrayList<List<EllipticalROI>>();
 		List<double[]> allDSpacings = new ArrayList<double[]>();
 
-		for (DiffractionTableData data : model) {
+		for (DiffractionTableData data : manager.iterable()) {
 			
 			int n = data.rois.size();
 			if (n != spacings.size()) { // always allow a choice to be made
@@ -73,10 +73,8 @@ public class FromRingsCalibrationRun extends AbstractCalibrationRun {
 			allDSpacings.add(ds);
 		}
 		
-		double[] deltaDistance = new double[model.size()];
-		for (int i = 0; i <model.size(); i++) deltaDistance[i] = model.get(i).distance;
 
-		AbstractDataset ddist = new DoubleDataset(deltaDistance, new int[]{deltaDistance.length});
+		AbstractDataset ddist = manager.getDistances();
 		
 		double pixelSize = currentData.md.getDetector2DProperties().getHPxSize();
 		
