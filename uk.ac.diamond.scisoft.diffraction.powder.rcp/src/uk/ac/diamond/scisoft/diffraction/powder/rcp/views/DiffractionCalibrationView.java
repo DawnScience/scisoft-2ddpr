@@ -692,7 +692,7 @@ public class DiffractionCalibrationView extends ViewPart {
 				
 				IRunnableWithProgress job = null;
 				
-				if (usePointCalibration.getSelection()) {
+				if (usePointCalibration.getSelection() && manager.getModel().size() == 1) {
 					setUpCalbrationModel(pointParameters);
 					job = new FromPointsCalibrationRun(Display.getDefault(), plottingSystem, manager.getModel(), manager.getCurrentData(), pointParameters);
 				} else {
