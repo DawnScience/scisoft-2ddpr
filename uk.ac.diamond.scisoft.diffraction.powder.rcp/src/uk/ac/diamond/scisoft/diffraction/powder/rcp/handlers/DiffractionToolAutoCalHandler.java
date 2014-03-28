@@ -51,8 +51,8 @@ public class DiffractionToolAutoCalHandler extends AbstractHandler {
 		
 		if (dm == null) return null;
 		
-		dtd.image = ds;
-		dtd.md = dm;
+		dtd.setImage(ds);
+		dtd.setMetaData(dm);
 		
 		List<DiffractionTableData> model = new ArrayList<DiffractionTableData>();
 		model.add(dtd);

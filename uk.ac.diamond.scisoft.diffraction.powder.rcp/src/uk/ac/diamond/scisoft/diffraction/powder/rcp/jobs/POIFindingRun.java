@@ -56,18 +56,18 @@ public class POIFindingRun implements IRunnableWithProgress {
 		
 		IStatus stat = Status.OK_STATUS;
 		
-		if (currentData == null && currentData.md == null)
+		if (currentData == null && currentData.getMetaData() == null)
 			return;
 
-		final List<IROI> resROIs = PowderCalibrationUtils.getResolutionRings(currentData.md);
+		final List<IROI> resROIs = PowderCalibrationUtils.getResolutionRings(currentData.getMetaData());
 		final IImageTrace image = getImageTrace(plottingSystem);
-		if (currentData.rois == null) {
-			currentData.rois = new ArrayList<IROI>();
+		if (currentData.getRois() == null) {
+			currentData.setRois(new ArrayList<IROI>());
 		} else {
-			currentData.rois.clear();
+			currentData.getRois().clear();
 		}
-		currentData.use = false;
-		currentData.nrois = 0;
+		currentData.setUse(false);
+		currentData.setNrois(0);
 		
 		Display.getDefault().syncExec(new Runnable() {
 			
@@ -117,15 +117,15 @@ public class POIFindingRun implements IRunnableWithProgress {
 				logger.trace("Could not find ellipse with {}: {}", r, ex);
 			} finally {
 				if (n >= 0) {
-					currentData.rois.add(roi); // can include null placeholder
+					currentData.getRois().add(roi); // can include null placeholder
 				} else {
-					currentData.rois.clear();
+					currentData.getRois().clear();
 				}
 			}
 		}
-		currentData.nrois = n;
-		if (currentData.nrois > 0) {
-			currentData.use = true;
+		currentData.setNrois(n);
+		if (currentData.getNrois() > 0) {
+			currentData.setUse(true);
 		}
 		return;
 	}

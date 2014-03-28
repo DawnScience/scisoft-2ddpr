@@ -38,14 +38,14 @@ public class FromRingsCalibrationRun extends AbstractCalibrationRun {
 
 		for (DiffractionTableData data : manager.iterable()) {
 			
-			int n = data.rois.size();
+			int n = data.getRois().size();
 			if (n != spacings.size()) { // always allow a choice to be made
 				throw new IllegalArgumentException("Number of ellipses should be equal to spacings");
 			}
 
 			int totalNonNull = 0;
 
-			for (IROI roi : data.rois) {
+			for (IROI roi : data.getRois()) {
 				if (roi != null) totalNonNull++;
 			}
 
@@ -53,8 +53,8 @@ public class FromRingsCalibrationRun extends AbstractCalibrationRun {
 			List<EllipticalROI> erois = new ArrayList<EllipticalROI>(totalNonNull);
 
 			int count = 0;
-			for (int i = 0; i < data.rois.size(); i++) {
-				IROI roi = data.rois.get(i);
+			for (int i = 0; i < data.getRois().size(); i++) {
+				IROI roi = data.getRois().get(i);
 				if (roi != null) {
 					ds[count]  = spacings.get(i).getDNano()*10;
 
@@ -76,14 +76,14 @@ public class FromRingsCalibrationRun extends AbstractCalibrationRun {
 
 		AbstractDataset ddist = manager.getDistances();
 		
-		double pixelSize = currentData.md.getDetector2DProperties().getHPxSize();
+		double pixelSize = currentData.getMetaData().getDetector2DProperties().getHPxSize();
 		
 		CalibrationOutput o = null;
 		
 		if (!params.isFloatEnergy()) {
-			o =  CalibrateEllipses.runKnownWavelength(allEllipses, allDSpacings, pixelSize,currentData.md.getDiffractionCrystalEnvironment().getWavelength());
+			o =  CalibrateEllipses.runKnownWavelength(allEllipses, allDSpacings, pixelSize,currentData.getMetaData().getDiffractionCrystalEnvironment().getWavelength());
 		} else if (!params.isFloatDistance()){
-			o =  CalibrateEllipses.runKnownDistance(allEllipses, allDSpacings, pixelSize,currentData.md.getDetector2DProperties().getBeamCentreDistance());
+			o =  CalibrateEllipses.runKnownDistance(allEllipses, allDSpacings, pixelSize,currentData.getMetaData().getDetector2DProperties().getBeamCentreDistance());
 		}else {
 			o =  CalibrateEllipses.run(allEllipses, allDSpacings,ddist, pixelSize);
 		}

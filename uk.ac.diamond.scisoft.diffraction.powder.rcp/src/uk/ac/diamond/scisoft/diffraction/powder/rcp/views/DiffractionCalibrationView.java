@@ -162,7 +162,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		if (memento != null) {
 			int i = 0;
 			for (DiffractionTableData data : manager.iterable()) {
-				memento.putString(DATA_PATH + String.valueOf(i++), data.path);
+				memento.putString(DATA_PATH + String.valueOf(i++), data.getPath());
 			}
 			memento.putString(CALIBRANT, calibrantCombo.getItem(calibrantCombo.getSelectionIndex()));
 			memento.putInteger(RINGS, ringSelection.getRingSpinnerSelection());
@@ -722,7 +722,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		updateScrolledComposite();
 		updateSelection(true);
 		
-		residualLabel.setText(RESIDUAL + manager.getCurrentData().residual);
+		residualLabel.setText(RESIDUAL + manager.getCurrentData().getResidual());
 		residualLabel.getParent().layout();
 	}
 
@@ -862,15 +862,15 @@ public class DiffractionCalibrationView extends ViewPart {
 
 	private void drawSelectedData(DiffractionTableData data) {
 
-		if (data.image == null)
+		if (data.getImage() == null)
 			return;
 
 		if (plottingSystem == null){
 			initializeSystems();
 		}
 		plottingSystem.clear();
-		plottingSystem.updatePlot2D(data.image, null, null);
-		plottingSystem.setTitle(data.name);
+		plottingSystem.updatePlot2D(data.getImage(), null, null);
+		plottingSystem.setTitle(data.getName());
 		plottingSystem.getAxes().get(0).setTitle("");
 		plottingSystem.getAxes().get(1).setTitle("");
 		plottingSystem.setKeepAspect(true);
@@ -879,8 +879,8 @@ public class DiffractionCalibrationView extends ViewPart {
 		updateCurrentData(data);
 
 		calibrantPositioning.setDiffractionData(manager.getCurrentData());
-		if (data.md != null) {
-		augmenter.setDiffractionMetadata(manager.getCurrentData().md);
+		if (data.getMetaData() != null) {
+		augmenter.setDiffractionMetadata(manager.getCurrentData().getMetaData());
 		
 		if (!augmenter.isActive() && checked) augmenter.activate();
 		

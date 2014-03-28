@@ -40,10 +40,10 @@ public class AutoCalibrationRun extends AbstractCalibrationRun {
 		
 		for (DiffractionTableData data : manager.iterable()) {
 			
-			if (manager.getSize() > 1) plottingSystem.updatePlot2D(data.image, null, monitor);
+			if (manager.getSize() > 1) plottingSystem.updatePlot2D(data.getImage(), null, monitor);
 			
-			final AbstractDataset image = (AbstractDataset)data.image;
-			IDiffractionMetadata meta = data.md;
+			final AbstractDataset image = (AbstractDataset)data.getImage();
+			IDiffractionMetadata meta = data.getMetaData();
 			
 			final EllipseFindingStructure efs = getResolutionEllipses(image, meta, params, monitor);
 			
@@ -76,11 +76,11 @@ public class AutoCalibrationRun extends AbstractCalibrationRun {
 		
 		monitor.beginTask("Calibrating", IProgressMonitor.UNKNOWN);
 		//TODO make sure fix wavelength/distance ignored for multiple images
-		CalibrationOutput output =  CalibrateEllipses.run(allEllipses, allDSpacings,ddist,currentData.md, params);
+		CalibrationOutput output =  CalibrateEllipses.run(allEllipses, allDSpacings,ddist,currentData.getMetaData(), params);
 
 		if (allEllipses.size() == 1 && params.isFinalGlobalOptimisation()) {
 			
-			updateMetaData(currentData.md, output, 0);
+			updateMetaData(currentData.getMetaData(), output, 0);
 			
 			CalibratePointsParameterModel paramModel = new CalibratePointsParameterModel(params);
 			
@@ -92,7 +92,7 @@ public class AutoCalibrationRun extends AbstractCalibrationRun {
 				}
 			}
 			
-			output = CalibratePoints.run(lineROIList, allDSpacings.get(0), currentData.md, paramModel);
+			output = CalibratePoints.run(lineROIList, allDSpacings.get(0), currentData.getMetaData(), paramModel);
 		}
 		
 		updateOnFinish(output);

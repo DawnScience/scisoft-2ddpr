@@ -34,14 +34,14 @@ public class FromPointsCalibrationRun extends AbstractCalibrationRun {
 		monitor.beginTask("Calibrate detector", IProgressMonitor.UNKNOWN);
 		List<HKL> spacings = CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs();
 		
-		int n = currentData.rois.size();
+		int n = currentData.getRois().size();
 		if (n != spacings.size()) { // always allow a choice to be made
 			throw new IllegalArgumentException("Number of ellipses should be equal to spacings");
 		}
 		
 		int totalNonNull = 0;
 		
-		for (IROI roi : currentData.rois) {
+		for (IROI roi : currentData.getRois()) {
 			if (roi != null) totalNonNull++;
 		}
 		
@@ -49,8 +49,8 @@ public class FromPointsCalibrationRun extends AbstractCalibrationRun {
 		List<PolylineROI> erois = new ArrayList<PolylineROI>(totalNonNull);
 		
 		int count = 0;
-		for (int i = 0; i < currentData.rois.size(); i++) {
-			IROI roi = currentData.rois.get(i);
+		for (int i = 0; i < currentData.getRois().size(); i++) {
+			IROI roi = currentData.getRois().get(i);
 			if (roi != null) {
 				ds[count]  = spacings.get(i).getDNano()*10;
 				
@@ -70,7 +70,7 @@ public class FromPointsCalibrationRun extends AbstractCalibrationRun {
 		List<double[]> allDSpacings = new ArrayList<double[]>();
 		allDSpacings.add(ds);
 		
-		CalibrationOutput o = CalibratePoints.run(allEllipses.get(0), allDSpacings.get(0), currentData.md,(CalibratePointsParameterModel)params);
+		CalibrationOutput o = CalibratePoints.run(allEllipses.get(0), allDSpacings.get(0), currentData.getMetaData(),(CalibratePointsParameterModel)params);
 
 		final CalibrationOutput output = o;
 		
@@ -78,9 +78,9 @@ public class FromPointsCalibrationRun extends AbstractCalibrationRun {
 			@Override
 			public void run() {
 //				
-				DetectorProperties dp = currentData.md.getDetector2DProperties();
+				DetectorProperties dp = currentData.getMetaData().getDetector2DProperties();
 				
-				currentData.md.getDiffractionCrystalEnvironment().setWavelength(output.getWavelength());
+				currentData.getMetaData().getDiffractionCrystalEnvironment().setWavelength(output.getWavelength());
 				
 				dp.setBeamCentreDistance(output.getDistance().getDouble(0));
 				double[] bc = new double[] {output.getBeamCentreX().getDouble(0),output.getBeamCentreY().getDouble(0) };
@@ -88,7 +88,7 @@ public class FromPointsCalibrationRun extends AbstractCalibrationRun {
 				
 				dp.setNormalAnglesInDegrees(output.getTilt().getDouble(0)*-1, 0, output.getTiltAngle().getDouble(0)*-1);
 				
-				currentData.residual = output.getResidual();
+				currentData.setResidual(output.getResidual());
 
 				removeFoundRings(plottingSystem);
 			}

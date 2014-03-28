@@ -237,8 +237,8 @@ public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 			public void run() {
 				int i = 0;
 				for (DiffractionTableData data : manager.iterable()) {
-					updateMetaData(data.md, output, i);
-					data.residual = output.getResidual();
+					updateMetaData(data.getMetaData(), output, i);
+					data.setResidual(output.getResidual());
 					i++;
 				}
 
