@@ -93,7 +93,7 @@ public class DiffractionCalibrationSettings extends Dialog {
 		ellipseParamGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
 
 		RadioGroupWidget calibEllipseParamRadios = new RadioGroupWidget(ellipseParamGroup);
-		calibEllipseParamRadios.setActions(getEllipseParamActions());
+		calibEllipseParamRadios.setActions(getEllipseParamActions(), true);
 
 		final Group pointCalibrateGroup = new Group(composite, SWT.FILL);
 		pointCalibrateGroup.setText("Point Calibrate");
@@ -109,6 +109,8 @@ public class DiffractionCalibrationSettings extends Dialog {
 				pointParameters.setFloatEnergy(!((Button)e.getSource()).getSelection());
 			}
 		});
+		fixEnergyButton.setSelection(!pointParameters.isFloatEnergy());
+		
 		Button fixDistanceButton = new Button(pointCalibrateGroup, SWT.CHECK);
 		fixDistanceButton.setText("Fix Distance");
 		fixDistanceButton.addSelectionListener(new SelectionAdapter() {
@@ -117,6 +119,8 @@ public class DiffractionCalibrationSettings extends Dialog {
 				pointParameters.setFloatDistance(!((Button)e.getSource()).getSelection());
 			}
 		});
+		fixDistanceButton.setSelection(!pointParameters.isFloatDistance());
+		
 		Button fixBeamCentreButton = new Button(pointCalibrateGroup, SWT.CHECK);
 		fixBeamCentreButton.setText("Fix Beam Centre");
 		fixBeamCentreButton.addSelectionListener(new SelectionAdapter() {
@@ -125,6 +129,8 @@ public class DiffractionCalibrationSettings extends Dialog {
 				pointParameters.setFloatBeamCentre(!((Button)e.getSource()).getSelection());
 			}
 		});
+		fixBeamCentreButton.setSelection(!pointParameters.isFloatBeamCentre());
+		
 		Button fixTiltButton = new Button(pointCalibrateGroup, SWT.CHECK);
 		fixTiltButton.setText("Fix Tilt");
 		fixTiltButton.addSelectionListener(new SelectionAdapter() {
@@ -133,6 +139,7 @@ public class DiffractionCalibrationSettings extends Dialog {
 				pointParameters.setFloatTilt(!((Button)e.getSource()).getSelection());
 			}
 		});
+		fixTiltButton.setSelection(!pointParameters.isFloatTilt());
 				
 		Button advanced = new Button(composite, SWT.NONE);
 		advanced.setText("Advanced...");
@@ -170,6 +177,7 @@ public class DiffractionCalibrationSettings extends Dialog {
 		};
 		fixNoneAction.setText("Fix None");
 		fixNoneAction.setToolTipText("No parameter is fixed");
+		fixNoneAction.setChecked(ellipseParameters.isFloatDistance()&&ellipseParameters.isFloatEnergy());
 
 		Action fixEnergyAction = new Action() {
 			@Override
@@ -180,6 +188,7 @@ public class DiffractionCalibrationSettings extends Dialog {
 		};
 		fixEnergyAction.setText("Fix Energy");
 		fixEnergyAction.setToolTipText("Energy parameter is fixed");
+		fixEnergyAction.setChecked(ellipseParameters.isFloatDistance()&&!ellipseParameters.isFloatEnergy());
 
 		Action fixDistanceAction = new Action() {
 			@Override
@@ -190,10 +199,20 @@ public class DiffractionCalibrationSettings extends Dialog {
 		};
 		fixDistanceAction.setText("Fix Distance");
 		fixDistanceAction.setToolTipText("Distance parameter is fixed");
+		fixDistanceAction.setChecked(!ellipseParameters.isFloatDistance()&&ellipseParameters.isFloatEnergy());
 
 		radioActions.add(fixNoneAction);
 		radioActions.add(fixEnergyAction);
 		radioActions.add(fixDistanceAction);
+		
+		boolean somethingSelected = false;
+		for (Action action : radioActions) {
+			if (action.isChecked()) {
+				somethingSelected = true;
+			}
+		}
+		if (!somethingSelected) fixNoneAction.setChecked(true);
+		
 		return radioActions;
 	}
 
