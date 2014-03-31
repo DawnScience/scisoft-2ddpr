@@ -39,7 +39,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -74,8 +73,6 @@ import uk.ac.diamond.scisoft.analysis.crystallography.CalibrantSelectedListener;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrantSelectionEvent;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationStandards;
-import uk.ac.diamond.scisoft.analysis.diffraction.DetectorProperties;
-import uk.ac.diamond.scisoft.analysis.diffraction.DiffractionCrystalEnvironment;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibratePointsParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.Activator;
@@ -116,8 +113,8 @@ public class DiffractionCalibrationView extends ViewPart {
 	private RadioGroupWidget calibEllipseParamRadios;
 	private POIFindingRun ringFindJob;
 	private DiffractionImageAugmenter augmenter;
-	CalibratePointsParameterModel pointParameters = new CalibratePointsParameterModel();
-	SimpleCalibrationParameterModel ellipseParameters = new SimpleCalibrationParameterModel();
+	private CalibratePointsParameterModel pointParameters = new CalibratePointsParameterModel();
+	private SimpleCalibrationParameterModel ellipseParameters = new SimpleCalibrationParameterModel();
 	
 	private static final String RESIDUAL = "Residual: ";
 
@@ -131,9 +128,6 @@ public class DiffractionCalibrationView extends ViewPart {
 	private String calibrantName;
 	private int ringNumberSaved;
 	private RingSelectionGroup ringSelection;
-
-	public DiffractionCalibrationView() {
-	}
 
 	@Override
 	public void init(IViewSite site, IMemento memento) throws PartInitException {
@@ -180,41 +174,37 @@ public class DiffractionCalibrationView extends ViewPart {
 
 		Composite controlComp = new Composite(parent, SWT.NONE);
 		controlComp.setLayout(new GridLayout(1, false));
-		GridUtils.removeMargins(controlComp);
 		createToolbarActions(controlComp);
+		GridUtils.removeMargins(controlComp);
 
-		Label instructionLabel = new Label(controlComp, SWT.WRAP);
+		// Simply used to get margins sorted
+		Composite headerComp = new Composite(controlComp, SWT.NONE);
+		headerComp.setLayout(new GridLayout(1, false));
+		headerComp.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, true, false));
+		
+		Label instructionLabel = new Label(headerComp, SWT.WRAP);
 		instructionLabel.setText("Drag/drop a file/data to the table below, " +
 				"choose the calibrant, " +
 				"select the rings to use " +
 				"and finally run the calibration.");
 		instructionLabel.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, true, false));
-		Point pt = instructionLabel.getSize(); pt.x +=4; pt.y += 4; instructionLabel.setSize(pt);
 
-		// make a scrolled composite
-		ScrolledComposite scrollComposite = new ScrolledComposite(controlComp, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
-		scrollComposite.setLayout(new GridLayout(1, false));
-		scrollComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-
-		Composite scrollHolder = new Composite(scrollComposite, SWT.NONE);
-		scrollHolder.setLayout(new GridLayout(1, false));
-		
+	
 		manager = new DiffractionDataManager();
 		
 		// table of images and found rings
-		diffractionTableViewer = new DiffCalTableViewer(scrollHolder, pathsList, manager);
+		diffractionTableViewer = new DiffCalTableViewer(headerComp, pathsList, manager);
 		diffractionTableViewer.addSelectionChangedListener(selectionChangeListener);
-		
+		GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
+		data.minimumHeight = 150;
+		diffractionTableViewer.getTable().setLayoutData(data);
 
-		Composite mainHolder = new Composite(scrollHolder, SWT.NONE);
+		Composite mainHolder = new Composite(controlComp, SWT.NONE);
 		mainHolder.setLayout(new GridLayout(1, false));
 		mainHolder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
 		// create calibrant combo
-		Composite topComp = new Composite(mainHolder, SWT.NONE);
-		topComp.setLayout(new GridLayout(2, false));
-		topComp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		createCalibrantGroup(topComp);
+		createCalibrantGroup(mainHolder);
 
 		ringSelection = new RingSelectionGroup(mainHolder, standards.getCalibrant().getHKLs().size());
 		ringSelection.addRingNumberSpinnerListener(new SelectionAdapter() {
@@ -232,7 +222,7 @@ public class DiffractionCalibrationView extends ViewPart {
 //		instructionLabel.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false));
 		
 		//TabFolder
-		final TabFolder tabFolder = new TabFolder(mainHolder, SWT.BORDER | SWT.FILL);
+		final TabFolder tabFolder = new TabFolder(mainHolder, SWT.FILL);
 		tabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		TabItem autoTabItem = new TabItem(tabFolder, SWT.FILL);
 		autoTabItem.setText("Auto");
@@ -276,15 +266,6 @@ public class DiffractionCalibrationView extends ViewPart {
 		residualLabel = new Label(mainHolder, SWT.NONE);
 		residualLabel.setText(RESIDUAL);
 		residualLabel.setLayoutData(new GridData());
-
-		scrollHolder.layout();
-		scrollComposite.setContent(scrollHolder);
-		scrollComposite.setExpandHorizontal(true);
-		scrollComposite.setExpandVertical(true);
-		Rectangle r = scrollHolder.getClientArea();
-		scrollComposite.setMinSize(scrollHolder.computeSize(r.width, SWT.DEFAULT));
-		scrollComposite.layout();
-		// end of Diffraction Calibration controls
 
 		// try to load the previous data saved in the memento
 		for (String p : pathsList) {
@@ -469,6 +450,7 @@ public class DiffractionCalibrationView extends ViewPart {
 	}
 
 	private void createCalibrantGroup(Composite composite) {
+		
 		Group selectCalibComp = new Group(composite, SWT.FILL);
 		selectCalibComp.setText("Select calibrant:");
 		selectCalibComp.setLayout(new GridLayout(1, false));
