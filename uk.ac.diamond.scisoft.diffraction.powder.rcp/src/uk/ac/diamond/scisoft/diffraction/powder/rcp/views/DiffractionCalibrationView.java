@@ -12,12 +12,11 @@ import org.dawb.common.ui.wizard.persistence.PersistenceExportWizard;
 import org.dawb.common.ui.wizard.persistence.PersistenceImportWizard;
 import org.dawb.workbench.ui.diffraction.CalibrantPositioningWidget;
 import org.dawb.workbench.ui.diffraction.DiffractionCalibrationUtils;
-import org.dawb.workbench.ui.diffraction.table.DiffCalTableViewer;
 import org.dawb.workbench.ui.diffraction.table.DiffractionDataChanged;
 import org.dawb.workbench.ui.diffraction.table.DiffractionDataManager;
+import org.dawb.workbench.ui.diffraction.table.DiffractionDelegate;
 import org.dawb.workbench.ui.diffraction.table.DiffractionTableData;
 import org.dawb.workbench.ui.diffraction.table.IDiffractionDataListener;
-import org.dawnsci.common.widgets.radio.RadioGroupWidget;
 import org.dawnsci.plotting.api.IPlottingSystem;
 import org.dawnsci.plotting.api.PlottingFactory;
 import org.dawnsci.plotting.tools.diffraction.DiffractionImageAugmenter;
@@ -36,11 +35,9 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -51,8 +48,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.TabFolder;
-import org.eclipse.swt.widgets.TabItem;
+import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IViewPart;
@@ -81,7 +77,6 @@ import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.AutoCalibrationRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.FromPointsCalibrationRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.FromRingsCalibrationRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.POIFindingRun;
-import uk.ac.diamond.scisoft.diffraction.powder.rcp.preferences.DiffractionCalibrationPreferencePage;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.RingSelectionGroup;
 
 public class DiffractionCalibrationView extends ViewPart {
@@ -100,20 +95,18 @@ public class DiffractionCalibrationView extends ViewPart {
 	private Map<String, Integer> calibrantRingsMap = new HashMap<String, Integer>();
 
 	// TODO FIXME - So much member data can lead to bugs
-	private Composite parent;
-	private DiffCalTableViewer diffractionTableViewer;
+	private DiffractionDelegate diffractionTableViewer;
 	private Button calibrateImagesButton;
 	private Combo calibrantCombo;
 	private CalibrantPositioningWidget calibrantPositioning;
 	private Label residualLabel;
 	private Button usePointCalibration;
 	private Button optimiseAfter;
-	private Group pointCalibrateGroup;
-	private Group ellipseParamGroup;
-	private RadioGroupWidget calibEllipseParamRadios;
 	private POIFindingRun ringFindJob;
 	private DiffractionImageAugmenter augmenter;
-	private CalibratePointsParameterModel pointParameters = new CalibratePointsParameterModel();
+	
+	// Actual data
+	private CalibratePointsParameterModel   pointParameters   = new CalibratePointsParameterModel();
 	private SimpleCalibrationParameterModel ellipseParameters = new SimpleCalibrationParameterModel();
 	
 	private static final String RESIDUAL = "Residual: ";
@@ -165,48 +158,22 @@ public class DiffractionCalibrationView extends ViewPart {
 
 	@Override
 	public void createPartControl(final Composite parent) {
-		parent.setLayout(new FillLayout());
-
-		this.parent = parent;
+		
+		final Composite content = new Composite(parent, SWT.NONE);
+		content.setLayout(new GridLayout(1, false));
 		
 		initializeListeners();
-		standards = CalibrationFactory.getCalibrationStandards();
-
-		Composite controlComp = new Composite(parent, SWT.NONE);
-		controlComp.setLayout(new GridLayout(1, false));
-		createToolbarActions(controlComp);
-		GridUtils.removeMargins(controlComp);
-
-		// Simply used to get margins sorted
-		Composite headerComp = new Composite(controlComp, SWT.NONE);
-		headerComp.setLayout(new GridLayout(1, false));
-		headerComp.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, true, false));
-		
-		Label instructionLabel = new Label(headerComp, SWT.WRAP);
-		instructionLabel.setText("Drag/drop a file/data to the table below, " +
-				"choose the calibrant, " +
-				"select the rings to use " +
-				"and finally run the calibration.");
-		instructionLabel.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, true, false));
-
-	
+		standards = CalibrationFactory.getCalibrationStandards();	
 		manager = new DiffractionDataManager();
 		
 		// table of images and found rings
-		diffractionTableViewer = new DiffCalTableViewer(headerComp, pathsList, manager);
+		diffractionTableViewer = new DiffractionDelegate(content, pathsList, manager);
 		diffractionTableViewer.addSelectionChangedListener(selectionChangeListener);
-		GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
-		data.minimumHeight = 150;
-		diffractionTableViewer.getTable().setLayoutData(data);
-
-		Composite mainHolder = new Composite(controlComp, SWT.NONE);
-		mainHolder.setLayout(new GridLayout(1, false));
-		mainHolder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
 		// create calibrant combo
-		createCalibrantGroup(mainHolder);
+		createCalibrantGroup(content);
 
-		ringSelection = new RingSelectionGroup(mainHolder, standards.getCalibrant().getHKLs().size());
+		ringSelection = new RingSelectionGroup(content, standards.getCalibrant().getHKLs().size());
 		ringSelection.addRingNumberSpinnerListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -216,26 +183,52 @@ public class DiffractionCalibrationView extends ViewPart {
 			}
 		});
 		
-//		instructionLabel = new Label(mainHolder, SWT.WRAP);
-//		instructionLabel.setText("Use auto calibration when images have complete rings" +
-//				" and only small tilts - for all other data use manual");
-//		instructionLabel.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false));
+		new Label(content, SWT.NONE);
 		
-		//TabFolder
-		final TabFolder tabFolder = new TabFolder(mainHolder, SWT.FILL);
-		tabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		TabItem autoTabItem = new TabItem(tabFolder, SWT.FILL);
-		autoTabItem.setText("Auto");
-		autoTabItem.setToolTipText("Automatic calibration");
-		autoTabItem.setControl(getAutoTabControl(tabFolder));
-		tabFolder.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent event) {
-				
-				diffractionTableViewer.updateTableColumnsAndLayout(tabFolder.getSelectionIndex());
-			}
+		final Group run  = new Group(content, SWT.NONE);
+		run.setText("Run Calibration");
+		run.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		run.setLayout(new GridLayout(1, false));
+		GridUtils.removeMargins(run);
+		
+		final Composite choiceLine = new Composite(run, SWT.NONE);
+		choiceLine.setLayout(new GridLayout(2, false));
+		choiceLine.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		
+        final Button autoRadio = new Button(choiceLine, SWT.RADIO);
+        autoRadio.setText("Automatic");
+        autoRadio.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
+        autoRadio.setSelection(true);
+        
+        final Button manualRadio = new Button(choiceLine, SWT.RADIO);
+        manualRadio.setText("Manual");
+        manualRadio.setLayoutData(new GridData(SWT.LEFT, SWT.FILL, true, false));
+        manualRadio.setSelection(false);
+		
+		final Composite choiceContent = new Composite(run, SWT.NONE);
+		final StackLayout stackLayout = new StackLayout();
+		choiceContent.setLayout(stackLayout);
+		choiceContent.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		
+		final Composite auto   = getAutoControl(choiceContent);
+		stackLayout.topControl = auto; // TODO Remember...
+		final Composite manual = getManualControl(choiceContent);
+		
+		
+        autoRadio.addSelectionListener(new SelectionAdapter() {
+        	public void widgetSelected(SelectionEvent e) {
+        		autoRadio.setSelection(true);
+                manualRadio.setSelection(false);
+                setCalibrationChoice(auto, 0, stackLayout);
+        	}
 		});
-		
+        manualRadio.addSelectionListener(new SelectionAdapter() {
+        	public void widgetSelected(SelectionEvent e) {
+                autoRadio.setSelection(false);
+                manualRadio.setSelection(true);
+                setCalibrationChoice(manual, 1, stackLayout);
+        	}
+		});
 		manager.addFileListener(new IDiffractionDataListener() {
 			
 			@Override
@@ -246,24 +239,29 @@ public class DiffractionCalibrationView extends ViewPart {
 					@Override
 					public void run() {
 						diffractionTableViewer.refresh();
-						diffractionTableViewer.updateTableColumnsAndLayout(tabFolder.getSelectionIndex());
+						diffractionTableViewer.updateTableColumnsAndLayout(calibrationTypeIndex);
 						diffractionTableViewer.setSelection(new StructuredSelection(event.getSource()),true);
 					}
 				});
 			}
 		});
-
-		TabItem manualTabItem = new TabItem(tabFolder, SWT.FILL);
-		manualTabItem.setText("Manual");
-		manualTabItem.setToolTipText("Manual calibration");
-		manualTabItem.setControl(getManualTabControl(tabFolder));
-
-		TabItem settingTabItem = new TabItem(tabFolder, SWT.FILL);
-		settingTabItem.setText("Settings");
-		settingTabItem.setToolTipText("Calibration settings");
-		settingTabItem.setControl(getSettingTabControl(tabFolder, standards));
-
-		residualLabel = new Label(mainHolder, SWT.NONE);
+		
+		final Link settings = new Link(content, SWT.RIGHT);
+		settings.setText("<a>Calibration Settings</a>");
+		settings.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false));
+		settings.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				DiffractionCalibrationSettings dialog = new DiffractionCalibrationSettings(settings.getShell(),
+						                                                                   pointParameters, 
+						                                                                   ellipseParameters,
+						                                                                   standards,
+						                                                                   calibrationTypeIndex,
+						                                                                   usePointCalibration.getSelection());
+				dialog.open();
+			}
+		});
+		
+		residualLabel = new Label(content, SWT.NONE);
 		residualLabel.setText(RESIDUAL);
 		residualLabel.setLayoutData(new GridData());
 
@@ -277,12 +275,21 @@ public class DiffractionCalibrationView extends ViewPart {
 		CalibrationFactory.addCalibrantSelectionListener(calibrantChangeListener);
 
 		calibrantPositioning.setControlsToUpdate(calibrateImagesButton);
-		calibrantPositioning.setTableViewerToUpdate(diffractionTableViewer);
+		calibrantPositioning.setRefreshable(diffractionTableViewer);
 
 		//initialize the calibrant ring Map
 		calibrantRingsMap.put(calibrantName, ringNumberSaved);
+		
+		createToolbarActions();
 	}
-
+	private int calibrationTypeIndex = 0;
+	public void setCalibrationChoice(Composite comp, int index, StackLayout stackLayout) {
+		calibrationTypeIndex = index;
+		stackLayout.topControl = comp;	
+		comp.getParent().layout();
+		diffractionTableViewer.updateTableColumnsAndLayout(index);
+	}
+	
 	private IViewPart getView(String viewID) {
 		IWorkbench workbench = PlatformUI.getWorkbench();
 		IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
@@ -382,9 +389,6 @@ public class DiffractionCalibrationView extends ViewPart {
 	private void setSingleImageOptionsEnabled(boolean enabled) {
 		usePointCalibration.setEnabled(enabled);
 		optimiseAfter.setEnabled(enabled);
-		enableControl(ellipseParamGroup, enabled);
-		
-		if (usePointCalibration.getSelection()) enableControl(pointCalibrateGroup, enabled);
 	}
 	
 	private void setCalibrantChoice() {
@@ -435,17 +439,6 @@ public class DiffractionCalibrationView extends ViewPart {
 			augmenter.drawCalibrantRings(true, standards.getCalibrant());
 		} else {
 			augmenter.deactivate(false);
-		}
-	}
-
-	private void updateScrolledComposite() {
-		// reset the scroll composite
-		Rectangle r = parent.getClientArea();
-		if (parent.getParent() instanceof ScrolledComposite) {
-			ScrolledComposite scrollHolder = (ScrolledComposite) parent
-					.getParent();
-			scrollHolder.setMinSize(parent.computeSize(r.width, SWT.DEFAULT));
-			scrollHolder.layout();
 		}
 	}
 
@@ -521,7 +514,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		showCalibAndBeamCtrCheckBox.setSelection(true);
 	}
 
-	private void createToolbarActions(Composite parent) {
+	private void createToolbarActions() {
 		IToolBarManager toolBarMan = this.getViewSite().getActionBars().getToolBarManager();
 
 		IAction importAction = new Action("Import metadata from file") {
@@ -604,18 +597,27 @@ public class DiffractionCalibrationView extends ViewPart {
 	/**
 	 * Gets the control for the automatic tab
 	 * 
-	 * @param tabFolder
+	 * @param content
 	 *            the parent tab folder
 	 * @return Control
 	 */
-	private Control getAutoTabControl(TabFolder tabFolder) {
-		Composite composite = new Composite(tabFolder, SWT.FILL);
-		composite.setLayout(new GridLayout(1, false));
+	private Composite getAutoControl(Composite content) {
 		
+		Composite composite = new Composite(content, SWT.NONE);
+		composite.setLayout(new GridLayout(1, false));
+				
+		new Label(composite, SWT.NONE);
+
+		optimiseAfter = new Button(composite, SWT.CHECK);
+		optimiseAfter.setLayoutData(new GridData(SWT.LEFT, SWT.BOTTOM, false, false));
+		optimiseAfter.setText("Finish with point calibration optimisation");
+		
+		new Label(composite, SWT.NONE);
+	
 		Button goBabyGoButton = new Button(composite, SWT.PUSH);
 		goBabyGoButton.setImage(Activator.getImage("icons/CalibrationRun.png"));
-		goBabyGoButton.setText("Run Auto Calibration");
-		goBabyGoButton.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
+		goBabyGoButton.setText("Run Calibration");
+		goBabyGoButton.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, true, true));
 		goBabyGoButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -637,32 +639,42 @@ public class DiffractionCalibrationView extends ViewPart {
 				
 			}
 		});
-		
-		optimiseAfter = new Button(composite, SWT.CHECK);
-		optimiseAfter.setLayoutData(new GridData(SWT.LEFT, SWT.BOTTOM, false, false));
-		optimiseAfter.setText("Finish with point calibration optimisation");
-		
+
 		return composite;
 	}
 
 	/**
 	 * Gets the control for the manual tab
 	 * 
-	 * @param tabFolder
+	 * @param content
 	 *            the parent tab folder
 	 * @param model
 	 * @return Control
 	 */
-	private Control getManualTabControl(TabFolder tabFolder) {
-		Composite composite = new Composite(tabFolder, SWT.NONE);
+	private Composite getManualControl(Composite content) {
+		
+		Composite composite = new Composite(content, SWT.NONE);
 		composite.setLayout(new GridLayout());
-		composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+		composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		
+		
 		calibrantPositioning = new CalibrantPositioningWidget(composite, manager);
 
+		new Label(composite, SWT.NONE);
+
+		usePointCalibration = new Button(composite, SWT.CHECK | SWT.WRAP);
+		usePointCalibration.setLayoutData(new GridData(SWT.LEFT, SWT.BOTTOM, false, false, 2, 1));
+		usePointCalibration.setText("Use point parameters");
+		usePointCalibration.setToolTipText("Tick to use point instead of ellipse parameters");
+		usePointCalibration.setSelection(false);
+		
+		new Label(composite, SWT.NONE);
+
 		calibrateImagesButton = new Button(composite, SWT.PUSH);
-		calibrateImagesButton.setText("Run Calibration Process");
+		calibrateImagesButton.setImage(Activator.getImage("icons/CalibrationRun.png"));
+		calibrateImagesButton.setText("Run Calibration");
 		calibrateImagesButton.setToolTipText("Calibrate detector in chosen images");
-		calibrateImagesButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
+		calibrateImagesButton.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, false, true));
 		calibrateImagesButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -692,108 +704,14 @@ public class DiffractionCalibrationView extends ViewPart {
 		});
 		calibrateImagesButton.setEnabled(false);
 		
-		usePointCalibration = new Button(composite, SWT.CHECK | SWT.WRAP);
-		usePointCalibration.setLayoutData(new GridData(SWT.LEFT, SWT.BOTTOM, false, false, 2, 1));
-		usePointCalibration.setText("Manual calibration uses points not ellipse parameters");
-		usePointCalibration.setSelection(false);
-		
 		return composite;
 	}
 	
 	private void updateAfterCalibration() {
-		updateScrolledComposite();
 		updateSelection(true);
 		
 		residualLabel.setText(RESIDUAL + manager.getCurrentData().getResidual());
 		residualLabel.getParent().layout();
-	}
-
-	/**
-	 * Gets the control for the setting tab
-	 * 
-	 * @param tabFolder
-	 *            the parent tab folder
-	 * @return Control
-	 */
-	private Control getSettingTabControl(TabFolder tabFolder, CalibrationStandards standards) {
-		Composite composite = new Composite(tabFolder, SWT.FILL);
-		composite.setLayout(new GridLayout(2, false));
-
-		ellipseParamGroup = new Group(composite, SWT.FILL);
-		ellipseParamGroup.setText("Ellipse Parameters");
-		ellipseParamGroup.setToolTipText("Set the Ellipse Parameters");
-		ellipseParamGroup.setLayout(new GridLayout());
-		ellipseParamGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
-
-		calibEllipseParamRadios = new RadioGroupWidget(ellipseParamGroup);
-		calibEllipseParamRadios.setActions(getEllipseParamActions());
-
-		pointCalibrateGroup = new Group(composite, SWT.FILL);
-		pointCalibrateGroup.setText("Point Calibrate");
-		pointCalibrateGroup.setToolTipText("Set the Point Parameters");
-		pointCalibrateGroup.setLayout(new GridLayout());
-		pointCalibrateGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
-
-		Button fixEnergyButton = new Button(pointCalibrateGroup, SWT.CHECK);
-		fixEnergyButton.setText("Fix Energy");
-		fixEnergyButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				pointParameters.setFloatEnergy(!((Button)e.getSource()).getSelection());
-			}
-		});
-		Button fixDistanceButton = new Button(pointCalibrateGroup, SWT.CHECK);
-		fixDistanceButton.setText("Fix Distance");
-		fixDistanceButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				pointParameters.setFloatDistance(!((Button)e.getSource()).getSelection());
-			}
-		});
-		Button fixBeamCentreButton = new Button(pointCalibrateGroup, SWT.CHECK);
-		fixBeamCentreButton.setText("Fix Beam Centre");
-		fixBeamCentreButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				pointParameters.setFloatBeamCentre(!((Button)e.getSource()).getSelection());
-			}
-		});
-		Button fixTiltButton = new Button(pointCalibrateGroup, SWT.CHECK);
-		fixTiltButton.setText("Fix Tilt");
-		fixTiltButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				pointParameters.setFloatTilt(!((Button)e.getSource()).getSelection());
-			}
-		});
-		
-		usePointCalibration.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				boolean isManual = usePointCalibration.getSelection();
-				enableControl(pointCalibrateGroup, isManual);
-			}
-		});
-		
-		Button advanced = new Button(composite, SWT.NONE);
-		advanced.setText("Advanced...");
-		advanced.setToolTipText("Open preference page for advanced settings");
-		advanced.setLayoutData(new GridData(SWT.LEFT, SWT.BOTTOM, true, false));
-		advanced.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				PreferenceDialog pref = PreferencesUtil
-						.createPreferenceDialogOn(PlatformUI.getWorkbench()
-								.getActiveWorkbenchWindow().getShell(),
-								DiffractionCalibrationPreferencePage.ID, null, null);
-				if (pref != null)
-					pref.open();
-			}
-		});
-		
-		enableControl(pointCalibrateGroup, false);
-
-		return composite;
 	}
 
 	private void enableControl(Group group, boolean enabled) {
@@ -803,44 +721,6 @@ public class DiffractionCalibrationView extends ViewPart {
 		group.setEnabled(enabled);
 	}
  	
-
-	private List<Action> getEllipseParamActions() {
-		List<Action> radioActions = new ArrayList<Action>();
-		Action fixNoneAction = new Action() {
-			@Override
-			public void run() {
-				ellipseParameters.setFloatDistance(true);
-				ellipseParameters.setFloatEnergy(true);
-			}
-		};
-		fixNoneAction.setText("Fix None");
-		fixNoneAction.setToolTipText("No parameter is fixed");
-
-		Action fixEnergyAction = new Action() {
-			@Override
-			public void run() {
-				ellipseParameters.setFloatDistance(true);
-				ellipseParameters.setFloatEnergy(false);
-			}
-		};
-		fixEnergyAction.setText("Fix Energy");
-		fixEnergyAction.setToolTipText("Energy parameter is fixed");
-
-		Action fixDistanceAction = new Action() {
-			@Override
-			public void run() {
-				ellipseParameters.setFloatDistance(false);
-				ellipseParameters.setFloatEnergy(true);
-			}
-		};
-		fixDistanceAction.setText("Fix Distance");
-		fixDistanceAction.setToolTipText("Distance parameter is fixed");
-
-		radioActions.add(fixNoneAction);
-		radioActions.add(fixEnergyAction);
-		radioActions.add(fixDistanceAction);
-		return radioActions;
-	}
 
 	private void drawSelectedData(DiffractionTableData data) {
 
@@ -903,8 +783,8 @@ public class DiffractionCalibrationView extends ViewPart {
 
 	@Override
 	public void setFocus() {
-		if (parent != null && !parent.isDisposed())
-			parent.setFocus();
+		if (diffractionTableViewer != null && !diffractionTableViewer.isDisposed())
+			diffractionTableViewer.setFocus();
 	}
 
 	/**
