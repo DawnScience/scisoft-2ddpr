@@ -621,6 +621,9 @@ public class DiffractionCalibrationView extends ViewPart {
 		goBabyGoButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
+				if (manager.isEmpty()) {
+					MessageDialog.openInformation(Display.getCurrent().getActiveShell(), "Load Data", "Please load some data!");
+				}
 				setUpCalbrationModel(ellipseParameters);
 				IRunnableWithProgress job = new AutoCalibrationRun(Display.getDefault(), plottingSystem, manager, manager.getCurrentData(), ellipseParameters);
 
@@ -708,8 +711,8 @@ public class DiffractionCalibrationView extends ViewPart {
 	}
 	
 	private void updateAfterCalibration() {
+		if (manager.isEmpty()) return;
 		updateSelection(true);
-		
 		residualLabel.setText(RESIDUAL + manager.getCurrentData().getResidual());
 		residualLabel.getParent().layout();
 	}

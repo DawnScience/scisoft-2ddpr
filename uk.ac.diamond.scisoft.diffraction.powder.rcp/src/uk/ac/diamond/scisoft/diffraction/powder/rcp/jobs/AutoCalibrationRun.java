@@ -33,6 +33,8 @@ public class AutoCalibrationRun extends AbstractCalibrationRun {
 	public void run(final IProgressMonitor monitor) {
 		
 		
+		if (manager.isEmpty()) return;
+		
 		AbstractDataset ddist = manager.getDistances();
 		
 		List<List<EllipticalROI>> allEllipses = new ArrayList<List<EllipticalROI>>();
