@@ -631,10 +631,12 @@ public class DiffractionCalibrationView extends ViewPart {
 				try {
 					dia.run(true, true, job);
 				} catch (InvocationTargetException e1) {
-					e1.printStackTrace();
-					MessageDialog.openError(Display.getCurrent().getActiveShell(), "Calibration Error", "An error occured: " + e1.getTargetException().getMessage());
+					logger.error(e1.getMessage());
+					MessageDialog.openError(Display.getCurrent().getActiveShell(), "Calibration Error", "An error occured during auto calibration!" + System.lineSeparator() +
+							"Check the correct calibrant is selected, try changing the number of rings or use manual calibration." + System.lineSeparator()
+							 + "Specific error :" + e1.getTargetException().getMessage());
+					
 				} catch (InterruptedException e1) {
-					e1.printStackTrace();
 					logger.error("Error running Job:" + e1.getMessage());
 				}
 				
