@@ -741,7 +741,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		plottingSystem.getAxes().get(0).setTitle("");
 		plottingSystem.getAxes().get(1).setTitle("");
 		plottingSystem.setKeepAspect(true);
-		plottingSystem.setShowIntensity(false);
+		//plottingSystem.setShowIntensity(false);
 
 		updateCurrentData(data);
 
