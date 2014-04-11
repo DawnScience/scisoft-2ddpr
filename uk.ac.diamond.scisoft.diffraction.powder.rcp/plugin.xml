@@ -195,5 +195,65 @@
             content="intro/introContribution.xml">
       </configExtension>
    </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:uk.ac.diamond.scisoft.diffraction.powder.rcp.views.PowderFileView">
+         <command
+               commandId="uk.ac.diamond.sda.navigator.exploreros"
+               icon="icons/folder.png"
+               label="Open in File Explorer"
+               style="push">
+         </command>
+         <command
+               commandId="org.dawnsci.conversion.convertWizard"
+               icon="icons/convert.png"
+               label="Convert..."
+               style="push"
+               tooltip="Convert data to other formats">
+            <visibleWhen
+                  checkEnabled="true">
+            </visibleWhen>
+         </command>
+         <separator
+               name="uk.ac.diamond.scisoft.diffraction.powder.rcp.separator1"
+               visible="true">
+         </separator>
+         <command
+               commandId="uk.ac.diamond.sda.navigator.refresh"
+               icon="icons/refresh.gif"
+               label="Refresh"
+               style="push"
+               tooltip="Refresh file tree">
+         </command>
+         <command
+               commandId="uk.ac.diamond.sda.navigator.collapseAll"
+               icon="icons/CollapseAll.png"
+               label="Collapse All"
+               style="push">
+         </command>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="toolbar:uk.ac.diamond.scisoft.diffraction.powder.rcp.views.PowderFileView">
+         <separator
+               name="uk.ac.diamond.scisoft.diffraction.powder.rcp.separator2">
+         </separator>
+         <command
+               commandId="uk.ac.diamond.sda.navigator.collapseAll"
+               icon="icons/CollapseAll.png"
+               label="Collapse All"
+               style="push">
+         </command>
+         <command
+               commandId="uk.ac.diamond.sda.navigator.refresh"
+               icon="icons/refresh.gif"
+               label="Refresh"
+               style="push"
+               tooltip="Refresh file tree">
+         </command>
+      </menuContribution>
+   </extension>
 
 </plugin>
