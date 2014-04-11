@@ -18,6 +18,7 @@ public class OpenLocalFileAction extends Action implements
 		IWorkbenchWindowActionDelegate {
 
 	private IWorkbenchWindow window;
+	private String filterPath;
 
 	@Override
 	public void run(IAction action) {
@@ -28,18 +29,20 @@ public class OpenLocalFileAction extends Action implements
 	public void run() {
 		FileDialog dialog =  new FileDialog(window.getShell(), SWT.OPEN | SWT.MULTI);
 		dialog.setText("Open file");
-		//dialog.setFilterPath(filterPath);
+		dialog.setFilterPath(filterPath);
 		dialog.open();
 		String[] names =  dialog.getFileNames();
-		IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-		IViewPart view = page.findView("uk.ac.diamond.scisoft.diffraction.powder.rcp.diffractionCalibrationView");
-		if (view==null) return;
-		
-		//FIXME table viewer should not be doing the data loading!
-		final DiffractionDataManager manager = (DiffractionDataManager)view.getAdapter(DiffractionDataManager.class);
-		if (manager != null) {
-			for (String name : names) {
-				manager.loadData(dialog.getFilterPath() + File.separator + name, null);
+		if (names != null) {
+			filterPath =  dialog.getFilterPath();
+			IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+			IViewPart view = page.findView("uk.ac.diamond.scisoft.diffraction.powder.rcp.diffractionCalibrationView");
+			if (view==null) return;
+
+			final DiffractionDataManager manager = (DiffractionDataManager)view.getAdapter(DiffractionDataManager.class);
+			if (manager != null) {
+				for (String name : names) {
+					manager.loadData(dialog.getFilterPath() + File.separator + name, null);
+				}
 			}
 		}
 	}
@@ -53,11 +56,13 @@ public class OpenLocalFileAction extends Action implements
 	@Override
 	public void dispose() {
 		window = null;
+		filterPath = null;
 	}
 
 	@Override
 	public void init(IWorkbenchWindow window) {
 		this.window =  window;
+		filterPath =  System.getProperty("user.home");
 	}
 
 }
