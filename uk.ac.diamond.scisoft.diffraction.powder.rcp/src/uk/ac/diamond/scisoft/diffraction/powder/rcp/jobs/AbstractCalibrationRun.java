@@ -158,7 +158,7 @@ public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 		NonPixelSplittingIntegration npsi = new NonPixelSplittingIntegration(md, nBins);
 		npsi.setAxisType(XAxis.PIXEL);
 		
-		List<AbstractDataset> integration = npsi.value(image);
+		List<AbstractDataset> integration = npsi.integrate(image);
 		final AbstractDataset x = integration.get(0);
 		final AbstractDataset y = integration.get(1);
 		
