@@ -13,6 +13,7 @@ import org.dawnsci.plotting.api.IPlottingSystem;
 import org.dawnsci.plotting.api.region.IRegion;
 import org.dawnsci.plotting.api.trace.IImageTrace;
 import org.dawnsci.plotting.tools.diffraction.DiffractionUtils;
+import org.dawnsci.plotting.tools.diffraction.NexusDiffractionMetaCreator;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Display;
@@ -23,7 +24,11 @@ import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.HKL;
 import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
 import uk.ac.diamond.scisoft.analysis.diffraction.DetectorProperties;
+import uk.ac.diamond.scisoft.analysis.diffraction.DiffractionCrystalEnvironment;
 import uk.ac.diamond.scisoft.analysis.diffraction.ResolutionEllipseROI;
+import uk.ac.diamond.scisoft.analysis.diffraction.powder.AbstractPixelIntegration;
+import uk.ac.diamond.scisoft.analysis.diffraction.powder.NonPixelSplittingIntegration;
+import uk.ac.diamond.scisoft.analysis.io.DiffractionMetadata;
 import uk.ac.diamond.scisoft.analysis.io.IDiffractionMetadata;
 import uk.ac.diamond.scisoft.analysis.roi.EllipticalFitROI;
 import uk.ac.diamond.scisoft.analysis.roi.EllipticalROI;
@@ -141,20 +146,30 @@ public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 		double[] farCorner = new double[]{0,0};
 		if (approxCentre[0] < shape[0]/2.0) farCorner[0] = shape[0];
 		if (approxCentre[1] < shape[1]/2.0) farCorner[1] = shape[1];
-		double maxDistance = Math.sqrt(Math.pow(approxCentre[0]-farCorner[0],2)+Math.pow(approxCentre[1]-farCorner[1],2));
-		SectorROI sector = new SectorROI(approxCentre[0], approxCentre[1], 0, maxDistance, 0, 2*Math.PI);
+		
+		int nBins = AbstractPixelIntegration.calculateNumberOfBins(approxCentre, shape);
 		monitor.beginTask("Integrating image...", IProgressMonitor.UNKNOWN);
-		AbstractDataset[] profile = ROIProfile.sector(image, null, sector, true, false, false, null, XAxis.PIXEL, false);
+		
+		DiffractionCrystalEnvironment ce = new DiffractionCrystalEnvironment();
+		//fill with harmless junk values except for beam centre
+		DetectorProperties dp = new DetectorProperties(100, 0, 0, 100, 100, 0.1,0.1);
+		dp.setBeamCentreCoords(approxCentre);
+		DiffractionMetadata md = new DiffractionMetadata("", dp, ce);
+		NonPixelSplittingIntegration npsi = new NonPixelSplittingIntegration(md, nBins);
+		npsi.setAxisType(XAxis.PIXEL);
+		
+		List<AbstractDataset> integration = npsi.value(image);
+		final AbstractDataset x = integration.get(0);
+		final AbstractDataset y = integration.get(1);
+		
 		if (monitor.isCanceled()) return null;
-		final AbstractDataset y = profile[0];
 		
 		int centreMaskRadius = Activator.getDefault().getPreferenceStore().getInt(DiffractionCalibrationConstants.CENTRE_MASK_RADIUS);
 		
+		//TODO should look at the x axis
 		for (int i = 0 ; i < centreMaskRadius ; i++) {
 			y.set(0, i);
 		}
-		
-		final AbstractDataset x = AbstractDataset.arange(y.getSize(), AbstractDataset.INT32);
 		
 		List<HKL> spacings = CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs();
 		
