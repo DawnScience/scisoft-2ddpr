@@ -102,7 +102,7 @@ public class ImageFitter {
 			errors.set(major.residual(lineData), i);
 		}
 		
-		double[] initParam = new double[]{Math.pow(major.getDouble(last),2),xApproxGuess.getDouble(errors.argMin())};
+		double[] initParam = new double[]{Math.pow(major.getDouble(last),2),xApproxGuess.getDouble(errors.minPos())};
 		
 		if (x.getDouble(0) < x.getDouble(last)) {
 			double[] lowerb = new double[]{Double.NEGATIVE_INFINITY,Double.NEGATIVE_INFINITY};
