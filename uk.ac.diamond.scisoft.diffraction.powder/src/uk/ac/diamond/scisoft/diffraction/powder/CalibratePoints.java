@@ -13,12 +13,10 @@ import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.NelderMeadSimplex
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.SimplexOptimizer;
 
 import uk.ac.diamond.scisoft.analysis.dataset.DoubleDataset;
-import uk.ac.diamond.scisoft.analysis.diffraction.DetectorProperties;
-import uk.ac.diamond.scisoft.analysis.diffraction.DiffractionCrystalEnvironment;
 import uk.ac.diamond.scisoft.analysis.diffraction.QSpace;
 import uk.ac.diamond.scisoft.analysis.io.IDiffractionMetadata;
-import uk.ac.diamond.scisoft.analysis.roi.PointROI;
-import uk.ac.diamond.scisoft.analysis.roi.PolylineROI;
+import uk.ac.diamond.scisoft.analysis.roi.IPolylineROI;
+import uk.ac.diamond.scisoft.analysis.roi.IROI;
 
 public class CalibratePoints {
 
@@ -26,7 +24,7 @@ public class CalibratePoints {
 	private static final double ABS_TOL = 1e-14;
 	private static final int MAX_EVAL = 100000;
 	
-	public static CalibrationOutput run(List<PolylineROI> allEllipses, double[] allDSpacings, final IDiffractionMetadata md, final CalibratePointsParameterModel paramModel) {
+	public static CalibrationOutput run(List<IPolylineROI> allEllipses, double[] allDSpacings, final IDiffractionMetadata md, final CalibratePointsParameterModel paramModel) {
 		
 		if (allEllipses.size() < 2) throw new IllegalArgumentException("Need more than 1 ellipse");
 		if (allDSpacings.length ==  0 || allEllipses.size() != allDSpacings.length) throw new IllegalArgumentException("Number of ellipses must equal number of d-spacings");
@@ -34,7 +32,7 @@ public class CalibratePoints {
 		
 		int total = 0;
 		
-		for (PolylineROI roi : allEllipses) {
+		for (IPolylineROI roi : allEllipses) {
 			total += roi.getNumberOfPoints();
 		}
 		
@@ -43,10 +41,10 @@ public class CalibratePoints {
 		final DoubleDataset yd = new DoubleDataset(new int[]{total});
 		int k = 0;
 		for (int i = 0; i < allEllipses.size(); i++) {
-			PolylineROI roi = allEllipses.get(i);
+			IPolylineROI roi = allEllipses.get(i);
 			double q = (2*Math.PI)/allDSpacings[i];
 			for (int j = 0; j < roi.getNumberOfPoints(); j++) {
-				PointROI p = roi.getPoint(j);
+				IROI p = roi.getPoint(j);
 				xd.set(p.getPointX(), k);
 				yd.set(p.getPointY(), k);
 				qd.set(q, k);

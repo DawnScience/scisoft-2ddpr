@@ -13,7 +13,7 @@ import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
 import uk.ac.diamond.scisoft.analysis.diffraction.ResolutionEllipseROI;
 import uk.ac.diamond.scisoft.analysis.io.IDiffractionMetadata;
 import uk.ac.diamond.scisoft.analysis.roi.EllipticalROI;
-import uk.ac.diamond.scisoft.analysis.roi.PolylineROI;
+import uk.ac.diamond.scisoft.analysis.roi.IPolylineROI;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrateEllipses;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibratePoints;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibratePointsParameterModel;
@@ -86,7 +86,7 @@ public class AutoCalibrationRun extends AbstractCalibrationRun {
 			
 			CalibratePointsParameterModel paramModel = new CalibratePointsParameterModel(params);
 			
-			List<PolylineROI> lineROIList = new ArrayList<PolylineROI>();
+			List<IPolylineROI> lineROIList = new ArrayList<IPolylineROI>();
 			
 			for (EllipticalROI roi : allEllipses.get(0)) {
 				if (roi instanceof ResolutionEllipseROI && ((ResolutionEllipseROI)roi).getPoints() != null) {

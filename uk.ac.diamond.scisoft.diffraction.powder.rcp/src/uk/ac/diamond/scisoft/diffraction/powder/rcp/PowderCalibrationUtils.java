@@ -7,8 +7,8 @@ import javax.measure.unit.NonSI;
 
 import org.dawnsci.plotting.api.IPlottingSystem;
 import org.dawnsci.plotting.api.region.IRegion;
-import org.dawnsci.plotting.api.region.RegionUtils;
 import org.dawnsci.plotting.api.region.IRegion.RegionType;
+import org.dawnsci.plotting.api.region.RegionUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.swt.graphics.Color;
@@ -22,8 +22,8 @@ import uk.ac.diamond.scisoft.analysis.diffraction.DetectorProperties;
 import uk.ac.diamond.scisoft.analysis.diffraction.DiffractionCrystalEnvironment;
 import uk.ac.diamond.scisoft.analysis.io.IDiffractionMetadata;
 import uk.ac.diamond.scisoft.analysis.roi.EllipticalFitROI;
+import uk.ac.diamond.scisoft.analysis.roi.IPolylineROI;
 import uk.ac.diamond.scisoft.analysis.roi.IROI;
-import uk.ac.diamond.scisoft.analysis.roi.PointROI;
 import uk.ac.diamond.scisoft.analysis.roi.PolylineROI;
 
 public class PowderCalibrationUtils {
@@ -51,25 +51,16 @@ public class PowderCalibrationUtils {
 		IROI shiftROI = null;
 		if (froi instanceof EllipticalFitROI) {
 			EllipticalFitROI ef = (EllipticalFitROI)froi.copy();
-			PolylineROI points = ef.getPoints();
-			for (int i = 0; i< points.getNumberOfPoints(); i++) {
-				PointROI proi = points.getPoint(i);
-				double[] point = proi.getPoint();
-				point[1] += 0.5;
-				point[0] += 0.5;
-				proi.setPoint(point);
+			for (IROI p : ef.getPoints()) {
+				p.addPoint(0.5, 0.5);
 			}
 			shiftROI = ef;
 		}
 		
-		if (froi instanceof PolylineROI) {
+		if (froi instanceof IPolylineROI) {
 			PolylineROI points = ((PolylineROI)froi).copy();
-			for (int i = 0; i< points.getNumberOfPoints(); i++) {
-				PointROI proi = points.getPoint(i);
-				double[] point = proi.getPoint();
-				point[1] += 0.5;
-				point[0] += 0.5;
-				proi.setPoint(point);
+			for (IROI p : points) {
+				p.addPoint(0.5, 0.5);
 			}
 			shiftROI = points;
 			col = ColorConstants.yellow;

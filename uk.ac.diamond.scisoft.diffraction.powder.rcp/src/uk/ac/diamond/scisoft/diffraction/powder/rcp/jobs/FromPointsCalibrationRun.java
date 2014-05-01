@@ -13,8 +13,8 @@ import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.HKL;
 import uk.ac.diamond.scisoft.analysis.diffraction.DetectorProperties;
 import uk.ac.diamond.scisoft.analysis.roi.EllipticalFitROI;
+import uk.ac.diamond.scisoft.analysis.roi.IPolylineROI;
 import uk.ac.diamond.scisoft.analysis.roi.IROI;
-import uk.ac.diamond.scisoft.analysis.roi.PolylineROI;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibratePoints;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibratePointsParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
@@ -46,7 +46,7 @@ public class FromPointsCalibrationRun extends AbstractCalibrationRun {
 		}
 		
 		double[] ds = new double[totalNonNull];
-		List<PolylineROI> erois = new ArrayList<PolylineROI>(totalNonNull);
+		List<IPolylineROI> erois = new ArrayList<IPolylineROI>(totalNonNull);
 		
 		int count = 0;
 		for (int i = 0; i < currentData.getRois().size(); i++) {
@@ -54,10 +54,10 @@ public class FromPointsCalibrationRun extends AbstractCalibrationRun {
 			if (roi != null) {
 				ds[count]  = spacings.get(i).getDNano()*10;
 				
-				if (roi instanceof PolylineROI) {
-					erois.add((PolylineROI)roi);
+				if (roi instanceof IPolylineROI) {
+					erois.add((IPolylineROI) roi);
 				} else if (roi instanceof EllipticalFitROI) {
-					erois.add(((EllipticalFitROI)roi).getPoints());
+					erois.add(((EllipticalFitROI) roi).getPoints());
 				} else {
 					throw new IllegalArgumentException("ROI not elliptical fit");
 				}
@@ -65,7 +65,7 @@ public class FromPointsCalibrationRun extends AbstractCalibrationRun {
 			}
 		}
 		
-		List<List<PolylineROI>> allEllipses = new ArrayList<List<PolylineROI>> ();
+		List<List<IPolylineROI>> allEllipses = new ArrayList<List<IPolylineROI>> ();
 		allEllipses.add(erois);
 		List<double[]> allDSpacings = new ArrayList<double[]>();
 		allDSpacings.add(ds);
