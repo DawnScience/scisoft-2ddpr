@@ -81,12 +81,12 @@ public class PowderCalibrationUtils {
 			public void run() {
 				try {
 					IRegion region = plotter.createRegion(RegionUtils.getUniqueName(REGION_PREFIX, plotter), ftype);
+					region.setROI(fr);
 					region.setRegionColor(fcol);
 					region.setLineWidth(flw);
 					if (monitor != null) monitor.subTask("Add region");
 					region.setUserRegion(false);
 					plotter.addRegion(region);
-					region.setROI(fr);
 					if (monitor != null) monitor.worked(1);
 				} catch (Exception e) {
 					status[0] = false;
