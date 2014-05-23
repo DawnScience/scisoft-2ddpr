@@ -1,24 +1,26 @@
 package uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import org.dawb.common.ui.monitor.ProgressMonitorWrapper;
+import org.dawb.workbench.ui.diffraction.DiffractionCalibrationUtils;
 import org.dawb.workbench.ui.diffraction.table.DiffractionDataManager;
 import org.dawb.workbench.ui.diffraction.table.DiffractionTableData;
 import org.dawnsci.plotting.api.IPlottingSystem;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.widgets.Display;
 
+import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
+import uk.ac.diamond.scisoft.analysis.crystallography.HKL;
 import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
-import uk.ac.diamond.scisoft.analysis.diffraction.ResolutionEllipseROI;
-import uk.ac.diamond.scisoft.analysis.io.IDiffractionMetadata;
-import uk.ac.diamond.scisoft.analysis.roi.EllipticalROI;
-import uk.ac.diamond.scisoft.analysis.roi.IPolylineROI;
-import uk.ac.diamond.scisoft.diffraction.powder.CalibrateEllipses;
-import uk.ac.diamond.scisoft.diffraction.powder.CalibratePoints;
-import uk.ac.diamond.scisoft.diffraction.powder.CalibratePointsParameterModel;
+import uk.ac.diamond.scisoft.analysis.dataset.IDataset;
+import uk.ac.diamond.scisoft.analysis.roi.IROI;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
+import uk.ac.diamond.scisoft.diffraction.powder.ICalibrationUIProgressUpdate;
+import uk.ac.diamond.scisoft.diffraction.powder.PowderCalibration;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.Activator;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.preferences.DiffractionCalibrationConstants;
 
 public class AutoCalibrationRun extends AbstractCalibrationRun {
 
@@ -32,70 +34,59 @@ public class AutoCalibrationRun extends AbstractCalibrationRun {
 	@Override
 	public void run(final IProgressMonitor monitor) {
 		
+		//Unpack all ui stuff to go into maths level since the automatic routine should be scriptable
+		ICalibrationUIProgressUpdate uiUpdate = new ICalibrationUIProgressUpdate() {
+			
+			@Override
+			public void updatePlotData(IDataset data) {
+				plottingSystem.updatePlot2D(data, null, monitor);
+				
+			}
+			
+			@Override
+			public void removeRings() {
+				display.syncExec(new Runnable() {
+					@Override
+					public void run() {
+						removeFoundRings(plottingSystem);
+					}
+				});
+				
+			}
+			
+			@Override
+			public void drawFoundRing(IROI roi) {
+				DiffractionCalibrationUtils.drawFoundRing(monitor, display, plottingSystem, roi, false);
+			}
+		};
 		
+		monitor.beginTask("Calibrating...", IProgressMonitor.UNKNOWN);
+		int centreMaskRadius = Activator.getDefault().getPreferenceStore().getInt(DiffractionCalibrationConstants.CENTRE_MASK_RADIUS);
+		int minSpacing = Activator.getDefault().getPreferenceStore().getInt(DiffractionCalibrationConstants.MINIMUM_SPACING);
+		int nPoints = Activator.getDefault().getPreferenceStore().getInt(DiffractionCalibrationConstants.NUMBER_OF_POINTS);
+		final ProgressMonitorWrapper mon = new ProgressMonitorWrapper(monitor);
+		List<HKL> spacings = CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs();
 		if (manager.isEmpty()) return;
 		
 		AbstractDataset ddist = manager.getDistances();
+		double pxSize = manager.getCurrentData().getMetaData().getDetector2DProperties().getHPxSize();
 		
-		List<List<EllipticalROI>> allEllipses = new ArrayList<List<EllipticalROI>>();
-		List<double[]> allDSpacings = new ArrayList<double[]>();
+		double fixed = 0;
+		if (params.isFloatDistance() && !params.isFloatEnergy()) {
+			fixed = currentData.getMetaData().getDiffractionCrystalEnvironment().getWavelength();
+		} else if (!params.isFloatDistance() && params.isFloatEnergy()) {
+			fixed = currentData.getMetaData().getDetector2DProperties().getBeamCentreDistance();
+		}
 		
+		
+		IDataset[] images = new IDataset[manager.getSize()];
+		
+		int count = 0;
 		for (DiffractionTableData data : manager.iterable()) {
-			
-			if (manager.getSize() > 1) plottingSystem.updatePlot2D(data.getImage(), null, monitor);
-			
-			final AbstractDataset image = (AbstractDataset)data.getImage();
-			IDiffractionMetadata meta = data.getMetaData();
-			
-			final EllipseFindingStructure efs = getResolutionEllipses(image, meta, params, monitor);
-			
-			if (monitor.isCanceled()) return;
-			
-			if (efs == null) throw new IllegalArgumentException("No rings found!");
-			
-			List<ResolutionEllipseROI> foundEllipses = getFittedResolutionROIs(plottingSystem, efs, display, monitor);
-			
-			if (monitor.isCanceled()) return;
-			
-			if (foundEllipses == null || foundEllipses.size() < 2) throw new IllegalArgumentException("No rings found!");
-			
-			double[] dSpaceArray = new double[foundEllipses.size()];
-			
-			for (int j = 0; j < foundEllipses.size();j++) {
-				dSpaceArray[j] = foundEllipses.get(j).getResolution();
-			}
-			
-			allDSpacings.add(dSpaceArray);
-			allEllipses.add(new ArrayList<EllipticalROI>(foundEllipses));
-			
-			display.syncExec(new Runnable() {
-				@Override
-				public void run() {
-					removeFoundRings(plottingSystem);
-				}
-			});
+			images[count++] = data.getImage();
 		}
 		
-		monitor.beginTask("Calibrating", IProgressMonitor.UNKNOWN);
-		//TODO make sure fix wavelength/distance ignored for multiple images
-		CalibrationOutput output =  CalibrateEllipses.run(allEllipses, allDSpacings,ddist,currentData.getMetaData(), params);
-
-		if (allEllipses.size() == 1 && params.isFinalGlobalOptimisation()) {
-			
-			updateMetaData(currentData.getMetaData(), output, 0);
-			
-			CalibratePointsParameterModel paramModel = new CalibratePointsParameterModel(params);
-			
-			List<IPolylineROI> lineROIList = new ArrayList<IPolylineROI>();
-			
-			for (EllipticalROI roi : allEllipses.get(0)) {
-				if (roi instanceof ResolutionEllipseROI && ((ResolutionEllipseROI)roi).getPoints() != null) {
-					lineROIList.add(((ResolutionEllipseROI)roi).getPoints());
-				}
-			}
-			
-			output = CalibratePoints.run(lineROIList, allDSpacings.get(0), currentData.getMetaData(), paramModel);
-		}
+		CalibrationOutput output = PowderCalibration.calibrateMultipleImages(images, ddist, pxSize, spacings, fixed, new int[]{centreMaskRadius,minSpacing,nPoints}, params, mon, uiUpdate);
 		
 		updateOnFinish(output);
 

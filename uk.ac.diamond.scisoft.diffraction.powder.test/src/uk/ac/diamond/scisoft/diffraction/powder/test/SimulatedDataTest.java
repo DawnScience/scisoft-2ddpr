@@ -72,7 +72,7 @@ public class SimulatedDataTest {
 		CalibrationStandards standards = CalibrationFactory.getCalibrationStandards();
 		CalibrantSpacing ceO2 = standards.getCalibrationPeakMap("CeO2");
 		CalibrationOutput result = PowderCalibration.calibrateKnownWavelength(image, ce.getWavelength(),
-				dp.getHPxSize(), ceO2.getHKLs());
+				dp.getHPxSize(), ceO2.getHKLs(),10);
 		
 		Assert.assertEquals(distance, result.getDistance().getDouble(0), 0.9);
 		Assert.assertEquals(bx, result.getBeamCentreX().getDouble(0), 0.9);
@@ -96,7 +96,7 @@ public class SimulatedDataTest {
 		CalibrationStandards standards = CalibrationFactory.getCalibrationStandards();
 		CalibrantSpacing ceO2 = standards.getCalibrationPeakMap("CeO2");
 		CalibrationOutput result = PowderCalibration.calibrateSingleImage(image,
-				dp.getHPxSize(), ceO2.getHKLs());
+				dp.getHPxSize(), ceO2.getHKLs(),10);
 		
 		Assert.assertEquals(distance, result.getDistance().getDouble(0), 0.9);
 		Assert.assertEquals(bx, result.getBeamCentreX().getDouble(0), 0.9);

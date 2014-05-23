@@ -10,7 +10,6 @@ import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
 import uk.ac.diamond.scisoft.analysis.dataset.DatasetUtils;
 import uk.ac.diamond.scisoft.analysis.dataset.DoubleDataset;
 import uk.ac.diamond.scisoft.analysis.dataset.Maths;
-import uk.ac.diamond.scisoft.analysis.io.IDiffractionMetadata;
 import uk.ac.diamond.scisoft.analysis.roi.EllipticalROI;
 
 /**
@@ -85,23 +84,20 @@ public class CalibrateEllipses {
 	 * @param params - parameter model for calibration process
 	 * @return calibrationOutput
 	 */
-	public static CalibrationOutput run(List<List<EllipticalROI>> allEllipses, List<double[]> allDSpacings, AbstractDataset deltaDistance, IDiffractionMetadata md, SimpleCalibrationParameterModel params) {
-		
-		double pixel = md.getDetector2DProperties().getHPxSize();
+	public static CalibrationOutput run(List<List<EllipticalROI>> allEllipses, List<double[]> allDSpacings,
+			AbstractDataset deltaDistance, double pixelSize, double fixedValue, SimpleCalibrationParameterModel params) {
 		
 		if (params.isFloatDistance() && !params.isFloatEnergy()) {
-			double w = md.getDiffractionCrystalEnvironment().getWavelength();
-			return runKnownWavelength(allEllipses, allDSpacings, pixel, w);
+			return runKnownWavelength(allEllipses, allDSpacings, pixelSize, fixedValue);
 		} else if (!params.isFloatDistance() && params.isFloatEnergy()) {
-			double d = md.getDetector2DProperties().getBeamCentreDistance();
-			return runKnownDistance(allEllipses, allDSpacings, pixel, d);
+			return runKnownDistance(allEllipses, allDSpacings, pixelSize, fixedValue);
 		} else {
-			return run(allEllipses, allDSpacings, deltaDistance,pixel, -1, false);
+			return run(allEllipses, allDSpacings, deltaDistance,pixelSize, -1, false);
 		}
 	}
 	
 	
-	private static CalibrationOutput run(List<List<EllipticalROI>> allEllipses, List<double[]> allDSpacings, AbstractDataset deltaDistance,double pixel, double knownValue, boolean isWavelength){
+	public static CalibrationOutput run(List<List<EllipticalROI>> allEllipses, List<double[]> allDSpacings, AbstractDataset deltaDistance,double pixel, double knownValue, boolean isWavelength){
 		
 		if (allEllipses.isEmpty() || allEllipses.get(0).size() < 2) throw new IllegalArgumentException("Need more than 1 ellipse");
 		if (allDSpacings.isEmpty() || allEllipses.get(0).size() != allDSpacings.get(0).length) throw new IllegalArgumentException("Number of ellipses must equal number of d-spacings");
