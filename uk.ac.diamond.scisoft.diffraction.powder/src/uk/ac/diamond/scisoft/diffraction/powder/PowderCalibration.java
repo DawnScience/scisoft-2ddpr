@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.HKL;
 import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
 import uk.ac.diamond.scisoft.analysis.dataset.BooleanDataset;
+import uk.ac.diamond.scisoft.analysis.dataset.DoubleDataset;
 import uk.ac.diamond.scisoft.analysis.diffraction.PeakFittingEllipseFinder;
 import uk.ac.diamond.scisoft.analysis.diffraction.PowderRingsUtils;
 import uk.ac.diamond.scisoft.analysis.diffraction.ResolutionEllipseROI;
@@ -47,6 +48,27 @@ public class PowderCalibration {
 		allDSpacings.add(dSpaceArray);
 		
 		return CalibrateEllipses.runKnownWavelength(allEllipses, allDSpacings, pixel, wavelength);
+	}
+	
+	public static CalibrationOutput calibrateSingleImage(AbstractDataset image, double pixel, List<HKL> spacings) {
+		
+		List<ResolutionEllipseROI> found = findMatchedEllipses(image, pixel, spacings);
+		
+		List<EllipticalROI> ellipses = new ArrayList<EllipticalROI>(found);
+		
+		List<List<EllipticalROI>> allEllipses = new ArrayList<List<EllipticalROI>>();
+		allEllipses.add(ellipses);
+		
+		List<double[]> allDSpacings = new ArrayList<double[]>();
+		double[] dSpaceArray = new double[found.size()];
+		
+		for (int j = 0; j < dSpaceArray.length;j++) {
+			dSpaceArray[j] = found.get(j).getResolution();
+		}
+		
+		allDSpacings.add(dSpaceArray);
+		
+		return CalibrateEllipses.run(allEllipses, allDSpacings, new DoubleDataset(new double[]{0}, new int[]{1}), pixel);
 	}
 	
 	public static List<ResolutionEllipseROI> findMatchedEllipses(AbstractDataset image, double pixel, List<HKL> spacings) {
