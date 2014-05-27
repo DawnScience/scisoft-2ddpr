@@ -35,9 +35,13 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.custom.StackLayout;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -158,14 +162,16 @@ public class DiffractionCalibrationView extends ViewPart {
 
 	@Override
 	public void createPartControl(final Composite parent) {
-		
-		final Composite content = new Composite(parent, SWT.NONE);
+
+		final ScrolledComposite scrollComposite = new ScrolledComposite(parent, SWT.H_SCROLL | SWT.V_SCROLL);
+
+		final Composite content = new Composite(scrollComposite, SWT.NONE);
 		content.setLayout(new GridLayout(1, false));
-		
+		content.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		initializeListeners();
 		standards = CalibrationFactory.getCalibrationStandards();	
 		manager = new DiffractionDataManager();
-		
+
 		// table of images and found rings
 		diffractionTableViewer = new DiffractionDelegate(content, pathsList, manager);
 		diffractionTableViewer.addSelectionChangedListener(selectionChangeListener);
@@ -213,8 +219,18 @@ public class DiffractionCalibrationView extends ViewPart {
 		final Composite auto   = getAutoControl(choiceContent);
 		stackLayout.topControl = auto; // TODO Remember...
 		final Composite manual = getManualControl(choiceContent);
-		
-		
+
+		scrollComposite.setContent(content);
+		scrollComposite.setExpandHorizontal(true);
+		scrollComposite.setExpandVertical(true);
+		scrollComposite.addControlListener(new ControlAdapter() {
+			@Override
+			public void controlResized(ControlEvent e) {
+				Rectangle r = scrollComposite.getClientArea();
+				scrollComposite.setMinSize(content.computeSize(r.width, SWT.DEFAULT));
+			}
+		});
+
         autoRadio.addSelectionListener(new SelectionAdapter() {
         	public void widgetSelected(SelectionEvent e) {
         		autoRadio.setSelection(true);
