@@ -221,13 +221,15 @@ public class DiffractionCalibrationView extends ViewPart {
 		final Composite manual = getManualControl(choiceContent);
 
 		scrollComposite.setContent(content);
-		scrollComposite.setExpandHorizontal(true);
 		scrollComposite.setExpandVertical(true);
+		scrollComposite.setExpandHorizontal(true);
 		scrollComposite.addControlListener(new ControlAdapter() {
 			@Override
 			public void controlResized(ControlEvent e) {
 				Rectangle r = scrollComposite.getClientArea();
-				scrollComposite.setMinSize(content.computeSize(r.width, SWT.DEFAULT));
+				int height = content.computeSize(r.width, SWT.DEFAULT).y;
+				scrollComposite.setMinHeight(height);
+				scrollComposite.setMinWidth(content.computeSize(SWT.DEFAULT, r.height).x);
 			}
 		});
 
