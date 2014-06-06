@@ -68,7 +68,7 @@ public class CalibratePoints {
 					qOut.set(q.qFromPixelPosition(xd.getDouble(i), yd.getDouble(i)).length(), i);
 				}
 				
-				double res = qd.residual(qOut);
+				double res = qd.residual(qOut)/qd.getSize();
 				
 				return res;
 			}
