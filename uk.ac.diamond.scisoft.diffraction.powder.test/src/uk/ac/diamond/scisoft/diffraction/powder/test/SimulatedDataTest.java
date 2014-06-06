@@ -74,9 +74,9 @@ public class SimulatedDataTest {
 		CalibrationOutput result = PowderCalibration.calibrateKnownWavelength(image, ce.getWavelength(),
 				dp.getHPxSize(), ceO2.getHKLs(),10);
 		
-		Assert.assertEquals(distance, result.getDistance().getDouble(0), 0.9);
-		Assert.assertEquals(bx, result.getBeamCentreX().getDouble(0), 0.9);
-		Assert.assertEquals(by, result.getBeamCentreY().getDouble(0), 0.9);
+		Assert.assertEquals(distance, result.getDistance().getDouble(0), 0.1);
+		Assert.assertEquals(bx, result.getBeamCentreX().getDouble(0), 0.1);
+		Assert.assertEquals(by, result.getBeamCentreY().getDouble(0), 0.1);
 		
 	}
 	
@@ -98,9 +98,9 @@ public class SimulatedDataTest {
 		CalibrationOutput result = PowderCalibration.calibrateSingleImage(image,
 				dp.getHPxSize(), ceO2.getHKLs(),10);
 		
-		Assert.assertEquals(distance, result.getDistance().getDouble(0), 0.9);
-		Assert.assertEquals(bx, result.getBeamCentreX().getDouble(0), 0.9);
-		Assert.assertEquals(by, result.getBeamCentreY().getDouble(0), 0.9);
+		Assert.assertEquals(distance, result.getDistance().getDouble(0), 0.1);
+		Assert.assertEquals(bx, result.getBeamCentreX().getDouble(0), 0.1);
+		Assert.assertEquals(by, result.getBeamCentreY().getDouble(0), 0.1);
 		Assert.assertEquals(wavelength, result.getWavelength(), 0.0001);
 		
 	}
@@ -111,7 +111,7 @@ public class SimulatedDataTest {
 		DiffractionCrystalEnvironment ce = new DiffractionCrystalEnvironment(wavelength);
 		
 		dp.setBeamCentreCoords(new double[]{bx,by});
-		dp.setDetectorDistance(distance);
+		dp.setBeamCentreDistance(distance);
 		dp.setNormalAnglesInDegrees(yaw, 0, roll);
 		
 		return new DiffractionMetadata("test",dp, ce);
