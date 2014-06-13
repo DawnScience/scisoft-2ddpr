@@ -11,16 +11,23 @@ import org.eclipse.swt.widgets.Display;
 
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.HKL;
+import uk.ac.diamond.scisoft.analysis.dataset.Dataset;
+import uk.ac.diamond.scisoft.analysis.dataset.DatasetFactory;
+import uk.ac.diamond.scisoft.analysis.dataset.Maths;
 import uk.ac.diamond.scisoft.analysis.diffraction.DetectorProperties;
+import uk.ac.diamond.scisoft.analysis.diffraction.IPowderCalibrationInfo;
 import uk.ac.diamond.scisoft.analysis.roi.EllipticalFitROI;
 import uk.ac.diamond.scisoft.analysis.roi.IPolylineROI;
 import uk.ac.diamond.scisoft.analysis.roi.IROI;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibratePoints;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibratePointsParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
+import uk.ac.diamond.scisoft.diffraction.powder.PowderCalibrationInfoImpl;
 
 public class FromPointsCalibrationRun extends AbstractCalibrationRun {
 
+	private static final String description = "Manual powder diffraction image calibration using point parameters";
+	
 	public FromPointsCalibrationRun(Display display,
 			IPlottingSystem plottingSystem, DiffractionDataManager manager,
 			DiffractionTableData currentData, CalibratePointsParameterModel params) {
@@ -74,6 +81,23 @@ public class FromPointsCalibrationRun extends AbstractCalibrationRun {
 
 		final CalibrationOutput output = o;
 		
+		double[] fullDSpace = new double[spacings.size()];
+		
+		for (int i = 0; i< spacings.size(); i++) fullDSpace[i] = spacings.get(i).getDNano()*10;
+		Dataset infoSpace = DatasetFactory.createFromObject(fullDSpace);
+		int[] infoIndex = new int[allDSpacings.get(0).length];
+		
+		for (int j = 0; j < infoIndex.length; j++) {
+			infoIndex[j] = Maths.abs(Maths.subtract(infoSpace, allDSpacings.get(0)[j])).argMin();
+		}
+		Dataset infoSpaceds = DatasetFactory.createFromObject(infoIndex);
+		
+		PowderCalibrationInfoImpl info = createPowderCalibrationInfo(currentData, false);
+		
+		info.setPostCalibrationInformation(description, infoSpace, infoSpaceds, output.getResidual());
+		
+		output.setCalibrationInfo(new IPowderCalibrationInfo[]{info});
+		
 		display.syncExec(new Runnable() {
 			@Override
 			public void run() {
@@ -88,7 +112,7 @@ public class FromPointsCalibrationRun extends AbstractCalibrationRun {
 				
 				dp.setNormalAnglesInDegrees(output.getTilt().getDouble(0)*-1, 0, output.getTiltAngle().getDouble(0)*-1);
 				
-				currentData.setResidual(output.getResidual());
+				currentData.setCalibrationInfo(output.getCalibrationInfo()[0]);
 
 				removeFoundRings(plottingSystem);
 			}

@@ -12,15 +12,21 @@ import org.eclipse.swt.widgets.Display;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.HKL;
 import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
+import uk.ac.diamond.scisoft.analysis.dataset.Dataset;
+import uk.ac.diamond.scisoft.analysis.dataset.DatasetFactory;
+import uk.ac.diamond.scisoft.analysis.dataset.Maths;
 import uk.ac.diamond.scisoft.analysis.roi.CircularROI;
 import uk.ac.diamond.scisoft.analysis.roi.EllipticalROI;
 import uk.ac.diamond.scisoft.analysis.roi.IROI;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrateEllipses;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
+import uk.ac.diamond.scisoft.diffraction.powder.PowderCalibrationInfoImpl;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 
 public class FromRingsCalibrationRun extends AbstractCalibrationRun {
 
+	private static final String description = "Manual powder diffraction image calibration using ellipse parameters";
+	
 	public FromRingsCalibrationRun(Display display,
 			IPlottingSystem plottingSystem,DiffractionDataManager manager,
 			DiffractionTableData currentData, SimpleCalibrationParameterModel params) {
@@ -89,6 +95,32 @@ public class FromRingsCalibrationRun extends AbstractCalibrationRun {
 		}
 		
 		final CalibrationOutput output = o;
+		
+		double[] fullDSpace = new double[spacings.size()];
+		
+		for (int i = 0; i< spacings.size(); i++) fullDSpace[i] = spacings.get(i).getDNano()*10;
+		Dataset infoSpace = DatasetFactory.createFromObject(fullDSpace);
+
+		PowderCalibrationInfoImpl[] info = new PowderCalibrationInfoImpl[manager.getSize()];
+		
+		int count = 0;
+		for (DiffractionTableData data : manager.iterable()) {
+
+			info[count++] = createPowderCalibrationInfo(data,true);
+		}
+		
+		for (int i = 0; i < allEllipses.size(); i++) {
+			int[] infoIndex = new int[allDSpacings.get(i).length];
+			
+			for (int j = 0; j < infoIndex.length; j++) {
+				infoIndex[j] = Maths.abs(Maths.subtract(infoSpace, allDSpacings.get(0)[j])).argMin();
+			}
+			Dataset infoSpaceds = DatasetFactory.createFromObject(infoIndex);
+			
+			info[i].setPostCalibrationInformation(description, infoSpace, infoSpaceds, output.getResidual());
+			
+		}
+		output.setCalibrationInfo(info);
 		
 		updateOnFinish(output);
 		

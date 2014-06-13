@@ -18,6 +18,7 @@ import uk.ac.diamond.scisoft.analysis.roi.IROI;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
 import uk.ac.diamond.scisoft.diffraction.powder.ICalibrationUIProgressUpdate;
 import uk.ac.diamond.scisoft.diffraction.powder.PowderCalibration;
+import uk.ac.diamond.scisoft.diffraction.powder.PowderCalibrationInfoImpl;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.Activator;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.preferences.DiffractionCalibrationConstants;
@@ -81,12 +82,16 @@ public class AutoCalibrationRun extends AbstractCalibrationRun {
 		
 		IDataset[] images = new IDataset[manager.getSize()];
 		
+		PowderCalibrationInfoImpl[] info = new PowderCalibrationInfoImpl[manager.getSize()];
+		
 		int count = 0;
 		for (DiffractionTableData data : manager.iterable()) {
-			images[count++] = data.getImage();
+			images[count] = data.getImage();
+			//TODO use better detector name for nexus paths
+			info[count++] = createPowderCalibrationInfo(data, true);
 		}
 		
-		CalibrationOutput output = PowderCalibration.calibrateMultipleImages(images, ddist, pxSize, spacings, fixed, new int[]{centreMaskRadius,minSpacing,nPoints}, params, mon, uiUpdate);
+		CalibrationOutput output = PowderCalibration.calibrateMultipleImages(images, ddist, pxSize, spacings, fixed, new int[]{centreMaskRadius,minSpacing,nPoints}, params, mon, uiUpdate, info);
 		
 		updateOnFinish(output);
 

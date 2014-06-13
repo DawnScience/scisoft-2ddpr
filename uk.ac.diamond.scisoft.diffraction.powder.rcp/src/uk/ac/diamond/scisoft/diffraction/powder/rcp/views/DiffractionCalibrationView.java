@@ -8,7 +8,6 @@ import java.util.Map;
 
 import org.dawb.common.ui.util.EclipseUtils;
 import org.dawb.common.ui.util.GridUtils;
-import org.dawb.common.ui.wizard.persistence.PersistenceExportWizard;
 import org.dawb.common.ui.wizard.persistence.PersistenceImportWizard;
 import org.dawb.workbench.ui.diffraction.CalibrantPositioningWidget;
 import org.dawb.workbench.ui.diffraction.DiffractionCalibrationUtils;
@@ -47,7 +46,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
@@ -554,10 +552,18 @@ public class DiffractionCalibrationView extends ViewPart {
 			@Override
 			public void run() {
 				try {
-					IWizard wiz = EclipseUtils.openWizard(PersistenceExportWizard.ID, false);
-					WizardDialog wd = new  WizardDialog(Display.getCurrent().getActiveShell(), wiz);
-					wd.setTitle(wiz.getWindowTitle());
-					wd.open();
+					
+					FileDialog dialog = new FileDialog(Display.getDefault().getActiveShell(), SWT.SAVE);
+					dialog.setText("Save calibration result to nexus file");
+					dialog.setFilterExtensions(new String[] { "*.nxs", "*.*" });
+					//dialog.setFilterPath("c:\\"); // Windows path
+					dialog.setFileName("calibration_output.nxs");
+					dialog.setOverwrite(true);
+					String savedFilePath = dialog.open();
+					if (savedFilePath != null) {
+						DiffractionCalibrationUtils.saveToNexusFile(manager, savedFilePath);
+					}
+					
 				} catch (Exception e) {
 					logger.error("Problem opening export!", e);
 				}
@@ -737,12 +743,12 @@ public class DiffractionCalibrationView extends ViewPart {
 		residualLabel.getParent().layout();
 	}
 
-	private void enableControl(Group group, boolean enabled) {
-		for (Control child : group.getChildren())
-			  child.setEnabled(enabled);
-		
-		group.setEnabled(enabled);
-	}
+//	private void enableControl(Group group, boolean enabled) {
+//		for (Control child : group.getChildren())
+//			  child.setEnabled(enabled);
+//		
+//		group.setEnabled(enabled);
+//	}
  	
 
 	private void drawSelectedData(DiffractionTableData data) {

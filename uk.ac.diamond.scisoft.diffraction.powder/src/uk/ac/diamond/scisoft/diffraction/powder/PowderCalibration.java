@@ -12,7 +12,10 @@ import org.slf4j.LoggerFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.HKL;
 import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
 import uk.ac.diamond.scisoft.analysis.dataset.BooleanDataset;
+import uk.ac.diamond.scisoft.analysis.dataset.Dataset;
+import uk.ac.diamond.scisoft.analysis.dataset.DatasetFactory;
 import uk.ac.diamond.scisoft.analysis.dataset.IDataset;
+import uk.ac.diamond.scisoft.analysis.dataset.Maths;
 import uk.ac.diamond.scisoft.analysis.diffraction.DetectorProperties;
 import uk.ac.diamond.scisoft.analysis.diffraction.DiffractionCrystalEnvironment;
 import uk.ac.diamond.scisoft.analysis.diffraction.PeakFittingEllipseFinder;
@@ -38,6 +41,9 @@ public class PowderCalibration {
 	private static final int CENTRE_MASK_RADIUS = 50;
 	private static final int NUMBER_OF_POINTS = 256;
 	private static final int MINIMUM_SPACING = 10;
+	
+	private static final String description = "Automatic powder diffraction image calibration using ellipse parameters";
+	private static final String addition = " with final point-based optimisation";
 	
 	private final static Logger logger = LoggerFactory.getLogger(PowderCalibration.class);
 	
@@ -67,7 +73,20 @@ public class PowderCalibration {
 	
 	public static CalibrationOutput calibrateMultipleImages(IDataset[] images, AbstractDataset deltaDistance, double pxSize,
 			List<HKL> spacings, double fixed, int[] options, SimpleCalibrationParameterModel params, IMonitor mon, ICalibrationUIProgressUpdate uiUpdate) {
+		
+		return calibrateMultipleImages(images, deltaDistance, pxSize, spacings, fixed, options, params, mon, uiUpdate, null);
+	}
+	
+	public static CalibrationOutput calibrateMultipleImages(IDataset[] images, AbstractDataset deltaDistance, double pxSize,
+			List<HKL> spacings, double fixed, int[] options, SimpleCalibrationParameterModel params, IMonitor mon, ICalibrationUIProgressUpdate uiUpdate, PowderCalibrationInfoImpl[] info) {
 
+		if (info == null) {
+			
+			info = new PowderCalibrationInfoImpl[images.length];
+			
+			for (int i = 0; i < images.length; i++) info[i] = new PowderCalibrationInfoImpl();
+		}
+		
 		//options [0]centreMaskRadius, [1]minSpacing, [2]nPoints
 		List<List<EllipticalROI>> allEllipses = new ArrayList<List<EllipticalROI>>();
 		List<double[]> allDSpacings = new ArrayList<double[]>();
@@ -104,6 +123,8 @@ public class PowderCalibration {
 		//TODO make sure fix wavelength/distance ignored for multiple images
 		CalibrationOutput output = CalibrateEllipses.run(allEllipses, allDSpacings,deltaDistance,pxSize, fixed, params);
 		
+		String desc = description;
+		
 		if (allEllipses.size() == 1 && params.isFinalGlobalOptimisation()) {
 			
 			IDiffractionMetadata meta = createMetadataFromOutput(output, 0, images[0].getShape(),pxSize);
@@ -118,8 +139,28 @@ public class PowderCalibration {
 				}
 			}
 			
+			desc = desc + addition;
 			output = CalibratePoints.run(lineROIList, allDSpacings.get(0), meta, paramModel);
+			
 		}
+		
+		double[] fullDSpace = new double[spacings.size()];
+		
+		for (int i = 0; i< spacings.size(); i++) fullDSpace[i] = spacings.get(i).getDNano()*10;
+		Dataset infoSpace = DatasetFactory.createFromObject(fullDSpace);
+
+		for (int i = 0; i < images.length; i++) {
+			int[] infoIndex = new int[allDSpacings.get(i).length];
+			
+			for (int j = 0; j < infoIndex.length; j++) {
+				infoIndex[j] = Maths.abs(Maths.subtract(infoSpace, allDSpacings.get(i)[j])).argMin();
+			}
+			Dataset infoSpaceds = DatasetFactory.createFromObject(infoIndex);
+			
+			info[i].setPostCalibrationInformation(desc, infoSpace, infoSpaceds, output.getResidual());
+			
+		}
+		output.setCalibrationInfo(info);
 		
 		return output;
 	}

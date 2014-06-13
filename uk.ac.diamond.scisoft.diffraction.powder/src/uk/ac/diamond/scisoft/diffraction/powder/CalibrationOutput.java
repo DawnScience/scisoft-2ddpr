@@ -2,6 +2,7 @@ package uk.ac.diamond.scisoft.diffraction.powder;
 
 import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
 import uk.ac.diamond.scisoft.analysis.dataset.DoubleDataset;
+import uk.ac.diamond.scisoft.analysis.diffraction.IPowderCalibrationInfo;
 
 public class CalibrationOutput {
 	
@@ -12,6 +13,7 @@ public class CalibrationOutput {
 	private AbstractDataset tiltAngle;
 	private AbstractDataset distance;
 	private double residual;
+	private IPowderCalibrationInfo calibrationInfo[];
 	
 	public CalibrationOutput(double wavelength, AbstractDataset beamCentreX, AbstractDataset beamCentreY,
 			AbstractDataset tilt, AbstractDataset tiltAngle, AbstractDataset distance, double residual) {
@@ -61,6 +63,14 @@ public class CalibrationOutput {
 	
 	public double getResidual() {
 		return residual;
+	}
+
+	public IPowderCalibrationInfo[] getCalibrationInfo() {
+		return calibrationInfo;
+	}
+
+	public void setCalibrationInfo(IPowderCalibrationInfo[] calibrationInfo) {
+		this.calibrationInfo = calibrationInfo;
 	}
 
 }
