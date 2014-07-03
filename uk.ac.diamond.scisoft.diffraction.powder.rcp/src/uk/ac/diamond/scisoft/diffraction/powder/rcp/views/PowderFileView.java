@@ -1,9 +1,9 @@
 package uk.ac.diamond.scisoft.diffraction.powder.rcp.views;
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.dawb.workbench.ui.diffraction.table.DiffractionDataManager;
-
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
@@ -20,17 +20,18 @@ public static final String ID = "uk.ac.diamond.scisoft.diffraction.powder.rcp.vi
 	
 	@Override
 	public void openSelectedFile() {
-		final File file = getSelectedFile();
+		
+		final Path file = getSelectedPath();
 		if (file==null) return;
 		
-		if (!file.isDirectory()) {
+		if (!Files.isDirectory(file)) {
 			IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
 			IViewPart view = page.findView(DiffractionCalibrationView.ID);
 			if (view==null) return;
 			
 			final DiffractionDataManager manager = (DiffractionDataManager)view.getAdapter(DiffractionDataManager.class);
 			if (manager != null) {
-				manager.loadData(file.getAbsolutePath(), null);
+				manager.loadData(file.toAbsolutePath().toString(), null);
 			} else {
 				logger.error("Could not get file manager");
 			}
