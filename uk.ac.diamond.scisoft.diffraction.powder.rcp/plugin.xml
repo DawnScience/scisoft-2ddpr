@@ -51,7 +51,7 @@
       </command>
    </extension>
    <extension
-         point="org.dawnsci.plotting.api.toolPageAction">
+         point="org.eclipse.dawnsci.plotting.api.toolPageAction">
       <tool_page_action
             action_type="TOOLBAR"
             command_id="uk.ac.diamond.scisoft.diffraction.powder.rcp.diffractiontoolautocal"
@@ -62,7 +62,7 @@
       </tool_page_action>
    </extension>
    <extension
-         point="org.dawnsci.plotting.api.toolPage">
+         point="org.eclipse.dawnsci.plotting.api.toolPage">
       <plotting_tool_page
             category="org.dawnsci.plotting.tools.category.Science"
             class="uk.ac.diamond.scisoft.diffraction.powder.rcp.tool.PowderDiffractionTool"
