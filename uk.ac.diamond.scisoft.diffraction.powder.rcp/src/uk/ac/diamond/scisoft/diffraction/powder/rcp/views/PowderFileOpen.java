@@ -10,25 +10,24 @@ import org.eclipse.ui.PlatformUI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.ac.diamond.sda.navigator.views.FileView;
+import uk.ac.diamond.sda.navigator.views.IOpenFileAction;
 
-public class PowderFileView extends FileView {
+public class PowderFileOpen implements IOpenFileAction {
 
-public static final String ID = "uk.ac.diamond.scisoft.diffraction.powder.rcp.views.PowderFileView";
-	
-	private static final Logger logger = LoggerFactory.getLogger(PowderFileView.class);
-	
+	public static final String ID = "uk.ac.diamond.scisoft.diffraction.powder.rcp.views.PowderFileView";
+
+	private static final Logger logger = LoggerFactory.getLogger(PowderFileOpen.class);
+
 	@Override
-	public void openSelectedFile() {
-		
-		final Path file = getSelectedPath();
+	public void openFile(Path file) {
+
 		if (file==null) return;
-		
+
 		if (!Files.isDirectory(file)) {
 			IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
 			IViewPart view = page.findView(DiffractionCalibrationView.ID);
 			if (view==null) return;
-			
+
 			final DiffractionDataManager manager = (DiffractionDataManager)view.getAdapter(DiffractionDataManager.class);
 			if (manager != null) {
 				manager.loadData(file.toAbsolutePath().toString(), null);

@@ -25,13 +25,6 @@
             name="Diffraction Calibration Controls"
             restorable="true">
       </view>
-      <view
-            class="uk.ac.diamond.scisoft.diffraction.powder.rcp.views.PowderFileView"
-            icon="icons/powderfile.png"
-            id="uk.ac.diamond.scisoft.diffraction.powder.rcp.views.PowderFileView"
-            name="File Navigator"
-            restorable="true">
-      </view>
    </extension>
    <extension
          point="org.eclipse.ui.perspectives">
@@ -254,6 +247,14 @@
                tooltip="Refresh file tree">
          </command>
       </menuContribution>
+   </extension>
+   <extension
+         point="uk.ac.diamond.sda.navigator.openFile">
+      <fileOpen
+            class="uk.ac.diamond.scisoft.diffraction.powder.rcp.views.PowderFileOpen"
+            id="uk.ac.diamond.scisoft.diffraction.powder.rcp.views.powderFileOpen"
+            perspective="uk.ac.diamond.scisoft.diffraction.powder.rcp.calibrationPerspective">
+      </fileOpen>
    </extension>
 
 </plugin>
