@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
+import uk.ac.diamond.scisoft.analysis.dataset.Dataset;
 import uk.ac.diamond.scisoft.analysis.dataset.DatasetUtils;
 import uk.ac.diamond.scisoft.analysis.dataset.DoubleDataset;
 import uk.ac.diamond.scisoft.analysis.dataset.Maths;
@@ -85,7 +86,7 @@ public class CalibrateEllipses {
 	 * @return calibrationOutput
 	 */
 	public static CalibrationOutput run(List<List<EllipticalROI>> allEllipses, List<double[]> allDSpacings,
-			AbstractDataset deltaDistance, double pixelSize, double fixedValue, SimpleCalibrationParameterModel params) {
+			Dataset deltaDistance, double pixelSize, double fixedValue, SimpleCalibrationParameterModel params) {
 		
 		if (params.isFloatDistance() && !params.isFloatEnergy()) {
 			return runKnownWavelength(allEllipses, allDSpacings, pixelSize, fixedValue);
@@ -97,7 +98,7 @@ public class CalibrateEllipses {
 	}
 	
 	
-	public static CalibrationOutput run(List<List<EllipticalROI>> allEllipses, List<double[]> allDSpacings, AbstractDataset deltaDistance,double pixel, double knownValue, boolean isWavelength){
+	public static CalibrationOutput run(List<List<EllipticalROI>> allEllipses, List<double[]> allDSpacings, Dataset deltaDistance,double pixel, double knownValue, boolean isWavelength){
 		
 		if (allEllipses.isEmpty() || allEllipses.get(0).size() < 2) throw new IllegalArgumentException("Need more than 1 ellipse");
 		if (allDSpacings.isEmpty() || allEllipses.get(0).size() != allDSpacings.get(0).length) throw new IllegalArgumentException("Number of ellipses must equal number of d-spacings");

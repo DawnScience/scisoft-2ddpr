@@ -47,7 +47,7 @@ public class PowderCalibration {
 	
 	private final static Logger logger = LoggerFactory.getLogger(PowderCalibration.class);
 	
-	public static CalibrationOutput calibrateKnownWavelength(AbstractDataset image, double wavelength, double pixel, List<HKL> spacings, int nRings) {
+	public static CalibrationOutput calibrateKnownWavelength(Dataset image, double wavelength, double pixel, List<HKL> spacings, int nRings) {
 		
 
 		int[] options = new int[]{CENTRE_MASK_RADIUS, MINIMUM_SPACING, NUMBER_OF_POINTS};
@@ -56,28 +56,28 @@ public class PowderCalibration {
 		params.setFloatEnergy(false);
 		params.setFinalGlobalOptimisation(true);
 		
-		return calibrateMultipleImages(new IDataset[] {image}, AbstractDataset.zeros(new int[]{1}, AbstractDataset.FLOAT64), pixel,
+		return calibrateMultipleImages(new IDataset[] {image}, DatasetFactory.zeros(new int[]{1}, Dataset.FLOAT64), pixel,
 				spacings,  wavelength, options, params, null, null);
 	}
 	
-	public static CalibrationOutput calibrateSingleImage(AbstractDataset image, double pixel, List<HKL> spacings, int nRings) {
+	public static CalibrationOutput calibrateSingleImage(Dataset image, double pixel, List<HKL> spacings, int nRings) {
 		
 		int[] options = new int[]{CENTRE_MASK_RADIUS, MINIMUM_SPACING, NUMBER_OF_POINTS};
 		SimpleCalibrationParameterModel params = new SimpleCalibrationParameterModel();
 		params.setNumberOfRings(nRings);
 		params.setFinalGlobalOptimisation(true);
 		
-		return calibrateMultipleImages(new IDataset[] {image}, AbstractDataset.zeros(new int[]{1}, AbstractDataset.FLOAT64), pixel,
+		return calibrateMultipleImages(new IDataset[] {image}, DatasetFactory.zeros(new int[]{1}, Dataset.FLOAT64), pixel,
 				spacings,  0, options, params, null, null);
 	}
 	
-	public static CalibrationOutput calibrateMultipleImages(IDataset[] images, AbstractDataset deltaDistance, double pxSize,
+	public static CalibrationOutput calibrateMultipleImages(IDataset[] images, Dataset deltaDistance, double pxSize,
 			List<HKL> spacings, double fixed, int[] options, SimpleCalibrationParameterModel params, IMonitor mon, ICalibrationUIProgressUpdate uiUpdate) {
 		
 		return calibrateMultipleImages(images, deltaDistance, pxSize, spacings, fixed, options, params, mon, uiUpdate, null);
 	}
 	
-	public static CalibrationOutput calibrateMultipleImages(IDataset[] images, AbstractDataset deltaDistance, double pxSize,
+	public static CalibrationOutput calibrateMultipleImages(IDataset[] images, Dataset deltaDistance, double pxSize,
 			List<HKL> spacings, double fixed, int[] options, SimpleCalibrationParameterModel params, IMonitor mon, ICalibrationUIProgressUpdate uiUpdate, PowderCalibrationInfoImpl[] info) {
 
 		if (info == null) {
@@ -95,13 +95,13 @@ public class PowderCalibration {
 
 			if (images.length > 1 && uiUpdate != null) uiUpdate.updatePlotData(image);
 
-			final EllipseFindingStructure efs = getResolutionEllipses((AbstractDataset)image,spacings, pxSize, params,options[0], mon);
+			final EllipseFindingStructure efs = getResolutionEllipses((Dataset) image, spacings, pxSize, params,options[0], mon);
 
 			if (mon != null && mon.isCancelled()) return null;
 
 			if (efs == null) throw new IllegalArgumentException("No rings found!");
 
-			List<ResolutionEllipseROI> foundEllipses = getFittedResolutionROIs(uiUpdate, efs,(AbstractDataset)image,options[0],options[1],options[2],mon);
+			List<ResolutionEllipseROI> foundEllipses = getFittedResolutionROIs(uiUpdate, efs, (Dataset) image,options[0],options[1],options[2],mon);
 
 			if (mon != null && mon.isCancelled()) return null;
 
@@ -165,7 +165,7 @@ public class PowderCalibration {
 		return output;
 	}
 	
-	public static List<ResolutionEllipseROI> findMatchedEllipses(AbstractDataset image, double pixel, List<HKL> spacings) {
+	public static List<ResolutionEllipseROI> findMatchedEllipses(Dataset image, double pixel, List<HKL> spacings) {
 
 		double[] approxCentre = CentreGuess.guessCentre(image);
 
@@ -181,13 +181,13 @@ public class PowderCalibration {
 
 		AbstractDataset[] profile = ROIProfile.sector(image, null, sector, true, false, false, null, XAxis.PIXEL, false);
 
-		final AbstractDataset y = profile[0];
+		final Dataset y = profile[0];
 
 		for (int i = 0 ; i < CENTRE_MASK_RADIUS ; i++) {
 			y.set(0, i);
 		}
 
-		final AbstractDataset x = AbstractDataset.arange(y.getSize(), AbstractDataset.INT32);
+		final Dataset x = DatasetFactory.createRange(y.getSize(), Dataset.INT32);
 
 		int max = spacings.size() > MAX_RINGS ? MAX_RINGS : spacings.size();
 
@@ -259,7 +259,7 @@ public class PowderCalibration {
 
 	}
 	
-	public static EllipticalROI ellipsePeakFit(AbstractDataset image, BooleanDataset mask,
+	public static EllipticalROI ellipsePeakFit(Dataset image, BooleanDataset mask,
 			EllipticalROI roi, double innerDelta, double outerDelta, int nPoints, IMonitor mon) {
 		
 		PolylineROI points;
@@ -287,7 +287,7 @@ public class PowderCalibration {
 		return efroi;
 	}
 	
-	protected static EllipseFindingStructure getResolutionEllipses(AbstractDataset image,
+	protected static EllipseFindingStructure getResolutionEllipses(Dataset image,
 			List<HKL> spacings, double pxSize, SimpleCalibrationParameterModel params, int centreMaskRadius, IMonitor monitor) {
 		int[] shape = image.getShape();
 		if (monitor != null) monitor.subTask("Finding approximate centre...");
@@ -308,9 +308,9 @@ public class PowderCalibration {
 		NonPixelSplittingIntegration npsi = new NonPixelSplittingIntegration(md, nBins);
 		npsi.setAxisType(XAxis.PIXEL);
 		
-		List<AbstractDataset> integration = npsi.integrate(image);
-		final AbstractDataset x = integration.get(0);
-		final AbstractDataset y = integration.get(1);
+		List<Dataset> integration = npsi.integrate(image);
+		final Dataset x = integration.get(0);
+		final Dataset y = integration.get(1);
 		
 		if (monitor != null) if (monitor != null && monitor.isCancelled()) return null;
 		
@@ -387,7 +387,7 @@ public class PowderCalibration {
 	}
 	
 	protected static List<ResolutionEllipseROI> getFittedResolutionROIs(ICalibrationUIProgressUpdate ui, EllipseFindingStructure efs,
-			AbstractDataset data, int centreMaskRadius,int minSpacing, int nPoints, IMonitor monitor) {
+			Dataset data, int centreMaskRadius,int minSpacing, int nPoints, IMonitor monitor) {
 		if (monitor != null) monitor.subTask("Finding ellipses...");
 		final List<ResolutionEllipseROI> foundEllipses = new ArrayList<ResolutionEllipseROI>();
 		if (monitor != null && monitor.isCancelled()) return null;

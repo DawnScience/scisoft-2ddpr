@@ -4,19 +4,16 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 
-import javax.vecmath.Matrix3d;
-import javax.vecmath.Vector3d;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
 
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrantSpacing;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationStandards;
 import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
+import uk.ac.diamond.scisoft.analysis.dataset.Dataset;
 import uk.ac.diamond.scisoft.analysis.dataset.Maths;
 import uk.ac.diamond.scisoft.analysis.diffraction.DetectorProperties;
 import uk.ac.diamond.scisoft.analysis.diffraction.DiffractionCrystalEnvironment;
@@ -48,7 +45,7 @@ public class SimulatedDataTest {
 	}
 	
 	@Parameterized.Parameters
-	   public static Collection params() {
+	   public static Collection<?> params() {
 	      return Arrays.asList(new Object[][] {
 	         { 300,999,1001,3,45,1}
 	         
@@ -85,13 +82,13 @@ public class SimulatedDataTest {
 
 		IDiffractionMetadata meta = getPerkinElmerDiffractionMetadata();
 		DetectorProperties dp = meta.getDetector2DProperties();
-		DiffractionCrystalEnvironment ce = meta.getDiffractionCrystalEnvironment();
+//		DiffractionCrystalEnvironment ce = meta.getDiffractionCrystalEnvironment();
 		
 		AbstractDataset[] s1d = getSimulated1D();
 		int[] shape = new int[]{dp.getPy(),dp.getPx()};
 		
-		AbstractDataset q2D = PixelIntegrationUtils.generateQArray(shape, meta); 
-		AbstractDataset image = PixelIntegrationUtils.generate2Dfrom1D(s1d, q2D);
+		Dataset q2D = PixelIntegrationUtils.generateQArray(shape, meta); 
+		Dataset image = PixelIntegrationUtils.generate2Dfrom1D(s1d, q2D);
 		
 		CalibrationStandards standards = CalibrationFactory.getCalibrationStandards();
 		CalibrantSpacing ceO2 = standards.getCalibrationPeakMap("CeO2");

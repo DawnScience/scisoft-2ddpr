@@ -10,7 +10,7 @@ import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.NelderMeadSimplex;
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.SimplexOptimizer;
 
-import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
+import uk.ac.diamond.scisoft.analysis.dataset.Dataset;
 import uk.ac.diamond.scisoft.analysis.dataset.Maths;
 import uk.ac.diamond.scisoft.analysis.fitting.Fitter;
 import uk.ac.diamond.scisoft.analysis.fitting.functions.Polynomial;
@@ -37,7 +37,7 @@ public class CentreFitter {
 	 * @param y
 	 * @return mc
 	 */
-	public static double[] fit(final AbstractDataset x, final AbstractDataset y) {
+	public static double[] fit(final Dataset x, final Dataset y) {
 		
 		//TODO check same length
 		
@@ -50,7 +50,7 @@ public class CentreFitter {
 //	    double c_approx = y.getDouble(last) - x.getDouble(last) * m_approx;
 	    Polynomial poly = null;;
 		try {
-			poly = Fitter.polyFit(new AbstractDataset[]{x}, y, 1e-15, 1);
+			poly = Fitter.polyFit(new Dataset[]{x}, y, 1e-15, 1);
 			
 			return poly.getParameterValues();
 		} catch (Exception e) {
@@ -65,7 +65,7 @@ public class CentreFitter {
 			@Override
 			public double value(double[] arg0) {
 				
-				AbstractDataset out = Maths.multiply(x, arg0[0]);
+				Dataset out = Maths.multiply(x, arg0[0]);
 				out.iadd(arg0[1]);
 				return out.residual(y);
 

@@ -6,7 +6,8 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
+import uk.ac.diamond.scisoft.analysis.dataset.Dataset;
+import uk.ac.diamond.scisoft.analysis.dataset.DatasetFactory;
 import uk.ac.diamond.scisoft.analysis.dataset.Maths;
 import uk.ac.diamond.scisoft.analysis.diffraction.DSpacing;
 import uk.ac.diamond.scisoft.analysis.diffraction.DetectorProperties;
@@ -38,7 +39,7 @@ public class BruteStandardMatcher {
 	 * @param pixelSize
 	 * @return dSpaceRadiusMap
 	 */
-	public static Map<Double,Double> bruteForceMatchStandards(AbstractDataset radius, AbstractDataset integrated, double[] dSpace, double pixelSize) {
+	public static Map<Double,Double> bruteForceMatchStandards(Dataset radius, Dataset integrated, double[] dSpace, double pixelSize) {
 		
 		double bestssq = Double.MIN_VALUE;
 		double[] bestValues = new double[] {energies[0],minDistance};
@@ -47,7 +48,7 @@ public class BruteStandardMatcher {
 		DiffractionCrystalEnvironment ce = new DiffractionCrystalEnvironment();
 		ce.setWavelengthFromEnergykeV(10);
 		
-		AbstractDataset clean = cleanUpData(radius, integrated);
+		Dataset clean = cleanUpData(radius, integrated);
 				
 		for (double en : energies) {
 			for (double dist = minDistance; dist <= maxDistance ; dist += distanceStep) {
@@ -59,8 +60,8 @@ public class BruteStandardMatcher {
 					if (w < 2*dSpace[i]) radii[i] = DSpacing.radiusFromDSpacing(dp, ce, dSpace[i]);
 				}
  				
-				AbstractDataset filter = getFilterDataset(radius,radii);
-				AbstractDataset out = Maths.multiply(filter, clean);
+				Dataset filter = getFilterDataset(radius,radii);
+				Dataset out = Maths.multiply(filter, clean);
 				double ssq = (double)out.sum();
 				
 				if (ssq > bestssq) {
@@ -94,9 +95,9 @@ public class BruteStandardMatcher {
 	 * @param peakPositions
 	 * @return filter
 	 */
-	public static AbstractDataset getFilterDataset(AbstractDataset pixelRadius, double[] peakPositions) {
+	public static Dataset getFilterDataset(Dataset pixelRadius, double[] peakPositions) {
 		
-		AbstractDataset filter = AbstractDataset.zeros(pixelRadius.getShape(), AbstractDataset.FLOAT64);
+		Dataset filter = DatasetFactory.zeros(pixelRadius.getShape(), Dataset.FLOAT64);
 		double val = 1;
 		for (double r : peakPositions) {
 			int rmin = (int)Math.round(r) - (int)defaultWidth;
@@ -123,15 +124,15 @@ public class BruteStandardMatcher {
 	 * @param data
 	 * @return d
 	 */
-	public static AbstractDataset cleanUpData(AbstractDataset radius, AbstractDataset data) {
+	public static Dataset cleanUpData(Dataset radius, Dataset data) {
 		
 		return rollingBallBaselineCorrection(data,10);
 	}
 	
-	private static AbstractDataset rollingBallBaselineCorrection(AbstractDataset y, int width) {
+	private static Dataset rollingBallBaselineCorrection(Dataset y, int width) {
 		
-		AbstractDataset t1 = AbstractDataset.zeros(y);
-		AbstractDataset t2 = AbstractDataset.zeros(y);
+		Dataset t1 = DatasetFactory.zeros(y);
+		Dataset t2 = DatasetFactory.zeros(y);
 		
 		for (int i = 0 ; i < y.getSize()-1; i++) {
 			int start = (i-width) < 0 ? 0 : (i - width);

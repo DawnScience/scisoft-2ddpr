@@ -1,6 +1,7 @@
 package uk.ac.diamond.scisoft.diffraction.powder;
 
-import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
+import uk.ac.diamond.scisoft.analysis.dataset.Dataset;
+import uk.ac.diamond.scisoft.analysis.dataset.DatasetFactory;
 import uk.ac.diamond.scisoft.analysis.dataset.DatasetUtils;
 import uk.ac.diamond.scisoft.analysis.dataset.Image;
 import uk.ac.diamond.scisoft.analysis.dataset.Signal;
@@ -13,7 +14,7 @@ import uk.ac.diamond.scisoft.analysis.optimize.ApacheNelderMead;
 
 public class CentreGuess {
 	
-	public static double[] guessCentre(AbstractDataset image) {
+	public static double[] guessCentre(Dataset image) {
 		
 		int downSample = 5;
 		int samFW = 18;
@@ -21,25 +22,25 @@ public class CentreGuess {
 		
 		Downsample ds = new Downsample(DownsampleMode.MEAN, new int[]{downSample, downSample});
 		
-		AbstractDataset small = ds.value(image).get(0);
+		Dataset small = ds.value(image).get(0);
 		
-		small = DatasetUtils.cast(small, AbstractDataset.FLOAT64);
+		small = DatasetUtils.cast(small, Dataset.FLOAT64);
 		
-		AbstractDataset conv = Signal.convolve(small, small, new int[]{0,1});
+		Dataset conv = Signal.convolve(small, small, new int[]{0,1});
 		
 		conv = Image.medianFilter(conv, new int[]{3,3});
 		
 		int[] maxPos = conv.maxPos();
 
-		AbstractDataset patch = conv.getSlice(new int[] {maxPos[0] - samW, maxPos[1] - samW}, new int[] {maxPos[0] + samW, maxPos[1] + samW}, null);
+		Dataset patch = conv.getSlice(new int[] {maxPos[0] - samW, maxPos[1] - samW}, new int[] {maxPos[0] + samW, maxPos[1] + samW}, null);
 		
-		AbstractDataset my = patch.sum(1);
-		AbstractDataset mx = patch.sum(0);
+		Dataset my = patch.sum(1);
+		Dataset mx = patch.sum(0);
 		
 		my.isubtract(my.min().doubleValue());
 		mx.isubtract(mx.min().doubleValue());
 		
-		AbstractDataset axis = AbstractDataset.arange(samFW, AbstractDataset.FLOAT64);
+		Dataset axis = DatasetFactory.createRange(samFW, Dataset.FLOAT64);
 		
 		Gaussian g = new Gaussian(samFW/2, samFW/4, my.max().doubleValue());
 		double yfound;
