@@ -11,7 +11,6 @@ import org.eclipse.swt.widgets.Display;
 
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.HKL;
-import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
 import uk.ac.diamond.scisoft.analysis.dataset.Dataset;
 import uk.ac.diamond.scisoft.analysis.dataset.DatasetFactory;
 import uk.ac.diamond.scisoft.analysis.dataset.Maths;
@@ -80,7 +79,7 @@ public class FromRingsCalibrationRun extends AbstractCalibrationRun {
 		}
 		
 
-		AbstractDataset ddist = manager.getDistances();
+		Dataset ddist = manager.getDistances();
 		
 		double pixelSize = currentData.getMetaData().getDetector2DProperties().getHPxSize();
 		

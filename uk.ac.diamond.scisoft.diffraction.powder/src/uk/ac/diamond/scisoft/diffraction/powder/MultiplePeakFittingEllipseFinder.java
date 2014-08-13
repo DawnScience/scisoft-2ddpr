@@ -9,8 +9,9 @@ import java.util.TreeSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
+import uk.ac.diamond.scisoft.analysis.dataset.Dataset;
 import uk.ac.diamond.scisoft.analysis.dataset.BooleanDataset;
+import uk.ac.diamond.scisoft.analysis.dataset.DatasetFactory;
 import uk.ac.diamond.scisoft.analysis.dataset.DoubleDataset;
 import uk.ac.diamond.scisoft.analysis.dataset.Stats;
 import uk.ac.diamond.scisoft.analysis.diffraction.PowderRingsUtils;
@@ -34,7 +35,7 @@ public class MultiplePeakFittingEllipseFinder {
 	private static final int MAX_POSITION_SHIFT = 20;
 	private static final double ANGULAR_STEP = Math.PI/32;
 	
-	public static List<EllipticalROI> findEllipses(AbstractDataset image, double[] approxCentre) {
+	public static List<EllipticalROI> findEllipses(Dataset image, double[] approxCentre) {
 		//TODO check image 2D
 		final int[] shape = image.getShape();
 		final int h = shape[0];
@@ -57,11 +58,11 @@ public class MultiplePeakFittingEllipseFinder {
 		List<Double> angles = new ArrayList<Double>();
 		
 		while (currentAngle < Math.PI) {
-			AbstractDataset profile;
+			Dataset profile;
 			List<CompositeFunction> peaks;
 			
 			profile = getProfile(image, approxCentre, currentAngle, 0, maxDist);
-			AbstractDataset x = AbstractDataset.arange(profile.getSize(), AbstractDataset.INT32);
+			Dataset x = DatasetFactory.createRange(profile.getSize(), Dataset.INT32);
 			
 			try {
 				peaks = Generic1DFitter.fitPeakFunctions(x, profile, Gaussian.class, new GeneticAlg(0.0001),
@@ -93,7 +94,7 @@ public class MultiplePeakFittingEllipseFinder {
 		
 		cleanFoundPeaks(foundParams);
 		
-		List<AbstractDataset> goodPoints = ellipsesFromFoundPeaks(foundParams, angles);
+		List<Dataset> goodPoints = ellipsesFromFoundPeaks(foundParams, angles);
 		
 		return ellipsesFromGoodPoints(goodPoints,angles,approxCentre);
 		
@@ -105,7 +106,7 @@ public class MultiplePeakFittingEllipseFinder {
 		
 		for (TreeSet<double[]> peaks : foundParams) {
 			
-			AbstractDataset widths = AbstractDataset.zeros(new int[] {peaks.size()}, AbstractDataset.FLOAT64);
+			Dataset widths = DatasetFactory.zeros(new int[] {peaks.size()}, Dataset.FLOAT64);
 			int i = 0;
 			
 			Iterator<double[]> iter = peaks.iterator();
@@ -128,9 +129,9 @@ public class MultiplePeakFittingEllipseFinder {
 		
 	}
 	
-	private static List<AbstractDataset> ellipsesFromFoundPeaks(List<TreeSet<double[]>> foundParams, List<Double> angles) {
+	private static List<Dataset> ellipsesFromFoundPeaks(List<TreeSet<double[]>> foundParams, List<Double> angles) {
 		
-		List<AbstractDataset> goodPoints = new ArrayList<AbstractDataset>();
+		List<Dataset> goodPoints = new ArrayList<Dataset>();
 		
 		int maxPeaks = 0;
 		for (TreeSet<double[]> peaks : foundParams) {
@@ -139,7 +140,7 @@ public class MultiplePeakFittingEllipseFinder {
 		
 		for (int j = 0; j < maxPeaks; j++) {
 			int i = 0;
-			AbstractDataset first = AbstractDataset.zeros(new int[] {foundParams.size()}, AbstractDataset.FLOAT64);
+			Dataset first = DatasetFactory.zeros(new int[] {foundParams.size()}, Dataset.FLOAT64);
 			
 			for (TreeSet<double[]> peaks : foundParams) {
 				if (!peaks.isEmpty()) first.set(peaks.first()[0], i++);
@@ -164,10 +165,10 @@ public class MultiplePeakFittingEllipseFinder {
 		
 	}
 	
-	private static List<EllipticalROI> ellipsesFromGoodPoints(List<AbstractDataset> goodPoints,List<Double> angles,double[] approxCentre){
+	private static List<EllipticalROI> ellipsesFromGoodPoints(List<Dataset> goodPoints,List<Double> angles,double[] approxCentre){
 		List<EllipticalROI> ellipses = new ArrayList<EllipticalROI>();
 
-		for (AbstractDataset points : goodPoints) {
+		for (Dataset points : goodPoints) {
 			PolylineROI polyline = new PolylineROI();
 			for (int i =0 ;  i< angles.size(); i++) {
 				double r = points.getDouble(i);
@@ -183,7 +184,7 @@ public class MultiplePeakFittingEllipseFinder {
 		return ellipses;
 	}
 	
-	private static AbstractDataset getProfile(AbstractDataset image, double[] centre, double angle, double inner, double outer) {
+	private static Dataset getProfile(Dataset image, double[] centre, double angle, double inner, double outer) {
 		
 		LinearROI roi = new LinearROI();
 		roi.setPoint(centre);
@@ -208,7 +209,7 @@ public class MultiplePeakFittingEllipseFinder {
 	 * @param maxPoints maximum number of points to return
 	 * @return polyline ROI
 	 */
-	public static PolylineROI fitPOIsNearEllipse(AbstractDataset image, BooleanDataset mask, EllipticalROI ellipse,
+	public static PolylineROI fitPOIsNearEllipse(Dataset image, BooleanDataset mask, EllipticalROI ellipse,
 			double arcLength, double radialDelta, int maxPoints) {
 		if (image.getRank() != 2) {
 			logger.error("Dataset must have two dimensions");
@@ -260,7 +261,7 @@ public class MultiplePeakFittingEllipseFinder {
 			double p = i * pdelta;
 			double cp = Math.cos(p);
 			double sp = Math.sin(p);
-			AbstractDataset sub;
+			Dataset sub;
 			final double[] beg = new double[] { (yc + rsj * sa * cp + rsn * ca * sp),
 					 (xc + rsj * ca * cp - rsn * sa * sp) };
 			final double[] end = new double[] { (yc + rej * sa * cp + ren * ca * sp),
@@ -270,7 +271,7 @@ public class MultiplePeakFittingEllipseFinder {
 			roi.setEndPoint(end[1], end[0]);
 
 			sub = ROIProfile.line(image,mask,roi,1,false)[0];
-			AbstractDataset xAx = AbstractDataset.arange(sub.getSize(), AbstractDataset.INT32);
+			Dataset xAx = DatasetFactory.createRange(sub.getSize(), Dataset.INT32);
 
 			List<CompositeFunction> peaks= null;
 			
@@ -283,7 +284,7 @@ public class MultiplePeakFittingEllipseFinder {
 					DoubleDataset xData = DoubleDataset.createRange(sub.getSize());
 						int maxPos = sub.maxPos()[0];
 						cf.getFunction(0).getParameter(1).setValue(maxPos);
-					Fitter.ApacheNelderMeadFit(new AbstractDataset[]{xData}, sub, cf);
+					Fitter.ApacheNelderMeadFit(new Dataset[]{xData}, sub, cf);
 					
 					if (cf.getFunction(0).getParameter(1).getValue() > 10 || cf.getFunction(0).getParameter(1).getValue() < 0.1 || cf.getFunction(0).getParameter(2).getValue() < 0) {
 						peaks = Generic1DFitter.fitPeakFunctions(xAx, sub, Gaussian.class, new GeneticAlg(0.0001),

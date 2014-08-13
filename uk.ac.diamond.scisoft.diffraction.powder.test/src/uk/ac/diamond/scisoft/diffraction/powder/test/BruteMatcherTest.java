@@ -6,7 +6,7 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 
-import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
+import uk.ac.diamond.scisoft.analysis.dataset.Dataset;
 import uk.ac.diamond.scisoft.analysis.io.LoaderFactory;
 import uk.ac.diamond.scisoft.diffraction.powder.BruteStandardMatcher;
 
@@ -28,11 +28,11 @@ public class BruteMatcherTest {
 				1.041472528000000e+00,
 				0.957};
 		
-		AbstractDataset x;
-		AbstractDataset trace;
+		Dataset x;
+		Dataset trace;
 		try {
-			x = (AbstractDataset)LoaderFactory.getDataSet(getTestFilePath("TestTrace.dat"),"x",null);
-			trace = (AbstractDataset)LoaderFactory.getDataSet(getTestFilePath("TestTrace.dat"),"dataset_0",null);
+			x = (Dataset)LoaderFactory.getDataSet(getTestFilePath("TestTrace.dat"),"x",null);
+			trace = (Dataset)LoaderFactory.getDataSet(getTestFilePath("TestTrace.dat"),"dataset_0",null);
 			
 			Map<Double,Double> out = BruteStandardMatcher.bruteForceMatchStandards(x, trace, dSpace, 0.148);
 			Assert.assertEquals(197.5, out.get(dSpace[0]), 5);

@@ -17,7 +17,7 @@ import org.eclipse.dawnsci.plotting.api.trace.ITrace;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.swt.widgets.Display;
 
-import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
+import uk.ac.diamond.scisoft.analysis.dataset.Dataset;
 import uk.ac.diamond.scisoft.analysis.io.IDiffractionMetadata;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.AutoCalibrationRun;
@@ -43,7 +43,7 @@ public class DiffractionToolAutoCalHandler extends AbstractHandler {
 		
 		IImageTrace imTrace = (IImageTrace)traces.iterator().next();
 		
-		AbstractDataset ds = (AbstractDataset)imTrace.getData();
+		Dataset ds = (Dataset)imTrace.getData();
 		
 		if (ds == null) return null;
 		

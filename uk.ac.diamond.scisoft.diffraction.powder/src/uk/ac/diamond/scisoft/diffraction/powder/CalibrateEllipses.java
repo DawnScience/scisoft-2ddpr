@@ -6,8 +6,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
 import uk.ac.diamond.scisoft.analysis.dataset.Dataset;
+import uk.ac.diamond.scisoft.analysis.dataset.DatasetFactory;
 import uk.ac.diamond.scisoft.analysis.dataset.DatasetUtils;
 import uk.ac.diamond.scisoft.analysis.dataset.DoubleDataset;
 import uk.ac.diamond.scisoft.analysis.dataset.Maths;
@@ -36,7 +36,7 @@ public class CalibrateEllipses {
 	 * @param wavelength in angstroms
 	 * @return calibrationOutput
 	 */
-	public static CalibrationOutput run(List<List<EllipticalROI>> allEllipses, List<double[]> allDSpacings, AbstractDataset deltaDistance, double pixel) {
+	public static CalibrationOutput run(List<List<EllipticalROI>> allEllipses, List<double[]> allDSpacings, Dataset deltaDistance, double pixel) {
 		return run(allEllipses, allDSpacings, deltaDistance,pixel, -1, false);
 	}
 	
@@ -52,7 +52,7 @@ public class CalibrateEllipses {
 	 * @return calibrationOutput
 	 */
 	public static CalibrationOutput runKnownDistance(List<List<EllipticalROI>> allEllipses, List<double[]> allDSpacings,double pixel,double knownDistance) {
-		AbstractDataset deltaDistance = AbstractDataset.zeros(new int[]{1}, AbstractDataset.FLOAT64);
+		Dataset deltaDistance = DatasetFactory.zeros(new int[]{1}, Dataset.FLOAT64);
 		return run(allEllipses, allDSpacings, deltaDistance,pixel, knownDistance, false);
 	}
 	
@@ -68,7 +68,7 @@ public class CalibrateEllipses {
 	 * @return calibrationOutput
 	 */
 	public static CalibrationOutput runKnownWavelength(List<List<EllipticalROI>> allEllipses, List<double[]> allDSpacings,double pixel,double knownWavelength) {
-		AbstractDataset deltaDistance = AbstractDataset.zeros(new int[]{1}, AbstractDataset.FLOAT64);
+		Dataset deltaDistance = DatasetFactory.zeros(new int[]{1}, Dataset.FLOAT64);
 		return run(allEllipses, allDSpacings, deltaDistance,pixel, knownWavelength, true);
 	}
 	
@@ -105,7 +105,7 @@ public class CalibrateEllipses {
 		
 		//double w = 2048, h = 2048;
 		//double pixel = 0.2;
-		AbstractDataset normDist = Maths.subtract(deltaDistance.getDouble(deltaDistance.getSize()-1),deltaDistance);
+		Dataset normDist = Maths.subtract(deltaDistance.getDouble(deltaDistance.getSize()-1),deltaDistance);
 		
 		List<EllipseParameters> ellipseParams = getParametersOfEllipses(allEllipses);
 		
@@ -115,11 +115,11 @@ public class CalibrateEllipses {
 //		beamcentres.add(new double[ellipseParams.size()]);
 //		beamcentres.add(new double[ellipseParams.size()]);
 		
-		AbstractDataset[] allMajor = new AbstractDataset[ellipseParams.size()];
-		AbstractDataset[] allDeltaDist= new AbstractDataset[ellipseParams.size()];
-		AbstractDataset[] allD= new AbstractDataset[ellipseParams.size()];
-		AbstractDataset[] allDSin= new AbstractDataset[ellipseParams.size()];
-		AbstractDataset dSint = AbstractDataset.zeros(new int[]{ellipseParams.size()}, AbstractDataset.FLOAT64);
+		Dataset[] allMajor = new Dataset[ellipseParams.size()];
+		Dataset[] allDeltaDist= new Dataset[ellipseParams.size()];
+		Dataset[] allD= new Dataset[ellipseParams.size()];
+		Dataset[] allDSin= new Dataset[ellipseParams.size()];
+		Dataset dSint = DatasetFactory.zeros(new int[]{ellipseParams.size()}, Dataset.FLOAT64);
 		
 		for (int i = 0; i<ellipseParams.size(); i++) {
 			EllipseParameters params = ellipseParams.get(i);
@@ -146,28 +146,28 @@ public class CalibrateEllipses {
 			
 			allMajor[i] = ellipseParams.get(i).majorAxes;
 			allD[i] = new DoubleDataset(allDSpacings.get(i), allDSpacings.get(i).length);
-			allDeltaDist[i] = AbstractDataset.ones(new int[]{size},AbstractDataset.FLOAT64).imultiply(normDist.getDouble(i));
-			allDSin[i] = AbstractDataset.ones(new int[]{size},AbstractDataset.FLOAT64).imultiply(beamC[0]);
+			allDeltaDist[i] = DatasetFactory.ones(new int[]{size},Dataset.FLOAT64).imultiply(normDist.getDouble(i));
+			allDSin[i] = DatasetFactory.ones(new int[]{size},Dataset.FLOAT64).imultiply(beamC[0]);
 			dSint.set(beamC[0], i);
 			
 		}
 		
-		AbstractDataset allMajorD = DatasetUtils.concatenate(allMajor, 0);
-		AbstractDataset allNormDistD = DatasetUtils.concatenate(allDeltaDist, 0);
-		AbstractDataset allDD = DatasetUtils.concatenate(allD, 0);
-		AbstractDataset allDSinD = DatasetUtils.concatenate(allDSin, 0);
+		Dataset allMajorD = DatasetUtils.concatenate(allMajor, 0);
+		Dataset allNormDistD = DatasetUtils.concatenate(allDeltaDist, 0);
+		Dataset allDD = DatasetUtils.concatenate(allD, 0);
+		Dataset allDSinD = DatasetUtils.concatenate(allDSin, 0);
 		
 		double[] out;
 		double wavelength;
 		double dist = 0;
 		double distFactor = 0;
-		AbstractDataset calculatedMajors;
+		Dataset calculatedMajors;
 		
 		if (knownValue == -1) {
-			AbstractDataset xcen = new DoubleDataset(beamcentres[0].clone(), beamcentres[0].length);
-			AbstractDataset ycen = new DoubleDataset(beamcentres[1].clone(), beamcentres[1].length);
+			Dataset xcen = new DoubleDataset(beamcentres[0].clone(), beamcentres[0].length);
+			Dataset ycen = new DoubleDataset(beamcentres[1].clone(), beamcentres[1].length);
 			
-			AbstractDataset hyp  = Maths.hypot(xcen.isubtract(xcen.getDouble(xcen.getSize()-1)),ycen.isubtract(ycen.getDouble(ycen.getSize()-1)));
+			Dataset hyp  = Maths.hypot(xcen.isubtract(xcen.getDouble(xcen.getSize()-1)),ycen.isubtract(ycen.getDouble(ycen.getSize()-1)));
 			
 			double[] mc = CentreFitter.fit(deltaDistance, hyp);
 			
@@ -183,7 +183,7 @@ public class CalibrateEllipses {
 			wavelength = knownValue;
 			out = LambdaFitter.fitKnownWavelength(Maths.multiply(allMajorD, pixel), allDD, Maths.multiply(allDSinD, pixel), deltaDistance.getDouble(deltaDistance.getSize()-1), wavelength);
 			dist = out[0];
-			AbstractDataset d0 = AbstractDataset.zeros(allNormDistD);
+			Dataset d0 = DatasetFactory.zeros(allNormDistD);
 			calculatedMajors = LambdaFitter.calculateMajorAxesfinal(d0, allDD, Maths.multiply(allDSinD, pixel), dist, wavelength);
 			calculatedMajors.imultiply(1/pixel);
 		} else {
@@ -191,7 +191,7 @@ public class CalibrateEllipses {
 			calculatedMajors = null;
 			out = LambdaFitter.fitKnownDistance(Maths.multiply(allMajorD, pixel), allDD, Maths.multiply(allDSinD, pixel), deltaDistance.getDouble(deltaDistance.getSize()-1), dist);
 			wavelength = out[0];
-			AbstractDataset d0 = AbstractDataset.zeros(allNormDistD);
+			Dataset d0 = DatasetFactory.zeros(allNormDistD);
 			calculatedMajors = LambdaFitter.calculateMajorAxesfinal(d0, allDD, Maths.multiply(allDSinD, pixel), dist, wavelength);
 			calculatedMajors.imultiply(1/pixel);
 		}
@@ -202,14 +202,14 @@ public class CalibrateEllipses {
 		
 		logger.debug("R2 value: " + rCoeff);
 		
-		AbstractDataset tilts = getFittedTilts(dist, Maths.multiply(normDist, distFactor), dSint,pixel);
+		Dataset tilts = getFittedTilts(dist, Maths.multiply(normDist, distFactor), dSint,pixel);
 		
-		AbstractDataset distances = Maths.subtract(dist, Maths.multiply(normDist, distFactor));
+		Dataset distances = Maths.subtract(dist, Maths.multiply(normDist, distFactor));
 		
-		AbstractDataset tiltAngles = getTiltAngles(ellipseParams, mcs);
+		Dataset tiltAngles = getTiltAngles(ellipseParams, mcs);
 		
-		AbstractDataset beamCentreX = new DoubleDataset(beamcentres[0], new int[]{beamcentres[0].length});
-		AbstractDataset beamCentreY = new DoubleDataset(beamcentres[1], new int[]{beamcentres[1].length});
+		Dataset beamCentreX = new DoubleDataset(beamcentres[0], new int[]{beamcentres[0].length});
+		Dataset beamCentreY = new DoubleDataset(beamcentres[1], new int[]{beamcentres[1].length});
 		
 		return new CalibrationOutput(wavelength, beamCentreX, beamCentreY, tilts, tiltAngles, distances,ssRes/ssTot);
 	}
@@ -228,10 +228,10 @@ public class CalibrateEllipses {
 	
 	private static EllipseParameters getParametersOfEllipse(List<EllipticalROI> rois) {
 		EllipseParameters els = new EllipseParameters();
-		AbstractDataset major = AbstractDataset.zeros(new int[]{rois.size()}, AbstractDataset.FLOAT64);
-		AbstractDataset xc = AbstractDataset.zeros(new int[]{rois.size()}, AbstractDataset.FLOAT64);
-		AbstractDataset yc = AbstractDataset.zeros(new int[]{rois.size()}, AbstractDataset.FLOAT64);
-		AbstractDataset angle = AbstractDataset.zeros(new int[]{rois.size()}, AbstractDataset.FLOAT64);
+		Dataset major = DatasetFactory.zeros(new int[]{rois.size()}, Dataset.FLOAT64);
+		Dataset xc = DatasetFactory.zeros(new int[]{rois.size()}, Dataset.FLOAT64);
+		Dataset yc = DatasetFactory.zeros(new int[]{rois.size()}, Dataset.FLOAT64);
+		Dataset angle = DatasetFactory.zeros(new int[]{rois.size()}, Dataset.FLOAT64);
 		
 		for (int i = 0; i < rois.size();i++) {
 			EllipticalROI el = rois.get(i);
@@ -249,12 +249,12 @@ public class CalibrateEllipses {
 		return els;
 	}
 	
-	private static AbstractDataset getFittedTilts(double d0_lambda, AbstractDataset normDist, AbstractDataset dSint, double pixel) {
+	private static Dataset getFittedTilts(double d0_lambda, Dataset normDist, Dataset dSint, double pixel) {
 		
-		AbstractDataset var = Maths.subtract(d0_lambda, normDist);
-		AbstractDataset denom = Maths.multiply(dSint, pixel);
+		Dataset var = Maths.subtract(d0_lambda, normDist);
+		Dataset denom = Maths.multiply(dSint, pixel);
 		var.idivide(denom);
-		AbstractDataset var2 = Maths.arcsin(var);
+		Dataset var2 = Maths.arcsin(var);
 		var2.idivide(Math.PI);
 		var2.imultiply(180);
 		
@@ -262,9 +262,9 @@ public class CalibrateEllipses {
 		return var2;
 	}
 	
-	private static AbstractDataset getTiltAngles(List<EllipseParameters> ellipseParams, List<double[]> mcs) {
+	private static Dataset getTiltAngles(List<EllipseParameters> ellipseParams, List<double[]> mcs) {
 		
-		AbstractDataset tiltAngles = AbstractDataset.zeros(new int[]{ellipseParams.size()}, AbstractDataset.FLOAT64);
+		Dataset tiltAngles = DatasetFactory.zeros(new int[]{ellipseParams.size()}, Dataset.FLOAT64);
 		
 		for (int i = 0; i<ellipseParams.size(); i++) {
 			EllipseParameters params = ellipseParams.get(i);
@@ -281,10 +281,10 @@ public class CalibrateEllipses {
 	}
 	
 	private static class EllipseParameters {
-		public AbstractDataset majorAxes;
-		public AbstractDataset xCentres;
-		public AbstractDataset yCentres;
-		public AbstractDataset anglesDegrees;
+		public Dataset majorAxes;
+		public Dataset xCentres;
+		public Dataset yCentres;
+		public Dataset anglesDegrees;
 	}
 
 }

@@ -12,7 +12,6 @@ import org.junit.runners.Parameterized;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrantSpacing;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationStandards;
-import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
 import uk.ac.diamond.scisoft.analysis.dataset.Dataset;
 import uk.ac.diamond.scisoft.analysis.dataset.Maths;
 import uk.ac.diamond.scisoft.analysis.diffraction.DetectorProperties;
@@ -60,11 +59,11 @@ public class SimulatedDataTest {
 		DetectorProperties dp = meta.getDetector2DProperties();
 		DiffractionCrystalEnvironment ce = meta.getDiffractionCrystalEnvironment();
 		
-		AbstractDataset[] s1d = getSimulated1D();
+		Dataset[] s1d = getSimulated1D();
 		int[] shape = new int[]{dp.getPy(),dp.getPx()};
 		
-		AbstractDataset q2D = PixelIntegrationUtils.generateQArray(shape, meta); 
-		AbstractDataset image = PixelIntegrationUtils.generate2Dfrom1D(s1d, q2D);
+		Dataset q2D = PixelIntegrationUtils.generateQArray(shape, meta); 
+		Dataset image = PixelIntegrationUtils.generate2Dfrom1D(s1d, q2D);
 		
 		CalibrationStandards standards = CalibrationFactory.getCalibrationStandards();
 		CalibrantSpacing ceO2 = standards.getCalibrationPeakMap("CeO2");
@@ -84,7 +83,7 @@ public class SimulatedDataTest {
 		DetectorProperties dp = meta.getDetector2DProperties();
 //		DiffractionCrystalEnvironment ce = meta.getDiffractionCrystalEnvironment();
 		
-		AbstractDataset[] s1d = getSimulated1D();
+		Dataset[] s1d = getSimulated1D();
 		int[] shape = new int[]{dp.getPy(),dp.getPx()};
 		
 		Dataset q2D = PixelIntegrationUtils.generateQArray(shape, meta); 
@@ -114,18 +113,18 @@ public class SimulatedDataTest {
 		return new DiffractionMetadata("test",dp, ce);
 	}
 	
-	private AbstractDataset[] getSimulated1D() {
+	private Dataset[] getSimulated1D() {
 		final File file = new File("testfiles/Sim_CeO2_SRM674b.dat");
-		AbstractDataset x;
-		AbstractDataset y;
+		Dataset x;
+		Dataset y;
 		try {
-			x = (AbstractDataset)LoaderFactory.getDataSet(file.getAbsolutePath(),"Column_1",null);
-			y = (AbstractDataset)LoaderFactory.getDataSet(file.getAbsolutePath(),"Column_2",null);
+			x = (Dataset)LoaderFactory.getDataSet(file.getAbsolutePath(),"Column_1",null);
+			y = (Dataset)LoaderFactory.getDataSet(file.getAbsolutePath(),"Column_2",null);
 		} catch (Exception e) {
 			return null;
 		}
 		
-		return new AbstractDataset[]{x,Maths.add(y,100)};
+		return new Dataset[]{x,Maths.add(y,100)};
 	}
 	
 }

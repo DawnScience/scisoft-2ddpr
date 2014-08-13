@@ -11,7 +11,8 @@ import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.NelderMeadSimplex;
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.SimplexOptimizer;
 
-import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
+import uk.ac.diamond.scisoft.analysis.dataset.Dataset;
+import uk.ac.diamond.scisoft.analysis.dataset.DatasetFactory;
 import uk.ac.diamond.scisoft.analysis.dataset.Maths;
 
 /**
@@ -39,7 +40,7 @@ public class ImageFitter {
 	 * @param pixel
 	 * @return mc
 	 */
-	public static double[] fit(final AbstractDataset major, final AbstractDataset x, final AbstractDataset y, final double[] line, double pixel){
+	public static double[] fit(final Dataset major, final Dataset x, final Dataset y, final double[] line, double pixel){
 
 		//TODO check same length
 		int last = major.getSize()-1;
@@ -57,7 +58,7 @@ public class ImageFitter {
 		
 		double xApprox = x.getDouble(0);
 		
-		AbstractDataset xApproxGuess = AbstractDataset.arange(xApprox, xApprox-(xDir*xRange), -xDir*xRange/100, AbstractDataset.FLOAT64);
+		Dataset xApproxGuess = DatasetFactory.createRange(xApprox, xApprox-(xDir*xRange), -xDir*xRange/100, Dataset.FLOAT64);
 		
 		MultivariateOptimizer opt = new SimplexOptimizer(REL_TOL,ABS_TOL);
 		MultivariateFunction fun = new MultivariateFunction() {
@@ -65,13 +66,13 @@ public class ImageFitter {
 			@Override
 			public double value(double[] arg0) {
 				
-				AbstractDataset sqrtxval =  calculateLine(x, y, line, arg0);
+				Dataset sqrtxval =  calculateLine(x, y, line, arg0);
 				double res =  major.residual(sqrtxval);
 				return res;
 			}
 		};
 		
-		AbstractDataset errors = AbstractDataset.zeros(xApproxGuess);
+		Dataset errors = DatasetFactory.zeros(xApproxGuess);
 		PointValuePair result;
 		double offset = 1e12;
 		double[] scale = new double[]{offset*0.25,offset*0.25};
@@ -98,7 +99,7 @@ public class ImageFitter {
 			}
 			
 			double[] estimates = result.getPointRef();
-			AbstractDataset lineData = calculateLine(x, y, line, estimates);
+			Dataset lineData = calculateLine(x, y, line, estimates);
 			errors.set(major.residual(lineData), i);
 		}
 		
@@ -125,17 +126,17 @@ public class ImageFitter {
 		return result.getPointRef();
 	}
 	
-	private static AbstractDataset calculateLine(AbstractDataset x, AbstractDataset y, double[] line, double[] arg0) {
-		AbstractDataset xval = Maths.subtract(x, arg0[1]);
+	private static Dataset calculateLine(Dataset x, Dataset y, double[] line, double[] arg0) {
+		Dataset xval = Maths.subtract(x, arg0[1]);
 		xval.ipower(2);
 		double lval = line[0]* arg0[1]+line[1];
 		
-		AbstractDataset yval = Maths.subtract(y, lval);
+		Dataset yval = Maths.subtract(y, lval);
 		yval.ipower(2);
 		
 		xval.iadd(yval);
 		
-		AbstractDataset sqrtxval = Maths.power(xval, 0.5);
+		Dataset sqrtxval = Maths.power(xval, 0.5);
 		
 		sqrtxval.imultiply(arg0[0]);
 		sqrtxval.iadd(xval);

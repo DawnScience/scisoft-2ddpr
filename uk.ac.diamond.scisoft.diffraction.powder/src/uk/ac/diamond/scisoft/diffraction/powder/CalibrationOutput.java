@@ -1,22 +1,22 @@
 package uk.ac.diamond.scisoft.diffraction.powder;
 
-import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
+import uk.ac.diamond.scisoft.analysis.dataset.Dataset;
 import uk.ac.diamond.scisoft.analysis.dataset.DoubleDataset;
 import uk.ac.diamond.scisoft.analysis.diffraction.IPowderCalibrationInfo;
 
 public class CalibrationOutput {
 	
 	private double wavelength;
-	private AbstractDataset beamCentreX;
-	private AbstractDataset beamCentreY;
-	private AbstractDataset tilt;
-	private AbstractDataset tiltAngle;
-	private AbstractDataset distance;
+	private Dataset beamCentreX;
+	private Dataset beamCentreY;
+	private Dataset tilt;
+	private Dataset tiltAngle;
+	private Dataset distance;
 	private double residual;
 	private IPowderCalibrationInfo calibrationInfo[];
 	
-	public CalibrationOutput(double wavelength, AbstractDataset beamCentreX, AbstractDataset beamCentreY,
-			AbstractDataset tilt, AbstractDataset tiltAngle, AbstractDataset distance, double residual) {
+	public CalibrationOutput(double wavelength, Dataset beamCentreX, Dataset beamCentreY,
+			Dataset tilt, Dataset tiltAngle, Dataset distance, double residual) {
 		this.wavelength = wavelength;
 		this.beamCentreX = beamCentreX;
 		this.beamCentreY = beamCentreY;
@@ -41,23 +41,23 @@ public class CalibrationOutput {
 		return wavelength;
 	}
 
-	public AbstractDataset getBeamCentreX() {
+	public Dataset getBeamCentreX() {
 		return beamCentreX;
 	}
 
-	public AbstractDataset getBeamCentreY() {
+	public Dataset getBeamCentreY() {
 		return beamCentreY;
 	}
 
-	public AbstractDataset getTilt() {
+	public Dataset getTilt() {
 		return tilt;
 	}
 
-	public AbstractDataset getTiltAngle() {
+	public Dataset getTiltAngle() {
 		return tiltAngle;
 	}
 
-	public AbstractDataset getDistance() {
+	public Dataset getDistance() {
 		return distance;
 	}
 	

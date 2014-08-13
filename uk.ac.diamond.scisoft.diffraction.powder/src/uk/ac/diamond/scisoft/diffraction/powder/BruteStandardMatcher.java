@@ -148,7 +148,7 @@ public class BruteStandardMatcher {
 			t2.set(val, i);
 		}
 		
-		//t1 = AbstractDataset.zeros(y);
+		//t1 = DatasetFactory.zeros(y);
 		
 		for (int i = 0 ; i < y.getSize()-1; i++) {
 			int start = (i-width) < 0 ? 0 : (i - width);

@@ -12,7 +12,7 @@ import org.junit.Test;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrantSpacing;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationStandards;
-import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
+import uk.ac.diamond.scisoft.analysis.dataset.Dataset;
 import uk.ac.diamond.scisoft.analysis.dataset.DoubleDataset;
 import uk.ac.diamond.scisoft.analysis.diffraction.ResolutionEllipseROI;
 import uk.ac.diamond.scisoft.analysis.io.LoaderFactory;
@@ -28,27 +28,27 @@ public class MultiImageCalibrationRunTest {
 	@Test
 	public void MultiImageTestPixium(){
 		
-		AbstractDataset image;
+		Dataset image;
 		try {
 			double pixel = 0.2;
-			image = (AbstractDataset)LoaderFactory.getDataSet("/dls/science/groups/das/ExampleData/i12/AlgorithmTesting/Circular1/pixi_00000.tif","image-01",null);
+			image = (Dataset)LoaderFactory.getDataSet("/dls/science/groups/das/ExampleData/i12/AlgorithmTesting/Circular1/pixi_00000.tif","image-01",null);
 			CalibrationStandards standards = CalibrationFactory.getCalibrationStandards();
 			CalibrantSpacing ceO2 = standards.getCalibrationPeakMap("CeO2");
 			List<ResolutionEllipseROI> first = PowderCalibration.findMatchedEllipses(image, pixel, ceO2.getHKLs());
 			
 			//assertEquals(197.97, first.get(0).getSemiAxis(0), 0.1);
 			
-			image = (AbstractDataset)LoaderFactory.getDataSet("/dls/science/groups/das/ExampleData/i12/AlgorithmTesting/Circular1/pixi_00001.tif","image-01",null);
+			image = (Dataset)LoaderFactory.getDataSet("/dls/science/groups/das/ExampleData/i12/AlgorithmTesting/Circular1/pixi_00001.tif","image-01",null);
 			List<ResolutionEllipseROI> second = PowderCalibration.findMatchedEllipses(image, pixel, ceO2.getHKLs());
 			
-			image = (AbstractDataset)LoaderFactory.getDataSet("/dls/science/groups/das/ExampleData/i12/AlgorithmTesting/Circular1/pixi_00003.tif","image-01",null);
+			image = (Dataset)LoaderFactory.getDataSet("/dls/science/groups/das/ExampleData/i12/AlgorithmTesting/Circular1/pixi_00003.tif","image-01",null);
 			List<ResolutionEllipseROI> third = PowderCalibration.findMatchedEllipses(image, pixel, ceO2.getHKLs());
 			
-			image = (AbstractDataset)LoaderFactory.getDataSet("/dls/science/groups/das/ExampleData/i12/AlgorithmTesting/Circular1/pixi_00004.tif","image-01",null);
+			image = (Dataset)LoaderFactory.getDataSet("/dls/science/groups/das/ExampleData/i12/AlgorithmTesting/Circular1/pixi_00004.tif","image-01",null);
 			List<ResolutionEllipseROI> forth = PowderCalibration.findMatchedEllipses(image, pixel, ceO2.getHKLs());
 			
 			double[] dDist = new double[]{300,400,600,700};
-			AbstractDataset deltaDistance = new DoubleDataset(dDist, dDist.length);
+			Dataset deltaDistance = new DoubleDataset(dDist, dDist.length);
 			
 			List<List<EllipticalROI>> allEllipses = new ArrayList<List<EllipticalROI>>();
 			allEllipses.add(new ArrayList<EllipticalROI>(first));
@@ -102,25 +102,25 @@ public class MultiImageCalibrationRunTest {
 	public void MultiImageTestPilatus(){
 		
 	
-		AbstractDataset image;
+		Dataset image;
 		try {
 			double pixel = 0.172;
-			image = (AbstractDataset)LoaderFactory.getDataSet("/dls/science/groups/das/ExampleData/i04/CeO2/ceo2_12kev_170.cbf","image-01",null);
+			image = (Dataset)LoaderFactory.getDataSet("/dls/science/groups/das/ExampleData/i04/CeO2/ceo2_12kev_170.cbf","image-01",null);
 			CalibrationStandards standards = CalibrationFactory.getCalibrationStandards();
 			CalibrantSpacing ceO2 = standards.getCalibrationPeakMap("CeO2Minimal");
 			List<ResolutionEllipseROI> first = PowderCalibration.findMatchedEllipses(image, pixel, ceO2.getHKLs());
 			
-			image = (AbstractDataset)LoaderFactory.getDataSet("/dls/science/groups/das/ExampleData/i04/CeO2/ceo2_12kev_210.cbf","image-01",null);
+			image = (Dataset)LoaderFactory.getDataSet("/dls/science/groups/das/ExampleData/i04/CeO2/ceo2_12kev_210.cbf","image-01",null);
 			List<ResolutionEllipseROI> second = PowderCalibration.findMatchedEllipses(image, pixel, ceO2.getHKLs());
 			
-			image = (AbstractDataset)LoaderFactory.getDataSet("/dls/science/groups/das/ExampleData/i04/CeO2/ceo2_12kev_250.cbf","image-01",null);
+			image = (Dataset)LoaderFactory.getDataSet("/dls/science/groups/das/ExampleData/i04/CeO2/ceo2_12kev_250.cbf","image-01",null);
 			List<ResolutionEllipseROI> third = PowderCalibration.findMatchedEllipses(image, pixel, ceO2.getHKLs());
 			
-			image = (AbstractDataset)LoaderFactory.getDataSet("/dls/science/groups/das/ExampleData/i04/CeO2/ceo2_12kev_290.cbf","image-01",null);
+			image = (Dataset)LoaderFactory.getDataSet("/dls/science/groups/das/ExampleData/i04/CeO2/ceo2_12kev_290.cbf","image-01",null);
 			List<ResolutionEllipseROI> forth = PowderCalibration.findMatchedEllipses(image, pixel, ceO2.getHKLs());
 			
 			double[] dDist = new double[]{170,210,250,290};
-			AbstractDataset deltaDistance = new DoubleDataset(dDist, dDist.length);
+			Dataset deltaDistance = new DoubleDataset(dDist, dDist.length);
 			
 			List<List<EllipticalROI>> allEllipses = new ArrayList<List<EllipticalROI>>();
 			allEllipses.add(new ArrayList<EllipticalROI>(first));
@@ -174,25 +174,25 @@ public class MultiImageCalibrationRunTest {
 	public void MultiImageTestPerkin(){
 		
 	
-		AbstractDataset image;
+		Dataset image;
 		try {
 			double pixel = 0.2;
-			image = (AbstractDataset)LoaderFactory.getDataSet("/dls/science/groups/das/ExampleData/i15/I15_Detector_Calibration/PE_Data/29p2keV/CeO2_29p2keV_d259-00017.tif","image-01",null);
+			image = (Dataset)LoaderFactory.getDataSet("/dls/science/groups/das/ExampleData/i15/I15_Detector_Calibration/PE_Data/29p2keV/CeO2_29p2keV_d259-00017.tif","image-01",null);
 			CalibrationStandards standards = CalibrationFactory.getCalibrationStandards();
 			CalibrantSpacing ceO2 = standards.getCalibrationPeakMap("CeO2Minimal");
 			List<ResolutionEllipseROI> first = PowderCalibration.findMatchedEllipses(image, pixel, ceO2.getHKLs());
 			
-			image = (AbstractDataset)LoaderFactory.getDataSet("/dls/science/groups/das/ExampleData/i15/I15_Detector_Calibration/PE_Data/29p2keV/CeO2_29p2keV_d359-00016.tif","image-01",null);
+			image = (Dataset)LoaderFactory.getDataSet("/dls/science/groups/das/ExampleData/i15/I15_Detector_Calibration/PE_Data/29p2keV/CeO2_29p2keV_d359-00016.tif","image-01",null);
 			List<ResolutionEllipseROI> second = PowderCalibration.findMatchedEllipses(image, pixel, ceO2.getHKLs());
 			
-			image = (AbstractDataset)LoaderFactory.getDataSet("/dls/science/groups/das/ExampleData/i15/I15_Detector_Calibration/PE_Data/29p2keV/CeO2_29p2keV_d459-00015.tif","image-01",null);
+			image = (Dataset)LoaderFactory.getDataSet("/dls/science/groups/das/ExampleData/i15/I15_Detector_Calibration/PE_Data/29p2keV/CeO2_29p2keV_d459-00015.tif","image-01",null);
 			List<ResolutionEllipseROI> third = PowderCalibration.findMatchedEllipses(image, pixel, ceO2.getHKLs());
 			
-			image = (AbstractDataset)LoaderFactory.getDataSet("/dls/science/groups/das/ExampleData/i15/I15_Detector_Calibration/PE_Data/29p2keV/CeO2_29p2keV_d559-00014.tif","image-01",null);
+			image = (Dataset)LoaderFactory.getDataSet("/dls/science/groups/das/ExampleData/i15/I15_Detector_Calibration/PE_Data/29p2keV/CeO2_29p2keV_d559-00014.tif","image-01",null);
 			List<ResolutionEllipseROI> forth = PowderCalibration.findMatchedEllipses(image, pixel, ceO2.getHKLs());
 			
 			double[] dDist = new double[]{250,350,450,550};
-			AbstractDataset deltaDistance = new DoubleDataset(dDist, dDist.length);
+			Dataset deltaDistance = new DoubleDataset(dDist, dDist.length);
 			
 			List<List<EllipticalROI>> allEllipses = new ArrayList<List<EllipticalROI>>();
 			allEllipses.add(new ArrayList<EllipticalROI>(first));
@@ -246,7 +246,7 @@ public class MultiImageCalibrationRunTest {
 	public void MultiImageTestPerkinLab629k(){
 		
 		double pixel = 0.2;
-		AbstractDataset image = getImage("/dls/science/groups/das/ExampleData/i15/I15_Detector_Calibration/PE_Data/29p2keV/LaB6_29p2keV_d359-00021.tif");
+		Dataset image = getImage("/dls/science/groups/das/ExampleData/i15/I15_Detector_Calibration/PE_Data/29p2keV/LaB6_29p2keV_d359-00021.tif");
 		if (image == null) {
 			Assert.fail("Image loading failed");
 			return;
@@ -279,7 +279,7 @@ public class MultiImageCalibrationRunTest {
 		List<ResolutionEllipseROI> forth = PowderCalibration.findMatchedEllipses(image, pixel, ceO2.getHKLs());
 
 		double[] dDist = new double[]{350,450,550,650};
-		AbstractDataset deltaDistance = new DoubleDataset(dDist, dDist.length);
+		Dataset deltaDistance = new DoubleDataset(dDist, dDist.length);
 
 		List<List<EllipticalROI>> allEllipses = new ArrayList<List<EllipticalROI>>();
 		allEllipses.add(new ArrayList<EllipticalROI>(first));
@@ -323,12 +323,12 @@ public class MultiImageCalibrationRunTest {
 
 	}
 	
-	private AbstractDataset getImage(String path) {
+	private Dataset getImage(String path) {
 
-		AbstractDataset image = null;
+		Dataset image = null;
 
 		try {
-			image = (AbstractDataset)LoaderFactory.getDataSet(path,"image-01",null);
+			image = (Dataset)LoaderFactory.getDataSet(path,"image-01",null);
 		} catch (Exception e) {
 			//fail silently, just return null to show it didnt work
 		}

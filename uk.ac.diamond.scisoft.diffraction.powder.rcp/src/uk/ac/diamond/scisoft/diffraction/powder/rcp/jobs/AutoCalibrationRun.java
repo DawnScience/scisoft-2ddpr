@@ -12,7 +12,7 @@ import org.eclipse.swt.widgets.Display;
 
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.HKL;
-import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
+import uk.ac.diamond.scisoft.analysis.dataset.Dataset;
 import uk.ac.diamond.scisoft.analysis.dataset.IDataset;
 import uk.ac.diamond.scisoft.analysis.roi.IROI;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
@@ -69,7 +69,7 @@ public class AutoCalibrationRun extends AbstractCalibrationRun {
 		List<HKL> spacings = CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs();
 		if (manager.isEmpty()) return;
 		
-		AbstractDataset ddist = manager.getDistances();
+		Dataset ddist = manager.getDistances();
 		double pxSize = manager.getCurrentData().getMetaData().getDetector2DProperties().getHPxSize();
 		
 		double fixed = 0;

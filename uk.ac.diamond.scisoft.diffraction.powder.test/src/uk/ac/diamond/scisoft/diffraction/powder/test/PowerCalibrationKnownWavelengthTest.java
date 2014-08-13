@@ -7,7 +7,7 @@ import org.junit.Test;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrantSpacing;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationStandards;
-import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
+import uk.ac.diamond.scisoft.analysis.dataset.Dataset;
 import uk.ac.diamond.scisoft.analysis.io.LoaderFactory;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
 import uk.ac.diamond.scisoft.diffraction.powder.PowderCalibration;
@@ -20,7 +20,7 @@ public class PowerCalibrationKnownWavelengthTest {
 	@Test
 	public void CeO212kevPilatus170(){
 		
-		AbstractDataset image = getImage("/dls/science/groups/das/ExampleData/i04/CeO2/ceo2_12kev_170.cbf");
+		Dataset image = getImage("/dls/science/groups/das/ExampleData/i04/CeO2/ceo2_12kev_170.cbf");
 
 		if (image == null) {
 			Assert.fail("Image loading failed");
@@ -40,7 +40,7 @@ public class PowerCalibrationKnownWavelengthTest {
 	@Test
 	public void CeO212kevPilatus370(){
 		
-		AbstractDataset image = getImage("/dls/science/groups/das/ExampleData/i04/CeO2/ceo2_12kev_370.cbf");
+		Dataset image = getImage("/dls/science/groups/das/ExampleData/i04/CeO2/ceo2_12kev_370.cbf");
 		if (image == null) {
 			Assert.fail("Image loading failed");
 			return;
@@ -59,7 +59,7 @@ public class PowerCalibrationKnownWavelengthTest {
 	@Test
 	public void CeO216kevPilatus170(){
 		
-		AbstractDataset image = getImage("/dls/science/groups/das/ExampleData/i04/CeO2/ceo2_16kev_170.cbf");
+		Dataset image = getImage("/dls/science/groups/das/ExampleData/i04/CeO2/ceo2_16kev_170.cbf");
 		if (image == null) {
 			Assert.fail("Image loading failed");
 			return;
@@ -79,7 +79,7 @@ public class PowerCalibrationKnownWavelengthTest {
 	public void CeO216kevPilatus370(){
 		//TODO needs ring rejection from fit to work
 		
-		AbstractDataset image = getImage("/dls/science/groups/das/ExampleData/i04/CeO2/ceo2_16kev_370.cbf");
+		Dataset image = getImage("/dls/science/groups/das/ExampleData/i04/CeO2/ceo2_16kev_370.cbf");
 		if (image == null) {
 			Assert.fail("Image loading failed");
 			return;
@@ -99,7 +99,7 @@ public class PowerCalibrationKnownWavelengthTest {
 	public void CeO229kevPerkin259(){
 		//TODO needs ring rejection from fit to work
 		
-		AbstractDataset image = getImage("/dls/science/groups/das/ExampleData/i15/I15_Detector_Calibration/PE_Data/29p2keV/CeO2_29p2keV_d259-00017.tif");
+		Dataset image = getImage("/dls/science/groups/das/ExampleData/i15/I15_Detector_Calibration/PE_Data/29p2keV/CeO2_29p2keV_d259-00017.tif");
 		if (image == null) {
 			Assert.fail("Image loading failed");
 			return;
@@ -117,7 +117,7 @@ public class PowerCalibrationKnownWavelengthTest {
 	@Ignore("Hard coded paths, currently for TDD, will be a valid test when we have a location for the files.")
 	@Test
 	public void CeO229kevPerkin659(){
-		AbstractDataset image = getImage("/dls/science/groups/das/ExampleData/i15/I15_Detector_Calibration/PE_Data/29p2keV/CeO2_29p2keV_d659-00013.tif");
+		Dataset image = getImage("/dls/science/groups/das/ExampleData/i15/I15_Detector_Calibration/PE_Data/29p2keV/CeO2_29p2keV_d659-00013.tif");
 		if (image == null) {
 			Assert.fail("Image loading failed");
 			return;
@@ -136,7 +136,7 @@ public class PowerCalibrationKnownWavelengthTest {
 //	public void LaB6229kevPerkin259(){
 //		//TODO needs ring rejection from fit to work
 //		try {
-//			AbstractDataset image = (AbstractDataset)LoaderFactory.getDataSet("/dls/science/groups/das/ExampleData/i15/I15_Detector_Calibration/PE_Data/29p2keV/LaB6_29p2keV_d259-00018.tif","image-01",null);
+//			Dataset image = (Dataset)LoaderFactory.getDataSet("/dls/science/groups/das/ExampleData/i15/I15_Detector_Calibration/PE_Data/29p2keV/LaB6_29p2keV_d259-00018.tif","image-01",null);
 //			CalibrationStandards standards = CalibrationFactory.getCalibrationStandards();
 //			CalibrantSpacing std = standards.getCalibrationPeakMap("LaB6");
 //			CalibrationOutput result = PowderCalibration.calibrateKnownWavelength(image, 0.425, 0.2, std.getHKLs());
@@ -155,7 +155,7 @@ public class PowerCalibrationKnownWavelengthTest {
 	@Test
 	public void LaB629kevPerkin359(){
 		//TODO needs ring rejection from fit to work
-		AbstractDataset image = getImage("/dls/science/groups/das/ExampleData/i15/I15_Detector_Calibration/PE_Data/29p2keV/LaB6_29p2keV_d359-00021.tif");
+		Dataset image = getImage("/dls/science/groups/das/ExampleData/i15/I15_Detector_Calibration/PE_Data/29p2keV/LaB6_29p2keV_d359-00021.tif");
 		if (image == null) {
 			Assert.fail("Image loading failed");
 			return;
@@ -174,7 +174,7 @@ public class PowerCalibrationKnownWavelengthTest {
 	@Test
 	public void LaB629kevPerkin659(){
 		
-		AbstractDataset image = getImage("/dls/science/groups/das/ExampleData/i15/I15_Detector_Calibration/PE_Data/29p2keV/LaB6_29p2keV_d659-00024.tif");
+		Dataset image = getImage("/dls/science/groups/das/ExampleData/i15/I15_Detector_Calibration/PE_Data/29p2keV/LaB6_29p2keV_d659-00024.tif");
 		if (image == null) {
 			Assert.fail("Image loading failed");
 			return;
@@ -195,7 +195,7 @@ public class PowerCalibrationKnownWavelengthTest {
 	@Test
 	public void CeO2Pixium788(){
 		//TODO needs ring rejection from fit to work
-		AbstractDataset image = getImage("/dls/science/groups/das/ExampleData/powder/ceopowder.tiff");
+		Dataset image = getImage("/dls/science/groups/das/ExampleData/powder/ceopowder.tiff");
 		if (image == null) {
 			Assert.fail("Image loading failed");
 			return;
@@ -215,7 +215,7 @@ public class PowerCalibrationKnownWavelengthTest {
 	@Test
 	public void CeO2Pixium289(){
 		//TODO needs ring rejection from fit to work
-		AbstractDataset image = getImage("/dls/science/groups/das/ExampleData/i12/AlgorithmTesting/Circular1/pixi_00000.tif");
+		Dataset image = getImage("/dls/science/groups/das/ExampleData/i12/AlgorithmTesting/Circular1/pixi_00000.tif");
 		if (image == null) {
 			Assert.fail("Image loading failed");
 			return;
@@ -234,7 +234,7 @@ public class PowerCalibrationKnownWavelengthTest {
 	@Test
 	public void CeO2Pixium689(){
 		//TODO needs ring rejection from fit to work
-		AbstractDataset image = getImage("/dls/science/groups/das/ExampleData/i12/AlgorithmTesting/Circular1/pixi_00004.tif");
+		Dataset image = getImage("/dls/science/groups/das/ExampleData/i12/AlgorithmTesting/Circular1/pixi_00004.tif");
 		if (image == null) {
 			Assert.fail("Image loading failed");
 			return;
@@ -249,12 +249,12 @@ public class PowerCalibrationKnownWavelengthTest {
 		Assert.assertEquals(1015.7, result.getBeamCentreY().getDouble(0), 0.9);
 	}
 	
-	private AbstractDataset getImage(String path) {
+	private Dataset getImage(String path) {
 		
-		AbstractDataset image = null;
+		Dataset image = null;
 		
 		try {
-			image = (AbstractDataset)LoaderFactory.getDataSet(path,"image-01",null);
+			image = (Dataset)LoaderFactory.getDataSet(path,"image-01",null);
 		} catch (Exception e) {
 			//fail silently, just return null to show it didnt work
 		}

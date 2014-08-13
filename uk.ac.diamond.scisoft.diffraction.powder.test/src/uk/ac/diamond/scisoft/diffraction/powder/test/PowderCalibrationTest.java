@@ -10,7 +10,7 @@ import java.util.List;
 
 import org.junit.Test;
 
-import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
+import uk.ac.diamond.scisoft.analysis.dataset.Dataset;
 import uk.ac.diamond.scisoft.analysis.dataset.DoubleDataset;
 import uk.ac.diamond.scisoft.analysis.roi.EllipticalROI;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrateEllipses;
@@ -45,8 +45,8 @@ public class PowderCalibrationTest {
 		
 		double[] expected = new double[]{1.304139779445208e+00,-3.538840672325122e+02};
 		
-		AbstractDataset xd = new DoubleDataset(x1, new int[]{x1.length});
-		AbstractDataset yd = new DoubleDataset(y1, new int[]{y1.length});
+		Dataset xd = new DoubleDataset(x1, new int[]{x1.length});
+		Dataset yd = new DoubleDataset(y1, new int[]{y1.length});
 		
 		double[] out = CentreFitter.fit(xd, yd);
 		
@@ -82,9 +82,9 @@ public class PowderCalibrationTest {
 		double[] expected = new double[]{5.625050069043890e+05,1.051567822834576e+03};
 		//min = 5.271676377107889e+03
 
-		AbstractDataset majord = new DoubleDataset(major, new int[]{major.length});
-		AbstractDataset xd = new DoubleDataset(x1, new int[]{x1.length});
-		AbstractDataset yd = new DoubleDataset(y1, new int[]{y1.length});
+		Dataset majord = new DoubleDataset(major, new int[]{major.length});
+		Dataset xd = new DoubleDataset(x1, new int[]{x1.length});
+		Dataset yd = new DoubleDataset(y1, new int[]{y1.length});
 		
 		double[] out = ImageFitter.fit(majord, xd, yd, centre_line, pixel);
 		assertArrayEquals(expected, out, 0.1);
@@ -195,10 +195,10 @@ public class PowderCalibrationTest {
 	
 	double pixel = 0.2;
 	
-	AbstractDataset majord = new DoubleDataset(major, new int[]{major.length});
-	AbstractDataset distd = new DoubleDataset(dist, new int[]{dist.length});
-	AbstractDataset dspaced = new DoubleDataset(dspace, new int[]{dspace.length});
-	AbstractDataset sintd = new DoubleDataset(sint, new int[]{sint.length});
+	Dataset majord = new DoubleDataset(major, new int[]{major.length});
+	Dataset distd = new DoubleDataset(dist, new int[]{dist.length});
+	Dataset dspaced = new DoubleDataset(dspace, new int[]{dspace.length});
+	Dataset sintd = new DoubleDataset(sint, new int[]{sint.length});
 	
 	double[] expected = new double[]{6.890468342740828e+02, 4.250447566358648e-01};
 	
@@ -220,7 +220,7 @@ public class PowderCalibrationTest {
 				   559,
 				   659};
 		
-		AbstractDataset deltad = new DoubleDataset(deltaDist, new int[]{deltaDist.length});
+		Dataset deltad = new DoubleDataset(deltaDist, new int[]{deltaDist.length});
 		
 		CalibrationOutput output = CalibrateEllipses.run(ellipses, allDSpacings,deltad,0.2);
 		
@@ -275,7 +275,7 @@ public class PowderCalibrationTest {
 		
 		double[] deltaDist = new double[]{580,780,980,1180,1380, 1580, 1780, 1980};
 		
-		AbstractDataset deltad = new DoubleDataset(deltaDist, new int[]{deltaDist.length});
+		Dataset deltad = new DoubleDataset(deltaDist, new int[]{deltaDist.length});
 		
 		CalibrationOutput output = CalibrateEllipses.run(ellipses, allDSpacings,deltad,0.148);
 		

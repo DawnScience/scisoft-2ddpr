@@ -10,7 +10,8 @@ import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.NelderMeadSimplex;
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.SimplexOptimizer;
 
-import uk.ac.diamond.scisoft.analysis.dataset.AbstractDataset;
+import uk.ac.diamond.scisoft.analysis.dataset.Dataset;
+import uk.ac.diamond.scisoft.analysis.dataset.DatasetFactory;
 import uk.ac.diamond.scisoft.analysis.dataset.Maths;
 
 /**
@@ -38,7 +39,7 @@ public class LambdaFitter {
 	 * @param lApprox
 	 * @return distance
 	 */
-	public static double[] fit(final AbstractDataset major, final AbstractDataset distance, final AbstractDataset dspace,  final AbstractDataset sint, final double dApprox, final double lApprox) {
+	public static double[] fit(final Dataset major, final Dataset distance, final Dataset dspace,  final Dataset sint, final double dApprox, final double lApprox) {
 
 		MultivariateOptimizer opt = new SimplexOptimizer(REL_TOL,ABS_TOL);
 		MultivariateFunction fun = new MultivariateFunction() {
@@ -70,9 +71,9 @@ public class LambdaFitter {
 	 * @param wavelength
 	 * @return distance
 	 */
-	public static double[] fitKnownWavelength(final AbstractDataset major, final AbstractDataset dspace,  final AbstractDataset sint, final double dApprox, final double wavelength) {
+	public static double[] fitKnownWavelength(final Dataset major, final Dataset dspace,  final Dataset sint, final double dApprox, final double wavelength) {
 	
-		final AbstractDataset distance = AbstractDataset.zeros(major);
+		final Dataset distance = DatasetFactory.zeros(major);
 		
 		MultivariateOptimizer opt = new SimplexOptimizer(REL_TOL,ABS_TOL);
 		MultivariateFunction fun = new MultivariateFunction() {
@@ -105,9 +106,9 @@ public class LambdaFitter {
 	 * @param distance
 	 * @return wavelength
 	 */
-	public static double[] fitKnownDistance(final AbstractDataset major, final AbstractDataset dspace,  final AbstractDataset sint, final double dApprox, final double distance) {
+	public static double[] fitKnownDistance(final Dataset major, final Dataset dspace,  final Dataset sint, final double dApprox, final double distance) {
 	
-		final AbstractDataset distances = AbstractDataset.zeros(major);
+		final Dataset distances = DatasetFactory.zeros(major);
 		
 		MultivariateOptimizer opt = new SimplexOptimizer(REL_TOL,ABS_TOL);
 		MultivariateFunction fun = new MultivariateFunction() {
@@ -127,29 +128,29 @@ public class LambdaFitter {
 		
 	}
 	
-	private static double calculateResidual(final AbstractDataset major, final AbstractDataset distance, final AbstractDataset dspace,  final AbstractDataset sint, final double dApprox, final double lApprox) {
+	private static double calculateResidual(final Dataset major, final Dataset distance, final Dataset dspace,  final Dataset sint, final double dApprox, final double lApprox) {
 		
-		AbstractDataset calcMajor= calculateMajorAxesfinal(distance, dspace, sint, dApprox, lApprox);
+		Dataset calcMajor= calculateMajorAxesfinal(distance, dspace, sint, dApprox, lApprox);
 		return major.residual(calcMajor);
 	}
 	
-	public static AbstractDataset calculateMajorAxesfinal(final AbstractDataset distance, final AbstractDataset dspace,  final AbstractDataset sint, final double d0, final double wavelength) {
-		AbstractDataset ddif = Maths.subtract(d0, distance);
-		AbstractDataset ld = Maths.multiply(dspace, 2);
+	public static Dataset calculateMajorAxesfinal(final Dataset distance, final Dataset dspace,  final Dataset sint, final double d0, final double wavelength) {
+		Dataset ddif = Maths.subtract(d0, distance);
+		Dataset ld = Maths.multiply(dspace, 2);
 		ld = Maths.divide(wavelength, ld);
 		ld = Maths.arcsin(ld);
 		ld.imultiply(2);
 		ld = Maths.tan(ld);// tan(2 * asin(lambda./(2 * ddata)))
 		
-		AbstractDataset var = Maths.divide(ddif, sint); //((D0 - deltaDdata) ./ D0_sint_data).^2
+		Dataset var = Maths.divide(ddif, sint); //((D0 - deltaDdata) ./ D0_sint_data).^2
 		var.ipower(2);
 
-		AbstractDataset denom = Maths.power(ld, 2);
+		Dataset denom = Maths.power(ld, 2);
 		denom.iadd(1);
 		denom.imultiply(var);
 		denom = Maths.subtract(1, denom);
 		
-		AbstractDataset numer = Maths.subtract(1, var);
+		Dataset numer = Maths.subtract(1, var);
 		numer.ipower(0.5);
 		numer.imultiply(ld);
 		numer.imultiply(ddif);
