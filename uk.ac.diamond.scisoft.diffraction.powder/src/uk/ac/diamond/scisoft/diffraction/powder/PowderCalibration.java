@@ -13,8 +13,11 @@ import uk.ac.diamond.scisoft.analysis.crystallography.HKL;
 import uk.ac.diamond.scisoft.analysis.dataset.BooleanDataset;
 import uk.ac.diamond.scisoft.analysis.dataset.Dataset;
 import uk.ac.diamond.scisoft.analysis.dataset.DatasetFactory;
+import uk.ac.diamond.scisoft.analysis.dataset.DatasetUtils;
 import uk.ac.diamond.scisoft.analysis.dataset.IDataset;
+import uk.ac.diamond.scisoft.analysis.dataset.IndexIterator;
 import uk.ac.diamond.scisoft.analysis.dataset.Maths;
+import uk.ac.diamond.scisoft.analysis.dataset.Stats;
 import uk.ac.diamond.scisoft.analysis.diffraction.DetectorProperties;
 import uk.ac.diamond.scisoft.analysis.diffraction.DiffractionCrystalEnvironment;
 import uk.ac.diamond.scisoft.analysis.diffraction.PeakFittingEllipseFinder;
@@ -94,7 +97,21 @@ public class PowderCalibration {
 
 			if (images.length > 1 && uiUpdate != null) uiUpdate.updatePlotData(image);
 
-			final EllipseFindingStructure efs = getResolutionEllipses((Dataset) image, spacings, pxSize, params,options[0], mon);
+			Dataset imds = DatasetUtils.convertToDataset(image).clone();
+			
+			//Clear any hot pixels that might interfere with centre finding etc
+			
+			double[] outlierValues = Stats.outlierValues(imds, 0.1, 99.9, -1);
+			
+			IndexIterator iterator = imds.getIterator();
+			
+			while (iterator.hasNext()) {
+				double val = imds.getElementDoubleAbs(iterator.index);
+				if (val < outlierValues[0]) imds.setObjectAbs(iterator.index, outlierValues[0]);
+				if (val > outlierValues[1]) imds.setObjectAbs(iterator.index, outlierValues[1]);
+			}
+			
+			final EllipseFindingStructure efs = getResolutionEllipses((Dataset) imds, spacings, pxSize, params,options[0], mon);
 
 			if (mon != null && mon.isCancelled()) return null;
 
