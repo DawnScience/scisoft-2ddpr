@@ -64,13 +64,18 @@ public class PowderCalibration {
 	
 	public static CalibrationOutput calibrateSingleImage(Dataset image, double pixel, List<HKL> spacings, int nRings) {
 		
+		return  calibrateSingleImage(image,pixel,spacings,nRings,null);
+	}
+	
+	public static CalibrationOutput calibrateSingleImage(Dataset image, double pixel, List<HKL> spacings, int nRings, PowderCalibrationInfoImpl info) {
+		
 		int[] options = new int[]{CENTRE_MASK_RADIUS, MINIMUM_SPACING, NUMBER_OF_POINTS};
 		SimpleCalibrationParameterModel params = new SimpleCalibrationParameterModel();
 		params.setNumberOfRings(nRings);
 		params.setFinalGlobalOptimisation(true);
 		
 		return calibrateMultipleImages(new IDataset[] {image}, DatasetFactory.zeros(new int[]{1}, Dataset.FLOAT64), pixel,
-				spacings,  0, options, params, null, null);
+				spacings,  0, options, params, null, null, info == null ? null : new PowderCalibrationInfoImpl[]{info});
 	}
 	
 	public static CalibrationOutput calibrateMultipleImages(IDataset[] images, Dataset deltaDistance, double pxSize,
