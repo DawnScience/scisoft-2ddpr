@@ -1,10 +1,11 @@
 package uk.ac.diamond.scisoft.diffraction.powder;
 
-import uk.ac.diamond.scisoft.analysis.dataset.Dataset;
-import uk.ac.diamond.scisoft.analysis.dataset.DatasetFactory;
-import uk.ac.diamond.scisoft.analysis.dataset.DatasetUtils;
-import uk.ac.diamond.scisoft.analysis.dataset.Image;
-import uk.ac.diamond.scisoft.analysis.dataset.Signal;
+import org.eclipse.dawnsci.analysis.dataset.impl.Dataset;
+import org.eclipse.dawnsci.analysis.dataset.impl.DatasetFactory;
+import org.eclipse.dawnsci.analysis.dataset.impl.DatasetUtils;
+import org.eclipse.dawnsci.analysis.dataset.impl.Image;
+import org.eclipse.dawnsci.analysis.dataset.impl.Signal;
+
 import uk.ac.diamond.scisoft.analysis.dataset.function.Downsample;
 import uk.ac.diamond.scisoft.analysis.dataset.function.DownsampleMode;
 import uk.ac.diamond.scisoft.analysis.fitting.Fitter;

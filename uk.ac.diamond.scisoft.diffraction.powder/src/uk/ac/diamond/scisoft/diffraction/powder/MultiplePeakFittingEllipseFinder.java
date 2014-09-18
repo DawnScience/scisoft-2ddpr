@@ -6,24 +6,24 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
 
+import org.eclipse.dawnsci.analysis.dataset.impl.BooleanDataset;
+import org.eclipse.dawnsci.analysis.dataset.impl.Dataset;
+import org.eclipse.dawnsci.analysis.dataset.impl.DatasetFactory;
+import org.eclipse.dawnsci.analysis.dataset.impl.DoubleDataset;
+import org.eclipse.dawnsci.analysis.dataset.impl.Stats;
+import org.eclipse.dawnsci.analysis.dataset.roi.EllipticalROI;
+import org.eclipse.dawnsci.analysis.dataset.roi.LinearROI;
+import org.eclipse.dawnsci.analysis.dataset.roi.PointROI;
+import org.eclipse.dawnsci.analysis.dataset.roi.PolylineROI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.ac.diamond.scisoft.analysis.dataset.BooleanDataset;
-import uk.ac.diamond.scisoft.analysis.dataset.Dataset;
-import uk.ac.diamond.scisoft.analysis.dataset.DatasetFactory;
-import uk.ac.diamond.scisoft.analysis.dataset.DoubleDataset;
-import uk.ac.diamond.scisoft.analysis.dataset.Stats;
 import uk.ac.diamond.scisoft.analysis.diffraction.PowderRingsUtils;
 import uk.ac.diamond.scisoft.analysis.fitting.Fitter;
 import uk.ac.diamond.scisoft.analysis.fitting.Generic1DFitter;
 import uk.ac.diamond.scisoft.analysis.fitting.functions.CompositeFunction;
 import uk.ac.diamond.scisoft.analysis.fitting.functions.Gaussian;
 import uk.ac.diamond.scisoft.analysis.optimize.GeneticAlg;
-import uk.ac.diamond.scisoft.analysis.roi.EllipticalROI;
-import uk.ac.diamond.scisoft.analysis.roi.LinearROI;
-import uk.ac.diamond.scisoft.analysis.roi.PointROI;
-import uk.ac.diamond.scisoft.analysis.roi.PolylineROI;
 import uk.ac.diamond.scisoft.analysis.roi.ROIProfile;
 
 public class MultiplePeakFittingEllipseFinder {

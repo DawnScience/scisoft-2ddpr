@@ -3,15 +3,15 @@ package uk.ac.diamond.scisoft.diffraction.powder;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.dawnsci.analysis.api.diffraction.DetectorProperties;
+import org.eclipse.dawnsci.analysis.api.diffraction.DiffractionCrystalEnvironment;
+import org.eclipse.dawnsci.analysis.dataset.impl.Dataset;
+import org.eclipse.dawnsci.analysis.dataset.impl.DatasetFactory;
+import org.eclipse.dawnsci.analysis.dataset.impl.Maths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.ac.diamond.scisoft.analysis.dataset.Dataset;
-import uk.ac.diamond.scisoft.analysis.dataset.DatasetFactory;
-import uk.ac.diamond.scisoft.analysis.dataset.Maths;
 import uk.ac.diamond.scisoft.analysis.diffraction.DSpacing;
-import uk.ac.diamond.scisoft.analysis.diffraction.DetectorProperties;
-import uk.ac.diamond.scisoft.analysis.diffraction.DiffractionCrystalEnvironment;
 
 /**
  * Brute force approximate matching of a powder diffraction calibrant trace to d-space values 

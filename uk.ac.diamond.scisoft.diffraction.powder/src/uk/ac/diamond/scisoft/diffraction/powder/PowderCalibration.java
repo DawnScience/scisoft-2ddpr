@@ -6,36 +6,36 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
+import org.eclipse.dawnsci.analysis.api.dataset.IDataset;
+import org.eclipse.dawnsci.analysis.api.diffraction.DetectorProperties;
+import org.eclipse.dawnsci.analysis.api.diffraction.DiffractionCrystalEnvironment;
+import org.eclipse.dawnsci.analysis.api.metadata.IDiffractionMetadata;
+import org.eclipse.dawnsci.analysis.api.monitor.IMonitor;
+import org.eclipse.dawnsci.analysis.api.roi.IPolylineROI;
+import org.eclipse.dawnsci.analysis.api.roi.IROI;
+import org.eclipse.dawnsci.analysis.dataset.impl.BooleanDataset;
+import org.eclipse.dawnsci.analysis.dataset.impl.Dataset;
+import org.eclipse.dawnsci.analysis.dataset.impl.DatasetFactory;
+import org.eclipse.dawnsci.analysis.dataset.impl.DatasetUtils;
+import org.eclipse.dawnsci.analysis.dataset.impl.IndexIterator;
+import org.eclipse.dawnsci.analysis.dataset.impl.Maths;
+import org.eclipse.dawnsci.analysis.dataset.impl.Stats;
+import org.eclipse.dawnsci.analysis.dataset.roi.EllipticalFitROI;
+import org.eclipse.dawnsci.analysis.dataset.roi.EllipticalROI;
+import org.eclipse.dawnsci.analysis.dataset.roi.PolylineROI;
+import org.eclipse.dawnsci.analysis.dataset.roi.SectorROI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.ac.diamond.scisoft.analysis.crystallography.HKL;
-import uk.ac.diamond.scisoft.analysis.dataset.BooleanDataset;
-import uk.ac.diamond.scisoft.analysis.dataset.Dataset;
-import uk.ac.diamond.scisoft.analysis.dataset.DatasetFactory;
-import uk.ac.diamond.scisoft.analysis.dataset.DatasetUtils;
-import uk.ac.diamond.scisoft.analysis.dataset.IDataset;
-import uk.ac.diamond.scisoft.analysis.dataset.IndexIterator;
-import uk.ac.diamond.scisoft.analysis.dataset.Maths;
-import uk.ac.diamond.scisoft.analysis.dataset.Stats;
-import uk.ac.diamond.scisoft.analysis.diffraction.DetectorProperties;
-import uk.ac.diamond.scisoft.analysis.diffraction.DiffractionCrystalEnvironment;
 import uk.ac.diamond.scisoft.analysis.diffraction.PeakFittingEllipseFinder;
 import uk.ac.diamond.scisoft.analysis.diffraction.PowderRingsUtils;
 import uk.ac.diamond.scisoft.analysis.diffraction.ResolutionEllipseROI;
 import uk.ac.diamond.scisoft.analysis.diffraction.powder.AbstractPixelIntegration;
 import uk.ac.diamond.scisoft.analysis.diffraction.powder.NonPixelSplittingIntegration;
 import uk.ac.diamond.scisoft.analysis.io.DiffractionMetadata;
-import uk.ac.diamond.scisoft.analysis.metadata.IDiffractionMetadata;
-import uk.ac.diamond.scisoft.analysis.monitor.IMonitor;
-import uk.ac.diamond.scisoft.analysis.roi.EllipticalFitROI;
-import uk.ac.diamond.scisoft.analysis.roi.EllipticalROI;
-import uk.ac.diamond.scisoft.analysis.roi.IPolylineROI;
-import uk.ac.diamond.scisoft.analysis.roi.IROI;
-import uk.ac.diamond.scisoft.analysis.roi.PolylineROI;
 import uk.ac.diamond.scisoft.analysis.roi.ROIProfile;
 import uk.ac.diamond.scisoft.analysis.roi.ROIProfile.XAxis;
-import uk.ac.diamond.scisoft.analysis.roi.SectorROI;
 
 public class PowderCalibration {
 	

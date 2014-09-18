@@ -3,15 +3,14 @@ package uk.ac.diamond.scisoft.diffraction.powder;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.dawnsci.analysis.dataset.impl.Dataset;
+import org.eclipse.dawnsci.analysis.dataset.impl.DatasetFactory;
+import org.eclipse.dawnsci.analysis.dataset.impl.DatasetUtils;
+import org.eclipse.dawnsci.analysis.dataset.impl.DoubleDataset;
+import org.eclipse.dawnsci.analysis.dataset.impl.Maths;
+import org.eclipse.dawnsci.analysis.dataset.roi.EllipticalROI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import uk.ac.diamond.scisoft.analysis.dataset.Dataset;
-import uk.ac.diamond.scisoft.analysis.dataset.DatasetFactory;
-import uk.ac.diamond.scisoft.analysis.dataset.DatasetUtils;
-import uk.ac.diamond.scisoft.analysis.dataset.DoubleDataset;
-import uk.ac.diamond.scisoft.analysis.dataset.Maths;
-import uk.ac.diamond.scisoft.analysis.roi.EllipticalROI;
 
 /**
  * Direct conversion of I12 Matlab calibrateD_forDAWN.m

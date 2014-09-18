@@ -1,9 +1,10 @@
 package uk.ac.diamond.scisoft.diffraction.powder;
 
-import uk.ac.diamond.scisoft.analysis.diffraction.DetectorProperties;
-import uk.ac.diamond.scisoft.analysis.diffraction.DiffractionCrystalEnvironment;
+import org.eclipse.dawnsci.analysis.api.diffraction.DetectorProperties;
+import org.eclipse.dawnsci.analysis.api.diffraction.DiffractionCrystalEnvironment;
+import org.eclipse.dawnsci.analysis.api.metadata.IDiffractionMetadata;
+
 import uk.ac.diamond.scisoft.analysis.io.DiffractionMetadata;
-import uk.ac.diamond.scisoft.analysis.metadata.IDiffractionMetadata;
 
 public class CalibratePointsParameterModel extends SimpleCalibrationParameterModel {
 	

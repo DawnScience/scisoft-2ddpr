@@ -1,5 +1,6 @@
 package uk.ac.diamond.scisoft.diffraction.powder.test;
 
+import org.eclipse.dawnsci.analysis.dataset.impl.Dataset;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -7,7 +8,6 @@ import org.junit.Test;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrantSpacing;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationStandards;
-import uk.ac.diamond.scisoft.analysis.dataset.Dataset;
 import uk.ac.diamond.scisoft.analysis.io.LoaderFactory;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
 import uk.ac.diamond.scisoft.diffraction.powder.PowderCalibration;

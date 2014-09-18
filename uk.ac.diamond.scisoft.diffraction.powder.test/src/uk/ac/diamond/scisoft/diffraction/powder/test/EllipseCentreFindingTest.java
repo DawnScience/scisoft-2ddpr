@@ -2,10 +2,10 @@ package uk.ac.diamond.scisoft.diffraction.powder.test;
 
 import java.io.File;
 
+import org.eclipse.dawnsci.analysis.dataset.impl.Dataset;
 import org.junit.Assert;
 import org.junit.Test;
 
-import uk.ac.diamond.scisoft.analysis.dataset.Dataset;
 import uk.ac.diamond.scisoft.analysis.io.LoaderFactory;
 import uk.ac.diamond.scisoft.diffraction.powder.CentreGuess;
 

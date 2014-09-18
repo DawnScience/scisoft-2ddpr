@@ -7,14 +7,14 @@ import org.dawb.workbench.ui.diffraction.DiffractionCalibrationUtils;
 import org.dawb.workbench.ui.diffraction.table.DiffractionDataManager;
 import org.dawb.workbench.ui.diffraction.table.DiffractionTableData;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.dawnsci.analysis.api.dataset.IDataset;
+import org.eclipse.dawnsci.analysis.api.roi.IROI;
+import org.eclipse.dawnsci.analysis.dataset.impl.Dataset;
 import org.eclipse.dawnsci.plotting.api.IPlottingSystem;
 import org.eclipse.swt.widgets.Display;
 
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.HKL;
-import uk.ac.diamond.scisoft.analysis.dataset.Dataset;
-import uk.ac.diamond.scisoft.analysis.dataset.IDataset;
-import uk.ac.diamond.scisoft.analysis.roi.IROI;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
 import uk.ac.diamond.scisoft.diffraction.powder.ICalibrationUIProgressUpdate;
 import uk.ac.diamond.scisoft.diffraction.powder.PowderCalibration;

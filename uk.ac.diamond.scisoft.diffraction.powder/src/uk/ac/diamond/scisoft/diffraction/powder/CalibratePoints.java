@@ -11,12 +11,12 @@ import org.apache.commons.math3.optim.nonlinear.scalar.MultivariateOptimizer;
 import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.NelderMeadSimplex;
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.SimplexOptimizer;
+import org.eclipse.dawnsci.analysis.api.metadata.IDiffractionMetadata;
+import org.eclipse.dawnsci.analysis.api.roi.IPolylineROI;
+import org.eclipse.dawnsci.analysis.api.roi.IROI;
+import org.eclipse.dawnsci.analysis.dataset.impl.DoubleDataset;
 
-import uk.ac.diamond.scisoft.analysis.dataset.DoubleDataset;
 import uk.ac.diamond.scisoft.analysis.diffraction.QSpace;
-import uk.ac.diamond.scisoft.analysis.metadata.IDiffractionMetadata;
-import uk.ac.diamond.scisoft.analysis.roi.IPolylineROI;
-import uk.ac.diamond.scisoft.analysis.roi.IROI;
 
 public class CalibratePoints {
 

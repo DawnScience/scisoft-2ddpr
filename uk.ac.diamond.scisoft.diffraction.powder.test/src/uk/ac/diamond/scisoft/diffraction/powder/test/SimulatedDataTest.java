@@ -4,6 +4,11 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.eclipse.dawnsci.analysis.api.diffraction.DetectorProperties;
+import org.eclipse.dawnsci.analysis.api.diffraction.DiffractionCrystalEnvironment;
+import org.eclipse.dawnsci.analysis.api.metadata.IDiffractionMetadata;
+import org.eclipse.dawnsci.analysis.dataset.impl.Dataset;
+import org.eclipse.dawnsci.analysis.dataset.impl.Maths;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,14 +17,9 @@ import org.junit.runners.Parameterized;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrantSpacing;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationStandards;
-import uk.ac.diamond.scisoft.analysis.dataset.Dataset;
-import uk.ac.diamond.scisoft.analysis.dataset.Maths;
-import uk.ac.diamond.scisoft.analysis.diffraction.DetectorProperties;
-import uk.ac.diamond.scisoft.analysis.diffraction.DiffractionCrystalEnvironment;
 import uk.ac.diamond.scisoft.analysis.diffraction.powder.PixelIntegrationUtils;
 import uk.ac.diamond.scisoft.analysis.io.DiffractionMetadata;
 import uk.ac.diamond.scisoft.analysis.io.LoaderFactory;
-import uk.ac.diamond.scisoft.analysis.metadata.IDiffractionMetadata;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
 import uk.ac.diamond.scisoft.diffraction.powder.PowderCalibration;
 
