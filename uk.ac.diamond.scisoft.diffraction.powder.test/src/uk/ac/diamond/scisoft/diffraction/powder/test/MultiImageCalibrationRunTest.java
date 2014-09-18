@@ -19,7 +19,6 @@ import uk.ac.diamond.scisoft.analysis.io.LoaderFactory;
 import uk.ac.diamond.scisoft.analysis.roi.EllipticalROI;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrateEllipses;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
-
 import uk.ac.diamond.scisoft.diffraction.powder.PowderCalibration;
 
 public class MultiImageCalibrationRunTest {

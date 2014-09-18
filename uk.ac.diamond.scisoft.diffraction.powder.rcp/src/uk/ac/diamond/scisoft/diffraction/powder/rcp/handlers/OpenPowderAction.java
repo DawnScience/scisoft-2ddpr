@@ -1,6 +1,5 @@
 package uk.ac.diamond.scisoft.diffraction.powder.rcp.handlers;
 
-import org.dawb.workbench.ui.diffraction.table.DiffractionDelegate;
 import org.dawb.workbench.ui.diffraction.table.DiffractionDataManager;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.action.Action;

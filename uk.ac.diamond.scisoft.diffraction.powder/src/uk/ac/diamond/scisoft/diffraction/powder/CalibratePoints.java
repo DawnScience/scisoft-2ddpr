@@ -14,7 +14,7 @@ import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.SimplexOptimizer;
 
 import uk.ac.diamond.scisoft.analysis.dataset.DoubleDataset;
 import uk.ac.diamond.scisoft.analysis.diffraction.QSpace;
-import uk.ac.diamond.scisoft.analysis.io.IDiffractionMetadata;
+import uk.ac.diamond.scisoft.analysis.metadata.IDiffractionMetadata;
 import uk.ac.diamond.scisoft.analysis.roi.IPolylineROI;
 import uk.ac.diamond.scisoft.analysis.roi.IROI;
 

@@ -1,6 +1,7 @@
 package uk.ac.diamond.scisoft.diffraction.powder.test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 import java.io.BufferedReader;
 import java.io.File;

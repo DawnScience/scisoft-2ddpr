@@ -8,7 +8,7 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Display;
 
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
-import uk.ac.diamond.scisoft.analysis.io.IDiffractionMetadata;
+import uk.ac.diamond.scisoft.analysis.metadata.IDiffractionMetadata;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
 import uk.ac.diamond.scisoft.diffraction.powder.PowderCalibration;
 import uk.ac.diamond.scisoft.diffraction.powder.PowderCalibrationInfoImpl;

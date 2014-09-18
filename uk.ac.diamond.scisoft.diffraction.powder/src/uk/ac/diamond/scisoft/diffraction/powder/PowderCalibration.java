@@ -26,7 +26,7 @@ import uk.ac.diamond.scisoft.analysis.diffraction.ResolutionEllipseROI;
 import uk.ac.diamond.scisoft.analysis.diffraction.powder.AbstractPixelIntegration;
 import uk.ac.diamond.scisoft.analysis.diffraction.powder.NonPixelSplittingIntegration;
 import uk.ac.diamond.scisoft.analysis.io.DiffractionMetadata;
-import uk.ac.diamond.scisoft.analysis.io.IDiffractionMetadata;
+import uk.ac.diamond.scisoft.analysis.metadata.IDiffractionMetadata;
 import uk.ac.diamond.scisoft.analysis.monitor.IMonitor;
 import uk.ac.diamond.scisoft.analysis.roi.EllipticalFitROI;
 import uk.ac.diamond.scisoft.analysis.roi.EllipticalROI;
@@ -34,8 +34,8 @@ import uk.ac.diamond.scisoft.analysis.roi.IPolylineROI;
 import uk.ac.diamond.scisoft.analysis.roi.IROI;
 import uk.ac.diamond.scisoft.analysis.roi.PolylineROI;
 import uk.ac.diamond.scisoft.analysis.roi.ROIProfile;
-import uk.ac.diamond.scisoft.analysis.roi.SectorROI;
 import uk.ac.diamond.scisoft.analysis.roi.ROIProfile.XAxis;
+import uk.ac.diamond.scisoft.analysis.roi.SectorROI;
 
 public class PowderCalibration {
 	
