@@ -51,6 +51,10 @@ public class PowderCalibration {
 	
 	public static CalibrationOutput calibrateKnownWavelength(Dataset image, double wavelength, double pixel, List<HKL> spacings, int nRings) {
 		
+		return calibrateKnownWavelength(image, wavelength, pixel, spacings, nRings, null);
+	}
+	
+	public static CalibrationOutput calibrateKnownWavelength(Dataset image, double wavelength, double pixel, List<HKL> spacings, int nRings,  PowderCalibrationInfoImpl info) {
 
 		int[] options = new int[]{CENTRE_MASK_RADIUS, MINIMUM_SPACING, NUMBER_OF_POINTS};
 		SimpleCalibrationParameterModel params = new SimpleCalibrationParameterModel();
@@ -59,7 +63,7 @@ public class PowderCalibration {
 		params.setFinalGlobalOptimisation(true);
 		
 		return calibrateMultipleImages(new IDataset[] {image}, DatasetFactory.zeros(new int[]{1}, Dataset.FLOAT64), pixel,
-				spacings,  wavelength, options, params, null, null);
+				spacings,  wavelength, options, params, null, null, info == null ? null : new PowderCalibrationInfoImpl[]{info});
 	}
 	
 	public static CalibrationOutput calibrateSingleImage(Dataset image, double pixel, List<HKL> spacings, int nRings) {
