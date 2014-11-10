@@ -1,5 +1,6 @@
 package uk.ac.diamond.scisoft.diffraction.powder.rcp.views;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,6 +17,7 @@ import org.dawb.workbench.ui.diffraction.table.DiffractionDataManager;
 import org.dawb.workbench.ui.diffraction.table.DiffractionDelegate;
 import org.dawb.workbench.ui.diffraction.table.DiffractionTableData;
 import org.dawb.workbench.ui.diffraction.table.IDiffractionDataListener;
+import org.dawnsci.common.widgets.dialog.FileSelectionDialog;
 import org.dawnsci.plotting.tools.diffraction.DiffractionImageAugmenter;
 import org.dawnsci.plotting.tools.preference.diffraction.DiffractionPreferencePage;
 import org.eclipse.dawnsci.plotting.api.IPlottingSystem;
@@ -23,6 +25,7 @@ import org.eclipse.dawnsci.plotting.api.PlottingFactory;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -124,6 +127,8 @@ public class DiffractionCalibrationView extends ViewPart {
 	private int ringNumberSaved;
 	private RingSelectionGroup ringSelection;
 
+	private String lastPath = null;
+	
 	@Override
 	public void init(IViewSite site, IMemento memento) throws PartInitException {
 		init(site);
@@ -552,18 +557,26 @@ public class DiffractionCalibrationView extends ViewPart {
 			@Override
 			public void run() {
 				try {
-					
-					FileDialog dialog = new FileDialog(Display.getDefault().getActiveShell(), SWT.SAVE);
-					dialog.setText("Save calibration result to nexus file");
-					dialog.setFilterExtensions(new String[] { "*.nxs", "*.*" });
-					//dialog.setFilterPath("c:\\"); // Windows path
-					dialog.setFileName("calibration_output.nxs");
-					dialog.setOverwrite(true);
-					String savedFilePath = dialog.open();
-					if (savedFilePath != null) {
-						DiffractionCalibrationUtils.saveToNexusFile(manager, savedFilePath);
+					FileSelectionDialog dialog = new FileSelectionDialog(Display.getDefault().getActiveShell());
+//					FileDialog dialog = new FileDialog(Display.getDefault().getActiveShell(), SWT.SAVE);
+					dialog.setNewFile(true);
+					dialog.setFolderSelector(false);
+					if (lastPath != null) {
+						File f = new File(lastPath);
+						if (!f.isDirectory()) {
+							lastPath = f.getParent();
+						}
+						dialog.setPath(lastPath + File.separator + "calibration_output.nxs");
+					} else {
+						dialog.setPath(System.getProperty("user.home")+ File.separator + "calibration_output.nxs");
 					}
 					
+					dialog.create();
+					if (dialog.open() == Dialog.OK) {
+						lastPath = dialog.getPath();
+						DiffractionCalibrationUtils.saveToNexusFile(manager, lastPath);
+					}
+
 				} catch (Exception e) {
 					logger.error("Problem opening export!", e);
 				}
