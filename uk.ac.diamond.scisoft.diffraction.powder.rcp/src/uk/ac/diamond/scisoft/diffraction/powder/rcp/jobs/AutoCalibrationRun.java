@@ -70,7 +70,7 @@ public class AutoCalibrationRun extends AbstractCalibrationRun {
 		if (manager.isEmpty()) return;
 		
 		Dataset ddist = manager.getDistances();
-		double pxSize = manager.getCurrentData().getMetaData().getDetector2DProperties().getHPxSize();
+		double pxSize = manager.getCurrentData() != null ? manager.getCurrentData().getMetaData().getDetector2DProperties().getHPxSize() : 0;
 		
 		double fixed = 0;
 		if (params.isFloatDistance() && !params.isFloatEnergy()) {
