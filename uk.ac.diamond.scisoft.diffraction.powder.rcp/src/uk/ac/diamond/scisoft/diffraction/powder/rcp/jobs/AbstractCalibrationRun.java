@@ -85,6 +85,7 @@ public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 		display.syncExec(new Runnable() {
 			@Override
 			public void run() {
+				if (output == null) return;
 				int i = 0;
 				for (DiffractionTableData data : manager.iterable()) {
 					updateMetaData(data.getMetaData(), output, i);
