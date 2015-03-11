@@ -424,7 +424,11 @@ public class PowderCalibration {
 		int i = -1;
 		for (ResolutionEllipseROI e : efs.ellipses) {
 			i++;
-			if (efs.innerSearch[i] < minSpacing || efs.outerSearch[i] < minSpacing) continue;
+			if (efs.innerSearch[i] < minSpacing || efs.outerSearch[i] < minSpacing) {
+				if (monitor != null) monitor.subTask("Separation lower than minimum required! (Minimum can be changed in calibration settings)");
+				logger.warn("Actual spacing smaller than minimum, inner: " +efs.innerSearch[i] + ", outer: "+  efs.outerSearch[i] + ", min: " + minSpacing );
+				continue;
+			}
 			
 			double startSemi = e.getSemiAxis(0);
 			e.setSemiAxis(0, startSemi+corFact);

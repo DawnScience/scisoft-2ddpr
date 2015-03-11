@@ -5,6 +5,8 @@ import org.eclipse.dawnsci.analysis.dataset.impl.DatasetFactory;
 import org.eclipse.dawnsci.analysis.dataset.impl.DatasetUtils;
 import org.eclipse.dawnsci.analysis.dataset.impl.Image;
 import org.eclipse.dawnsci.analysis.dataset.impl.Signal;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import uk.ac.diamond.scisoft.analysis.dataset.function.Downsample;
 import uk.ac.diamond.scisoft.analysis.dataset.function.DownsampleMode;
@@ -14,6 +16,8 @@ import uk.ac.diamond.scisoft.analysis.fitting.functions.Gaussian;
 import uk.ac.diamond.scisoft.analysis.optimize.ApacheNelderMead;
 
 public class CentreGuess {
+	
+	private static Logger logger = LoggerFactory.getLogger(CentreGuess.class);
 	
 	public static double[] guessCentre(Dataset image) {
 		
@@ -49,8 +53,8 @@ public class CentreGuess {
 			CompositeFunction out = Fitter.fit(axis, my, new ApacheNelderMead(), g);
 			yfound = out.getFunction(0).getParameterValue(0);
 		} catch (Exception e) {
-			yfound = maxPos[1];
-			e.printStackTrace();
+			yfound = my.maxPos()[0];
+			logger.warn("y fit failed");
 		}
 		
 		g = new Gaussian(samFW/2, samFW/4, mx.max().doubleValue());
@@ -59,8 +63,8 @@ public class CentreGuess {
 			CompositeFunction out = Fitter.fit(axis, mx, new ApacheNelderMead(), g);
 			xfound = out.getFunction(0).getParameterValue(0);
 		} catch (Exception e) {
-			xfound = maxPos[0];
-			e.printStackTrace();
+			xfound = mx.maxPos()[0];
+			logger.warn("x fit failed");
 		}
 		
 		double convCenX = maxPos[1] - samW + xfound;
