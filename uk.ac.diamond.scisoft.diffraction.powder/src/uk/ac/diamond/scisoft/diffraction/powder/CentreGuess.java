@@ -27,7 +27,7 @@ public class CentreGuess {
 		
 		Downsample ds = new Downsample(DownsampleMode.MEAN, new int[]{downSample, downSample});
 		
-		Dataset small = ds.value(image).get(0);
+		Dataset small = (Dataset)ds.value(image).get(0);
 		
 		small = DatasetUtils.cast(small, Dataset.FLOAT64);
 		
