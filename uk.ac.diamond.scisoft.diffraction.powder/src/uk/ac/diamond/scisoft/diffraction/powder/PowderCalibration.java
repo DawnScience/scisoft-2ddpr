@@ -490,6 +490,25 @@ public class PowderCalibration {
 
 		dp.setNormalAnglesInDegrees(output.getTilt().getDouble(i)*-1, 0, output.getTiltAngle().getDouble(i)*-1);
 		md.getDiffractionCrystalEnvironment().setWavelength(output.getWavelength());
+		
+		
+//		Specifying fast axis orientation
+//		double fastAngleDegrees = 30;
+//
+//		DetectorProperties dp = md.getDetector2DProperties();
+//		dp.setNormalAnglesInDegrees(0,0,0);
+//		dp.setDetectorDistance(100);
+//		dp.setBeamCentreCoords(new double[]{0,0});
+//
+//		double[] bc = new double[] {output.getBeamCentreX().getDouble(i),output.getBeamCentreY().getDouble(i) };
+//		dp.setOrientationEulerZYZ(Math.toRadians(-fastAngleDegrees), Math.toRadians(output.getTilt().getDouble(i)),Math.toRadians(output.getTiltAngle().getDouble(i)));
+//		dp.setBeamCentreCoords(bc);
+//		double offset = fastAngleDegrees - dp.getNormalAnglesInDegrees()[2];
+//		dp.setOrientationEulerZYZ(Math.toRadians(-fastAngleDegrees - offset), Math.toRadians(output.getTilt().getDouble(i)),Math.toRadians(output.getTiltAngle().getDouble(i)));
+//		dp.setBeamCentreCoords(bc);
+//		dp.setBeamCentreDistance(output.getDistance().getDouble(i));
+//		
+//		md.getDiffractionCrystalEnvironment().setWavelength(output.getWavelength());
 	}
 	
 
