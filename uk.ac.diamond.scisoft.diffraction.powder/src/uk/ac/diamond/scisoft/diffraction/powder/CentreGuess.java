@@ -5,7 +5,6 @@ import org.eclipse.dawnsci.analysis.dataset.impl.Dataset;
 import org.eclipse.dawnsci.analysis.dataset.impl.DatasetFactory;
 import org.eclipse.dawnsci.analysis.dataset.impl.DatasetUtils;
 import org.eclipse.dawnsci.analysis.dataset.impl.Image;
-import org.eclipse.dawnsci.analysis.dataset.impl.Maths;
 import org.eclipse.dawnsci.analysis.dataset.impl.Signal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,25 +42,10 @@ public class CentreGuess {
 		Dataset my = patch.sum(1);
 		Dataset mx = patch.sum(0);
 		
+		my.isubtract(my.min().doubleValue());
+		mx.isubtract(mx.min().doubleValue());
+		
 		Dataset axis = DatasetFactory.createRange(samFW, Dataset.FLOAT64);
-		
-		double s = my.getDouble(0);
-		double en = my.getDouble(my.getSize()-1);
-		double m = (s-en)/(0-my.getSize()-1);
-		double c = s;
-		Dataset base = Maths.multiply(axis, m);
-		base.iadd(c);
-		
-		my.isubtract(base);
-		
-		s = mx.getDouble(0);
-		en = mx.getDouble(mx.getSize()-1);
-		m = (s-en)/(0-mx.getSize()-1);
-		c = s;
-		base = Maths.multiply(axis, m);
-		base.iadd(c);
-		
-		mx.isubtract(base);
 		
 		Gaussian g = new Gaussian(samFW/2, samFW/4, my.max().doubleValue());
 		double yfound;
