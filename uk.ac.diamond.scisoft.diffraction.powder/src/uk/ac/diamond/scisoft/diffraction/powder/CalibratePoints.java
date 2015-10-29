@@ -2,27 +2,25 @@ package uk.ac.diamond.scisoft.diffraction.powder;
 
 import java.util.List;
 
-import org.apache.commons.math3.analysis.MultivariateFunction;
-import org.apache.commons.math3.optim.InitialGuess;
-import org.apache.commons.math3.optim.MaxEval;
-import org.apache.commons.math3.optim.PointValuePair;
-import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
-import org.apache.commons.math3.optim.nonlinear.scalar.MultivariateOptimizer;
-import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
-import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.NelderMeadSimplex;
-import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.SimplexOptimizer;
+import org.eclipse.dawnsci.analysis.api.dataset.IDataset;
 import org.eclipse.dawnsci.analysis.api.metadata.IDiffractionMetadata;
 import org.eclipse.dawnsci.analysis.api.roi.IPolylineROI;
 import org.eclipse.dawnsci.analysis.api.roi.IROI;
+import org.eclipse.dawnsci.analysis.dataset.impl.Dataset;
+import org.eclipse.dawnsci.analysis.dataset.impl.DatasetFactory;
 import org.eclipse.dawnsci.analysis.dataset.impl.DoubleDataset;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import uk.ac.diamond.scisoft.analysis.diffraction.QSpace;
+import uk.ac.diamond.scisoft.analysis.fitting.functions.AFunction;
+import uk.ac.diamond.scisoft.analysis.fitting.functions.CoordinatesIterator;
+import uk.ac.diamond.scisoft.analysis.optimize.ApacheLevenbergMarquardt;
 
 public class CalibratePoints {
 
-	private static final double REL_TOL = 1e-14;
-	private static final double ABS_TOL = 1e-14;
-	private static final int MAX_EVAL = 100000;
+	private final static Logger logger = LoggerFactory.getLogger(CalibratePoints.class);
+	
 	
 	public static CalibrationOutput run(List<IPolylineROI> allEllipses, double[] allDSpacings, final IDiffractionMetadata md, final CalibratePointsParameterModel paramModel) {
 		
@@ -52,37 +50,16 @@ public class CalibratePoints {
 			}
 		}
 		
-		MultivariateOptimizer opt = new SimplexOptimizer(REL_TOL,ABS_TOL);
-		MultivariateFunction fun = new MultivariateFunction() {
+		DetectorFunction df = new CalibratePoints(). new DetectorFunction(paramModel.getNumberOfFloatingParameters(),paramModel, md, qd, xd, yd);
+		ApacheLevenbergMarquardt lma = new ApacheLevenbergMarquardt();
+		try {
+			lma.optimize(new IDataset[]{DatasetFactory.createRange(qd.getSize(),Dataset.FLOAT64)}, qd,df);
+		} catch (Exception e) {
+			logger.error(e.getMessage(),e);
+		}
 
-			@Override
-			public double value(double[] arg0) {
-				
-				IDiffractionMetadata argMd = paramModel.getMetadata(arg0, md);
-				
-				QSpace q = new QSpace(argMd.getDetector2DProperties(), argMd.getDiffractionCrystalEnvironment());
-				
-				DoubleDataset qOut = new DoubleDataset(qd);
-				
-				for (int i = 0 ; i < qOut.getSize(); i++) {
-					qOut.set(q.qFromPixelPosition(xd.getDouble(i), yd.getDouble(i)).length(), i);
-				}
-				
-				double res = qd.residual(qOut)/qd.getSize();
-				
-				return res;
-			}
-		};
-		
-		double[] initParam = paramModel.getInitialParams(md);
-		
-		PointValuePair result = opt.optimize(new InitialGuess(initParam), GoalType.MINIMIZE,
-				new ObjectiveFunction(fun), new MaxEval(MAX_EVAL),
-				new NelderMeadSimplex(paramModel.getNumberOfFloatingParameters()));
-		
-		double[] point = result.getPointRef();
-		
-		IDiffractionMetadata outMd = paramModel.getMetadata(point, md);
+		IDiffractionMetadata outMd = paramModel.getMetadata(df.getParameterValues(), md);
+
 		
 		return new CalibrationOutput(outMd.getDiffractionCrystalEnvironment().getWavelength(),
 									outMd.getDetector2DProperties().getBeamCentreCoords()[0],
@@ -90,6 +67,52 @@ public class CalibratePoints {
 									outMd.getDetector2DProperties().getNormalAnglesInDegrees()[0]*-1,
 									outMd.getDetector2DProperties().getNormalAnglesInDegrees()[2]*-1,
 									outMd.getDetector2DProperties().getBeamCentreDistance(),
-									result.getValue());
+									df.residual(true, qd, null, new IDataset[]{yd})/yd.getSize());
 	}
+	
+	public class DetectorFunction extends AFunction {
+
+		private static final long serialVersionUID = 1L;
+		
+		private CalibratePointsParameterModel model;
+		private IDiffractionMetadata md;
+		private Dataset qd;
+		private Dataset xd;
+		private Dataset yd;
+
+		public DetectorFunction(int nParms, CalibratePointsParameterModel paramModel, IDiffractionMetadata md, Dataset qd, Dataset xd, Dataset yd) {
+			super(nParms);
+			this.model = paramModel;
+			this.md = md;
+			this.yd = yd;
+			this.xd = xd;
+			this.qd = qd;
+			setParameterValues(paramModel.getInitialParams(md));
+		}
+
+		@Override
+		public double val(double... values) {
+			IDiffractionMetadata argMd = model.getMetadata(getParameterValues(), md);
+			
+			QSpace q = new QSpace(argMd.getDetector2DProperties(), argMd.getDiffractionCrystalEnvironment());
+			
+			return q.qFromPixelPosition(xd.getDouble((int)values[0]), yd.getDouble((int)values[0])).length();
+		}
+
+		@Override
+		public void fillWithValues(DoubleDataset data, CoordinatesIterator it) {
+
+			IDiffractionMetadata argMd = model.getMetadata(getParameterValues(), md);
+			QSpace q = new QSpace(argMd.getDetector2DProperties(), argMd.getDiffractionCrystalEnvironment());
+			
+			DoubleDataset qOut = new DoubleDataset(qd);
+			
+			for (int i = 0 ; i < qOut.getSize(); i++) {
+				data.set(q.qFromPixelPosition(xd.getDouble(i), yd.getDouble(i)).length(), i);
+			}
+			it.reset();
+		}
+		
+	}
+	
 }
