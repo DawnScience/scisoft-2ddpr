@@ -14,7 +14,7 @@ import org.eclipse.swt.widgets.Shell;
 
 public class DebugPlotDialog extends Dialog {
 
-	IPlottingSystem plottingSystem;
+	private IPlottingSystem<Composite> plottingSystem;
 	
 	public DebugPlotDialog(Shell parentShell) {
 		super(parentShell);
