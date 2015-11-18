@@ -42,7 +42,7 @@ public class DebugPlotDialog extends Dialog {
 		return new Point(800, 600);
 	}
 	
-	public IPlottingSystem getPlottingSystem() {
+	public IPlottingSystem<Composite> getPlottingSystem() {
 		return plottingSystem;
 	}
 

@@ -29,7 +29,7 @@ public class FromPointsCalibrationRun extends AbstractCalibrationRun {
 	private static final String description = "Manual powder diffraction image calibration using point parameters";
 	
 	public FromPointsCalibrationRun(Display display,
-			IPlottingSystem plottingSystem, DiffractionDataManager manager,
+			IPlottingSystem<?> plottingSystem, DiffractionDataManager manager,
 			DiffractionTableData currentData, CalibratePointsParameterModel params) {
 		super(display, plottingSystem, manager, currentData, params);
 		// TODO Auto-generated constructor stub

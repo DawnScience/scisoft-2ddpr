@@ -31,7 +31,7 @@ public class PowderCalibrationUtils {
 
 	public static String REGION_PREFIX = "Pixel peaks";
 	
-	public static void clearFoundRings(IPlottingSystem plottingSystem) {
+	public static void clearFoundRings(IPlottingSystem<?> plottingSystem) {
 		for (IRegion r : plottingSystem.getRegions()) {
 			String n = r.getName();
 			if (n.startsWith(REGION_PREFIX)) {
@@ -40,7 +40,7 @@ public class PowderCalibrationUtils {
 		}
 	}
 	
-	public static boolean drawFoundRing(final IPlottingSystem plotter, final IROI froi, final IProgressMonitor monitor) {
+	public static boolean drawFoundRing(final IPlottingSystem<?> plotter, final IROI froi, final IProgressMonitor monitor) {
 		final boolean[] status = {true};
 		
 		Color col = ColorConstants.orange;

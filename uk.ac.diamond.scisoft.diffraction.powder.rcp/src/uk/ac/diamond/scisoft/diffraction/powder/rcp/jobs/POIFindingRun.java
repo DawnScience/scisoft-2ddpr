@@ -29,7 +29,7 @@ import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.RingSelectionGroup;
 
 public class POIFindingRun implements IRunnableWithProgress {
 
-	IPlottingSystem plottingSystem;
+	IPlottingSystem<?> plottingSystem;
 	DiffractionTableData currentData;
 	RingSelectionGroup param;
 	
@@ -39,7 +39,7 @@ public class POIFindingRun implements IRunnableWithProgress {
 	
 	static String REGION_PREFIX = "Pixel peaks";
 	
-	public POIFindingRun(final IPlottingSystem plottingSystem,
+	public POIFindingRun(final IPlottingSystem<?> plottingSystem,
 			final DiffractionTableData currentData,
 			final RingSelectionGroup param) {
 		this.plottingSystem = plottingSystem;
@@ -138,7 +138,7 @@ public class POIFindingRun implements IRunnableWithProgress {
 		this.currentData = currentData;
 	}
 
-	protected IImageTrace getImageTrace(IPlottingSystem system) {
+	protected IImageTrace getImageTrace(IPlottingSystem<?> system) {
 		Collection<ITrace> traces = system.getTraces();
 		if (traces != null && traces.size() > 0) {
 			ITrace trace = traces.iterator().next();

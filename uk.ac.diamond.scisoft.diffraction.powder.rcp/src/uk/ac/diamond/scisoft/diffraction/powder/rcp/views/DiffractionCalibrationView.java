@@ -117,7 +117,7 @@ public class DiffractionCalibrationView extends ViewPart {
 	
 	private static final String RESIDUAL = "Residual: ";
 
-	private IPlottingSystem plottingSystem;
+	private IPlottingSystem<Composite> plottingSystem;
 
 	private ISelectionChangedListener selectionChangeListener;
 	private CalibrantSelectedListener calibrantChangeListener;
@@ -337,7 +337,7 @@ public class DiffractionCalibrationView extends ViewPart {
 	private void initializeSystems() {
 
 		IViewPart plotView = getView(DiffractionPlotView.ID);
-		plottingSystem = (IPlottingSystem)plotView.getAdapter(IPlottingSystem.class);
+		plottingSystem = (IPlottingSystem<Composite>)plotView.getAdapter(IPlottingSystem.class);
 		if (plottingSystem != null && plottingSystem.isDisposed()) { // if we close the perspective then reopen it
 			plottingSystem = PlottingFactory.getPlottingSystem(DiffractionPlotView.DIFFRACTION_PLOT_TITLE);
 		}

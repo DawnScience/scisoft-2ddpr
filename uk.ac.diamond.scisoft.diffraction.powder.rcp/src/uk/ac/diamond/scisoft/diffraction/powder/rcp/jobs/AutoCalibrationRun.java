@@ -26,7 +26,7 @@ import uk.ac.diamond.scisoft.diffraction.powder.rcp.preferences.DiffractionCalib
 public class AutoCalibrationRun extends AbstractCalibrationRun {
 
 
-	public AutoCalibrationRun(Display display, IPlottingSystem plottingSystem,
+	public AutoCalibrationRun(Display display, IPlottingSystem<?> plottingSystem,
 			DiffractionDataManager manager, DiffractionTableData currentData,
 			SimpleCalibrationParameterModel param) {
 		super(display, plottingSystem, manager, currentData, param);

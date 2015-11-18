@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 public class DiffractionPlotView extends ViewPart {
 
 	public static final String ID = "uk.ac.diamond.scisoft.diffraction.powder.rcp.plottingView";
-	private IPlottingSystem plottingSystem;
+	private IPlottingSystem<Composite> plottingSystem;
 	private final Logger logger = LoggerFactory.getLogger(DiffractionPlotView.class);
 	public static final String DIFFRACTION_PLOT_TITLE = "Diffraction Plotting";
 

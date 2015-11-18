@@ -33,7 +33,7 @@ public class DiffractionToolAutoCalHandler extends AbstractHandler {
 		
 		DiffractionTableData dtd = new DiffractionTableData();
 		
-		IPlottingSystem system = dtool.getPlottingSystem();
+		IPlottingSystem<?> system = dtool.getPlottingSystem();
 		
 		if (system == null) return null;
 		

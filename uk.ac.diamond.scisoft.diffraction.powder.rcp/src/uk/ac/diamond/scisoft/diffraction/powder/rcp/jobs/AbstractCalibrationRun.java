@@ -17,7 +17,7 @@ import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 
 	Display display;
-	IPlottingSystem plottingSystem;
+	IPlottingSystem<?> plottingSystem;
 	DiffractionDataManager manager;
 	DiffractionTableData currentData;
 	SimpleCalibrationParameterModel params;
@@ -55,7 +55,7 @@ public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 	private static String REGION_PREFIX = "Pixel peaks";
 	
 	public AbstractCalibrationRun(Display display,
-			IPlottingSystem plottingSystem,
+			IPlottingSystem<?> plottingSystem,
 			DiffractionDataManager manager,
 			DiffractionTableData currentData,
 			SimpleCalibrationParameterModel params) {
@@ -71,7 +71,7 @@ public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 	 * 
 	 * @param plottingSystem
 	 */
-	public void removeFoundRings(IPlottingSystem plottingSystem) {
+	public void removeFoundRings(IPlottingSystem<?> plottingSystem) {
 		for (IRegion r : plottingSystem.getRegions()) {
 			String n = r.getName();
 			if (n.startsWith(REGION_PREFIX)) {
