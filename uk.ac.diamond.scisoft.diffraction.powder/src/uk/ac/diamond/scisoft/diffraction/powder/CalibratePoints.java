@@ -24,7 +24,7 @@ public class CalibratePoints {
 	
 	public static CalibrationOutput run(List<IPolylineROI> allEllipses, double[] allDSpacings, final IDiffractionMetadata md, final CalibratePointsParameterModel paramModel) {
 		
-		if (allEllipses.size() < 2) throw new IllegalArgumentException("Need more than 1 ellipse");
+//		if (allEllipses.size() < 2) throw new IllegalArgumentException("Need more than 1 ellipse");
 		if (allDSpacings.length ==  0 || allEllipses.size() != allDSpacings.length) throw new IllegalArgumentException("Number of ellipses must equal number of d-spacings");
 		
 		
