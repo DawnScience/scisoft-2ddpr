@@ -13,7 +13,8 @@ import uk.ac.diamond.scisoft.analysis.dataset.function.Downsample;
 import uk.ac.diamond.scisoft.analysis.fitting.Fitter;
 import uk.ac.diamond.scisoft.analysis.fitting.functions.CompositeFunction;
 import uk.ac.diamond.scisoft.analysis.fitting.functions.Gaussian;
-import uk.ac.diamond.scisoft.analysis.optimize.ApacheNelderMead;
+import uk.ac.diamond.scisoft.analysis.optimize.ApacheOptimizer;
+import uk.ac.diamond.scisoft.analysis.optimize.ApacheOptimizer.Optimizer;
 
 public class CentreGuess {
 	
@@ -50,7 +51,7 @@ public class CentreGuess {
 		Gaussian g = new Gaussian(samFW/2, samFW/4, my.max().doubleValue());
 		double yfound;
 		try {
-			CompositeFunction out = Fitter.fit(axis, my, new ApacheNelderMead(), g);
+			CompositeFunction out = Fitter.fit(axis, my, new ApacheOptimizer(Optimizer.SIMPLEX_MD), g);
 			yfound = out.getFunction(0).getParameterValue(0);
 		} catch (Exception e) {
 			yfound = my.maxPos()[0];
@@ -60,7 +61,7 @@ public class CentreGuess {
 		g = new Gaussian(samFW/2, samFW/4, mx.max().doubleValue());
 		double xfound;
 		try {
-			CompositeFunction out = Fitter.fit(axis, mx, new ApacheNelderMead(), g);
+			CompositeFunction out = Fitter.fit(axis, mx, new ApacheOptimizer(Optimizer.SIMPLEX_MD), g);
 			xfound = out.getFunction(0).getParameterValue(0);
 		} catch (Exception e) {
 			xfound = mx.maxPos()[0];
