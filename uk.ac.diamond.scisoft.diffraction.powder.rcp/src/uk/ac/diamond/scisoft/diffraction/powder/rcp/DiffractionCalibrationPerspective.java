@@ -1,5 +1,6 @@
 package uk.ac.diamond.scisoft.diffraction.powder.rcp;
 
+import org.dawnsci.plotting.views.ToolPageView;
 import org.eclipse.ui.IFolderLayout;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
@@ -20,7 +21,7 @@ public class DiffractionCalibrationPerspective implements IPerspectiveFactory {
 		navigatorFolder.addView("org.eclipse.ui.navigator.ProjectExplorer");
 		navigatorFolder.addView("uk.ac.diamond.sda.navigator.views.FileView");
 
-		String fixed = "org.dawb.workbench.plotting.views.toolPageView.fixed:";
+		String fixed = ToolPageView.FIXED_VIEW_ID + ":";
 		String powderCheckID = "org.dawnsci.plotting.tools.powdercheck";
 		String diffractionID = "uk.ac.diamond.scisoft.diffraction.powder.rcp.powderDiffractionTool";
 
