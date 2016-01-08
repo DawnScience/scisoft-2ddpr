@@ -17,6 +17,7 @@ import org.eclipse.dawnsci.analysis.dataset.impl.BooleanDataset;
 import org.eclipse.dawnsci.analysis.dataset.impl.Dataset;
 import org.eclipse.dawnsci.analysis.dataset.impl.DatasetFactory;
 import org.eclipse.dawnsci.analysis.dataset.impl.DatasetUtils;
+import org.eclipse.dawnsci.analysis.dataset.impl.DoubleDataset;
 import org.eclipse.dawnsci.analysis.dataset.impl.IndexIterator;
 import org.eclipse.dawnsci.analysis.dataset.impl.Maths;
 import org.eclipse.dawnsci.analysis.dataset.impl.Stats;
@@ -308,6 +309,22 @@ public class PowderCalibration {
 		}
 		if (mon != null) mon.subTask("Trim POIs");
 		efroi = PowderRingsUtils.fitAndTrimOutliers(null, points, 2, false);
+		
+		EllipticalFitROI cfroi = PowderRingsUtils.fitAndTrimOutliers(null, points, 100, true);
+		
+		
+		double dma = efroi.getSemiAxis(0)-cfroi.getSemiAxis(0);
+		double dmi = efroi.getSemiAxis(1)-cfroi.getSemiAxis(0);
+		
+		double crms = Math.sqrt((dma*dma + dmi*dmi)/2);
+		System.err.println("Diff ax: " + (crms));
+		double rms = efroi.getRMS();
+		System.err.println("DRMS: " + (efroi.getRMS()));
+		
+		if (crms < rms) {
+			efroi = cfroi;
+			logger.warn("SWITCHING TO CIRCLE - RMS SEMIAX-RADIUS {} < FIT RMS {}",crms,rms);
+		}
 
 		return efroi;
 	}
