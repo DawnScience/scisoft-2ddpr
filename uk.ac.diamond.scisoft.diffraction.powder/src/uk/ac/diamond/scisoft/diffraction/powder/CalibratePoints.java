@@ -1,5 +1,6 @@
 package uk.ac.diamond.scisoft.diffraction.powder;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.dawnsci.analysis.api.dataset.IDataset;
@@ -60,6 +61,9 @@ public class CalibratePoints {
 
 		IDiffractionMetadata outMd = paramModel.getMetadata(df.getParameterValues(), md);
 
+		if (lma.guessParametersErrors() != null) {
+			logger.info("Guess errors: " + Arrays.toString(lma.guessParametersErrors()));
+		}
 		
 		return new CalibrationOutput(outMd.getDiffractionCrystalEnvironment().getWavelength(),
 									outMd.getDetector2DProperties().getBeamCentreCoords()[0],
@@ -67,7 +71,7 @@ public class CalibratePoints {
 									outMd.getDetector2DProperties().getNormalAnglesInDegrees()[0]*-1,
 									outMd.getDetector2DProperties().getNormalAnglesInDegrees()[2]*-1,
 									outMd.getDetector2DProperties().getBeamCentreDistance(),
-									df.residual(true, qd, null, new IDataset[]{yd})/yd.getSize());
+									df.residual(true, qd, null, new IDataset[]{yd})/yd.getSize(),lma.guessParametersErrors());
 	}
 	
 	public class DetectorFunction extends AFunction {

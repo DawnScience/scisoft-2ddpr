@@ -14,9 +14,10 @@ public class CalibrationOutput {
 	private Dataset distance;
 	private double residual;
 	private IPowderCalibrationInfo calibrationInfo[];
+	private double[] errors;
 	
 	public CalibrationOutput(double wavelength, Dataset beamCentreX, Dataset beamCentreY,
-			Dataset tilt, Dataset tiltAngle, Dataset distance, double residual) {
+			Dataset tilt, Dataset tiltAngle, Dataset distance, double residual, double[] errors) {
 		this.wavelength = wavelength;
 		this.beamCentreX = beamCentreX;
 		this.beamCentreY = beamCentreY;
@@ -24,17 +25,18 @@ public class CalibrationOutput {
 		this.tiltAngle = tiltAngle;
 		this.distance = distance;
 		this.residual = residual;
+		this.errors = errors;
 	}
 	
 	public CalibrationOutput(double wavelength, double beamCentreX, double beamCentreY,
-			double tilt, double tiltAngle, double distance, double residual) {
+			double tilt, double tiltAngle, double distance, double residual, double[] errors) {
 		this(wavelength,
 				new DoubleDataset(new double[]{beamCentreX}, new int[]{1}),
 				new DoubleDataset(new double[]{beamCentreY}, new int[]{1}),
 				new DoubleDataset(new double[]{tilt}, new int[]{1}),
 				new DoubleDataset(new double[]{tiltAngle}, new int[]{1}),
 				new DoubleDataset(new double[]{distance}, new int[]{1}),
-				residual);
+				residual, errors);
 	}
 
 	public double getWavelength() {
@@ -71,6 +73,10 @@ public class CalibrationOutput {
 
 	public void setCalibrationInfo(IPowderCalibrationInfo[] calibrationInfo) {
 		this.calibrationInfo = calibrationInfo;
+	}
+
+	public double[] getErrors() {
+		return errors;
 	}
 
 }

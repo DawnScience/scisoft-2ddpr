@@ -210,7 +210,7 @@ public class CalibrateEllipses {
 		Dataset beamCentreX = new DoubleDataset(beamcentres[0], new int[]{beamcentres[0].length});
 		Dataset beamCentreY = new DoubleDataset(beamcentres[1], new int[]{beamcentres[1].length});
 		
-		return new CalibrationOutput(wavelength, beamCentreX, beamCentreY, tilts, tiltAngles, distances,ssRes/ssTot);
+		return new CalibrationOutput(wavelength, beamCentreX, beamCentreY, tilts, tiltAngles, distances,ssRes/ssTot,null);
 	}
 	
 	private static double calculateApproximateAngle(double x1, double x2, double y1, double y2) {
