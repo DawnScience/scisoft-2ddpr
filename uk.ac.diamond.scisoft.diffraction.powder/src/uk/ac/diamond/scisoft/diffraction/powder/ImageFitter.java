@@ -72,6 +72,7 @@ public class ImageFitter {
 		};
 		
 		Dataset errors = DatasetFactory.zeros(xApproxGuess);
+		errors.iadd(Double.MAX_VALUE);
 		PointValuePair result;
 		double offset = 1e12;
 		double[] scale = new double[]{offset*0.25,offset*0.25};
@@ -79,27 +80,33 @@ public class ImageFitter {
 			
 			double[] initParam = new double[]{Math.pow(major.getDouble(last),2),xApproxGuess.getDouble(i)};
 			
-			if (x.getDouble(0) < x.getDouble(last)) {
-				double[] lowerb = new double[]{Double.NEGATIVE_INFINITY,Double.NEGATIVE_INFINITY};
-				double[] upperb = new double[]{Double.POSITIVE_INFINITY,x.getDouble(0)};
-				MultivariateFunctionPenaltyAdapter of = new MultivariateFunctionPenaltyAdapter(fun, lowerb, upperb, offset, scale);
+			try {
 				
-				result = opt.optimize(new InitialGuess(initParam), GoalType.MINIMIZE,
-						new ObjectiveFunction(of), new MaxEval(MAX_EVAL),
-						new NelderMeadSimplex(2));	
-			} else {
-				double[] lowerb = new double[]{Double.NEGATIVE_INFINITY,x.getDouble(0)};
-				double[] upperb = new double[]{Double.POSITIVE_INFINITY,Double.POSITIVE_INFINITY};
-				MultivariateFunctionPenaltyAdapter of = new MultivariateFunctionPenaltyAdapter(fun, lowerb, upperb, offset, scale);
+				if (x.getDouble(0) < x.getDouble(last)) {
+					double[] lowerb = new double[]{Double.NEGATIVE_INFINITY,Double.NEGATIVE_INFINITY};
+					double[] upperb = new double[]{Double.POSITIVE_INFINITY,x.getDouble(0)};
+					MultivariateFunctionPenaltyAdapter of = new MultivariateFunctionPenaltyAdapter(fun, lowerb, upperb, offset, scale);
+					
+					result = opt.optimize(new InitialGuess(initParam), GoalType.MINIMIZE,
+							new ObjectiveFunction(of), new MaxEval(MAX_EVAL),
+							new NelderMeadSimplex(2));	
+				} else {
+					double[] lowerb = new double[]{Double.NEGATIVE_INFINITY,x.getDouble(0)};
+					double[] upperb = new double[]{Double.POSITIVE_INFINITY,Double.POSITIVE_INFINITY};
+					MultivariateFunctionPenaltyAdapter of = new MultivariateFunctionPenaltyAdapter(fun, lowerb, upperb, offset, scale);
+					
+					result = opt.optimize(new InitialGuess(initParam), GoalType.MINIMIZE,
+							new ObjectiveFunction(of), new MaxEval(MAX_EVAL),
+							new NelderMeadSimplex(2));	
+				}
 				
-				result = opt.optimize(new InitialGuess(initParam), GoalType.MINIMIZE,
-						new ObjectiveFunction(of), new MaxEval(MAX_EVAL),
-						new NelderMeadSimplex(2));	
+				double[] estimates = result.getPointRef();
+				Dataset lineData = calculateLine(x, y, line, estimates);
+				errors.set(major.residual(lineData), i);
+				
+			} catch (Exception e) {
+				//to log
 			}
-			
-			double[] estimates = result.getPointRef();
-			Dataset lineData = calculateLine(x, y, line, estimates);
-			errors.set(major.residual(lineData), i);
 		}
 		
 		double[] initParam = new double[]{Math.pow(major.getDouble(last),2),xApproxGuess.getDouble(errors.minPos())};
