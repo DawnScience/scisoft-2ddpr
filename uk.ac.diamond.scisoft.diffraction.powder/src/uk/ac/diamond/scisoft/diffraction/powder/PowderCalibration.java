@@ -17,7 +17,6 @@ import org.eclipse.dawnsci.analysis.dataset.impl.BooleanDataset;
 import org.eclipse.dawnsci.analysis.dataset.impl.Dataset;
 import org.eclipse.dawnsci.analysis.dataset.impl.DatasetFactory;
 import org.eclipse.dawnsci.analysis.dataset.impl.DatasetUtils;
-import org.eclipse.dawnsci.analysis.dataset.impl.DoubleDataset;
 import org.eclipse.dawnsci.analysis.dataset.impl.IndexIterator;
 import org.eclipse.dawnsci.analysis.dataset.impl.Maths;
 import org.eclipse.dawnsci.analysis.dataset.impl.Stats;
@@ -304,7 +303,7 @@ public class PowderCalibration {
 		
 		points = PeakFittingEllipseFinder.findPointsOnConic(image, mask, roi, inOut,nPoints,null);
 		
-		if (points.getNumberOfPoints() < 3) {
+		if (points == null || points.getNumberOfPoints() < 3) {
 			throw new IllegalArgumentException("Could not find enough points to trim");
 		}
 		if (mon != null) mon.subTask("Trim POIs");
