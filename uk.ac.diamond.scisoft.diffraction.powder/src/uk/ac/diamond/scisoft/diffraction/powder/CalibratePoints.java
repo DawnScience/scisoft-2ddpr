@@ -16,7 +16,8 @@ import org.slf4j.LoggerFactory;
 import uk.ac.diamond.scisoft.analysis.diffraction.QSpace;
 import uk.ac.diamond.scisoft.analysis.fitting.functions.AFunction;
 import uk.ac.diamond.scisoft.analysis.fitting.functions.CoordinatesIterator;
-import uk.ac.diamond.scisoft.analysis.optimize.ApacheLevenbergMarquardt;
+import uk.ac.diamond.scisoft.analysis.optimize.ApacheOptimizer;
+import uk.ac.diamond.scisoft.analysis.optimize.ApacheOptimizer.Optimizer;
 
 public class CalibratePoints {
 
@@ -52,7 +53,8 @@ public class CalibratePoints {
 		}
 		
 		DetectorFunction df = new CalibratePoints(). new DetectorFunction(paramModel.getNumberOfFloatingParameters(),paramModel, md, qd, xd, yd);
-		ApacheLevenbergMarquardt lma = new ApacheLevenbergMarquardt();
+		ApacheOptimizer lma = new ApacheOptimizer(Optimizer.LEVENBERG_MARQUARDT);
+
 		try {
 			lma.optimize(new IDataset[]{DatasetFactory.createRange(qd.getSize(),Dataset.FLOAT64)}, qd,df);
 		} catch (Exception e) {
