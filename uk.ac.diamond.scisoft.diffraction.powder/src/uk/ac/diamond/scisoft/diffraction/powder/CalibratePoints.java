@@ -97,6 +97,10 @@ public class CalibratePoints {
 		}
 
 		@Override
+		protected void setNames() {
+		}
+
+		@Override
 		public double val(double... values) {
 			IDiffractionMetadata argMd = model.getMetadata(getParameterValues(), md);
 			
