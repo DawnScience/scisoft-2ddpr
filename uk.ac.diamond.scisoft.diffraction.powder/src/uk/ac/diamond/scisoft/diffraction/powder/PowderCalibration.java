@@ -120,13 +120,13 @@ public class PowderCalibration {
 				if (val > outlierValues[1]) imds.setObjectAbs(iterator.index, outlierValues[1]);
 			}
 			
-			final EllipseFindingStructure efs = getResolutionEllipses((Dataset) imds, spacings, pxSize, params,options[0], mon);
+			final EllipseFindingStructure efs = getResolutionEllipses(imds, spacings, pxSize, params,options[0], mon);
 
 			if (mon != null && mon.isCancelled()) return null;
 
 			if (efs == null) throw new IllegalArgumentException("No rings found!");
 
-			List<ResolutionEllipseROI> foundEllipses = getFittedResolutionROIs(uiUpdate, efs, (Dataset) image,options[0],options[1],options[2],mon);
+			List<ResolutionEllipseROI> foundEllipses = getFittedResolutionROIs(uiUpdate, efs, DatasetUtils.convertToDataset(image),options[0],options[1],options[2],mon);
 
 			if (mon != null && mon.isCancelled()) return null;
 

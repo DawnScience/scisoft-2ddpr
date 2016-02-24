@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Map;
 
 import org.eclipse.dawnsci.analysis.dataset.impl.Dataset;
+import org.eclipse.dawnsci.analysis.dataset.impl.DatasetUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -31,8 +32,8 @@ public class BruteMatcherTest {
 		Dataset x;
 		Dataset trace;
 		try {
-			x = (Dataset)LoaderFactory.getDataSet(getTestFilePath("TestTrace.dat"),"x",null);
-			trace = (Dataset)LoaderFactory.getDataSet(getTestFilePath("TestTrace.dat"),"dataset_0",null);
+			x = DatasetUtils.convertToDataset(LoaderFactory.getDataSet(getTestFilePath("TestTrace.dat"),"x",null));
+			trace = DatasetUtils.convertToDataset(LoaderFactory.getDataSet(getTestFilePath("TestTrace.dat"),"dataset_0",null));
 			
 			Map<Double,Double> out = BruteStandardMatcher.bruteForceMatchStandards(x, trace, dSpace, 0.148);
 			Assert.assertEquals(197.5, out.get(dSpace[0]), 5);

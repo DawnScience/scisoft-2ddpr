@@ -8,6 +8,7 @@ import org.eclipse.dawnsci.analysis.api.diffraction.DetectorProperties;
 import org.eclipse.dawnsci.analysis.api.diffraction.DiffractionCrystalEnvironment;
 import org.eclipse.dawnsci.analysis.api.metadata.IDiffractionMetadata;
 import org.eclipse.dawnsci.analysis.dataset.impl.Dataset;
+import org.eclipse.dawnsci.analysis.dataset.impl.DatasetUtils;
 import org.eclipse.dawnsci.analysis.dataset.impl.Maths;
 import org.junit.Assert;
 import org.junit.Test;
@@ -118,8 +119,8 @@ public class SimulatedDataTest {
 		Dataset x;
 		Dataset y;
 		try {
-			x = (Dataset)LoaderFactory.getDataSet(file.getAbsolutePath(),"Column_1",null);
-			y = (Dataset)LoaderFactory.getDataSet(file.getAbsolutePath(),"Column_2",null);
+			x = DatasetUtils.convertToDataset(LoaderFactory.getDataSet(file.getAbsolutePath(),"Column_1",null));
+			y = DatasetUtils.convertToDataset(LoaderFactory.getDataSet(file.getAbsolutePath(),"Column_2",null));
 		} catch (Exception e) {
 			return null;
 		}

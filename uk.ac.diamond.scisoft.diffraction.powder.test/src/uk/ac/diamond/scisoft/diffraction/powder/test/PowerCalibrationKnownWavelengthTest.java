@@ -1,6 +1,7 @@
 package uk.ac.diamond.scisoft.diffraction.powder.test;
 
 import org.eclipse.dawnsci.analysis.dataset.impl.Dataset;
+import org.eclipse.dawnsci.analysis.dataset.impl.DatasetUtils;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -254,7 +255,7 @@ public class PowerCalibrationKnownWavelengthTest {
 		Dataset image = null;
 		
 		try {
-			image = (Dataset)LoaderFactory.getDataSet(path,"image-01",null);
+			image = DatasetUtils.convertToDataset(LoaderFactory.getDataSet(path,"image-01",null));
 		} catch (Exception e) {
 			//fail silently, just return null to show it didnt work
 		}
