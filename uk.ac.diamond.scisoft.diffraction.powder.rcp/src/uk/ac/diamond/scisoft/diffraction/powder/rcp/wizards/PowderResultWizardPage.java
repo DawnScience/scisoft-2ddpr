@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
 
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationStandards;
@@ -124,84 +125,9 @@ public class PowderResultWizardPage extends WizardPage {
 			e.printStackTrace();
 		}
 		
-		Button btn = new Button(left, SWT.None);
-		btn.addSelectionListener(new SelectionListener() {
-			
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				showCalibrantAndBeamCentre(true);
-				
-			}
-			
-			@Override
-			public void widgetDefaultSelected(SelectionEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-		});
-		
-		
-		Group selectCalibComp = new Group(left, SWT.FILL);
-		selectCalibComp.setText("Select calibrant:");
-		selectCalibComp.setLayout(new GridLayout(1, false));
-		selectCalibComp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		new Label(left, SWT.None).setText("Add cool stuff here:");
+	}
 
-		Composite comp = new Composite(selectCalibComp, SWT.NONE);
-		comp.setLayout(new GridLayout(2, true));
-		comp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		final Combo calibrantCombo = new Combo(comp, SWT.READ_ONLY);
-		calibrantCombo.setToolTipText("Select a type of calibrant");
-		calibrantCombo.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		calibrantCombo.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				if (manager.getCurrentData() == null)
-					return;
-				int index = calibrantCombo.getSelectionIndex();
-				String calibrantName = calibrantCombo.getItem(index);
-				// update the calibrant in diffraction tool
-				CalibrationFactory.getCalibrationStandards().setSelectedCalibrant(calibrantName, true);
-				// set the maximum number of rings
-				int ringMaxNumber = CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs().size();
-//				ringSelection.setMaximumRingNumber(ringMaxNumber);
-//				// Set the calibrant ring number
-//				if (calibrantRingsMap.containsKey(calibrantName)) {
-//					ringSelection.setRingSpinnerSelection(calibrantRingsMap.get(calibrantName));
-//				} else {
-//					calibrantRingsMap.put(calibrantName, ringMaxNumber);
-//					ringSelection.setRingSpinnerSelection(ringMaxNumber);
-//				}
-				// Tell the ring selection field about the maximum number allowed
-				
-			}
-		});
-		for (String c : CalibrationFactory.getCalibrationStandards().getCalibrantList()) {
-			calibrantCombo.add(c);
-		}
-		String s = CalibrationFactory.getCalibrationStandards().getSelectedCalibrant();
-		if (s != null) {
-			calibrantCombo.setText(s);
-		}
-		
-//		sideProfile1.setLineOrientation(false);
-//		sideProfile1.setPlotEdgeProfile(true);
-//		sideProfile1.setPlotAverageProfile(false);
-//		sideProfile1.setToolSystem(tps);
-		
-		
-	}
-	
-	private void showCalibrantAndBeamCentre(boolean show) {
-		if (augmenter == null) return;
-		if (show && !augmenter.isActive()) {
-			augmenter.activate();
-			augmenter.drawBeamCentre(true);
-			CalibrationStandards standards = CalibrationFactory.getCalibrationStandards();
-			augmenter.drawCalibrantRings(true, standards.getCalibrant());
-		} else {
-			augmenter.deactivate(false);
-		}
-	}
 	
 	@Override
 	public void setVisible(boolean visible) {

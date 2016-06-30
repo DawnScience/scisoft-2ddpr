@@ -1,11 +1,14 @@
 package uk.ac.diamond.scisoft.diffraction.powder.rcp.wizards;
 
+import java.lang.reflect.InvocationTargetException;
+
 import org.dawb.common.ui.widgets.ActionBarWrapper;
 import org.dawb.workbench.ui.diffraction.table.DiffractionDataManager;
 import org.eclipse.dawnsci.analysis.dataset.impl.DatasetUtils;
 import org.eclipse.dawnsci.plotting.api.IPlottingSystem;
 import org.eclipse.dawnsci.plotting.api.PlotType;
 import org.eclipse.dawnsci.plotting.api.PlottingFactory;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
@@ -13,6 +16,10 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+
+import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.AutoCalibrationRun;
 
 public class PowderDataWizardPage extends WizardPage {
 
@@ -48,11 +55,20 @@ public class PowderDataWizardPage extends WizardPage {
 		try {
 			system = PlottingFactory.createPlottingSystem();
 			system.createPlotPart(displayPlotComp, "PlotDataWizard", actionBarWrapper, PlotType.IMAGE, null);
-			system.createPlot2D(DatasetUtils.sliceAndConvertLazyDataset(manager.getCurrentData().getImage()), null,null);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		
 	}
+	
+	@Override
+	public void setVisible(boolean visible) {
+		if (visible) {
+			system.createPlot2D(DatasetUtils.sliceAndConvertLazyDataset(manager.getCurrentData().getImage()), null,null);
+		} else {
+			system.clear();
+		}
+        super.setVisible(visible);
+    }
 
 }
