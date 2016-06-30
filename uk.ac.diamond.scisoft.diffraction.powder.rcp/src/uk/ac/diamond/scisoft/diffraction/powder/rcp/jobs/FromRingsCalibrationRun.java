@@ -43,23 +43,19 @@ public class FromRingsCalibrationRun extends AbstractCalibrationRun {
 
 		for (DiffractionTableData data : manager.iterable()) {
 			
-			int n = data.getRois().size();
+			int n = data.getROISize();
 			if (n != spacings.size()) { // always allow a choice to be made
 				throw new IllegalArgumentException("Number of ellipses should be equal to spacings");
 			}
 
-			int totalNonNull = 0;
-
-			for (IROI roi : data.getRois()) {
-				if (roi != null) totalNonNull++;
-			}
+			int totalNonNull = data.getNonNullROISize();
 
 			double[] ds = new double[totalNonNull];
 			List<EllipticalROI> erois = new ArrayList<EllipticalROI>(totalNonNull);
 
 			int count = 0;
-			for (int i = 0; i < data.getRois().size(); i++) {
-				IROI roi = data.getRois().get(i);
+			for (int i = 0; i < data.getROISize(); i++) {
+				IROI roi = data.getRoi(i);
 				if (roi != null) {
 					ds[count]  = spacings.get(i).getDNano()*10;
 

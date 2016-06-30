@@ -10,6 +10,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.dawnsci.analysis.api.dataset.IDataset;
 import org.eclipse.dawnsci.analysis.api.roi.IROI;
 import org.eclipse.dawnsci.analysis.dataset.impl.Dataset;
+import org.eclipse.dawnsci.analysis.dataset.impl.DatasetUtils;
 import org.eclipse.dawnsci.plotting.api.IPlottingSystem;
 import org.eclipse.swt.widgets.Display;
 
@@ -86,7 +87,7 @@ public class AutoCalibrationRun extends AbstractCalibrationRun {
 		
 		int count = 0;
 		for (DiffractionTableData data : manager.iterable()) {
-			images[count] = data.getImage();
+			images[count] = DatasetUtils.sliceAndConvertLazyDataset(data.getImage());
 			//TODO use better detector name for nexus paths
 			info[count++] = createPowderCalibrationInfo(data, true);
 		}

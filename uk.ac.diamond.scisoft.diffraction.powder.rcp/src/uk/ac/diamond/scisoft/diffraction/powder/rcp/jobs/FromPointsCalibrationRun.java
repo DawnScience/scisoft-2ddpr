@@ -20,9 +20,9 @@ import org.eclipse.swt.widgets.Display;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.HKL;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibratePoints;
-import uk.ac.diamond.scisoft.diffraction.powder.CalibratePointsParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
 import uk.ac.diamond.scisoft.diffraction.powder.PowderCalibrationInfoImpl;
+import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 
 public class FromPointsCalibrationRun extends AbstractCalibrationRun {
 
@@ -30,7 +30,7 @@ public class FromPointsCalibrationRun extends AbstractCalibrationRun {
 	
 	public FromPointsCalibrationRun(Display display,
 			IPlottingSystem<?> plottingSystem, DiffractionDataManager manager,
-			DiffractionTableData currentData, CalibratePointsParameterModel params) {
+			DiffractionTableData currentData, SimpleCalibrationParameterModel params) {
 		super(display, plottingSystem, manager, currentData, params);
 		// TODO Auto-generated constructor stub
 	}
@@ -41,23 +41,19 @@ public class FromPointsCalibrationRun extends AbstractCalibrationRun {
 		monitor.beginTask("Calibrate detector", IProgressMonitor.UNKNOWN);
 		List<HKL> spacings = CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs();
 		
-		int n = currentData.getRois().size();
+		int n = currentData.getROISize();
 		if (n != spacings.size()) { // always allow a choice to be made
 			throw new IllegalArgumentException("Number of ellipses should be equal to spacings");
 		}
 		
-		int totalNonNull = 0;
-		
-		for (IROI roi : currentData.getRois()) {
-			if (roi != null) totalNonNull++;
-		}
+		int totalNonNull = currentData.getNonNullROISize();
 		
 		double[] ds = new double[totalNonNull];
 		List<IPolylineROI> erois = new ArrayList<IPolylineROI>(totalNonNull);
 		
 		int count = 0;
-		for (int i = 0; i < currentData.getRois().size(); i++) {
-			IROI roi = currentData.getRois().get(i);
+		for (int i = 0; i < currentData.getROISize(); i++) {
+			IROI roi = currentData.getRoi(i);
 			if (roi != null) {
 				ds[count]  = spacings.get(i).getDNano()*10;
 				
@@ -77,7 +73,7 @@ public class FromPointsCalibrationRun extends AbstractCalibrationRun {
 		List<double[]> allDSpacings = new ArrayList<double[]>();
 		allDSpacings.add(ds);
 		
-		CalibrationOutput o = CalibratePoints.run(allEllipses.get(0), allDSpacings.get(0), currentData.getMetaData(),(CalibratePointsParameterModel)params);
+		CalibrationOutput o = CalibratePoints.run(allEllipses.get(0), allDSpacings.get(0), currentData.getMetaData(),params);
 
 		final CalibrationOutput output = o;
 		

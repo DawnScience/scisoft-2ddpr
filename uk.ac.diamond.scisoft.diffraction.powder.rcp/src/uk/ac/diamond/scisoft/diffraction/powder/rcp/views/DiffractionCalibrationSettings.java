@@ -24,29 +24,25 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationStandards;
-import uk.ac.diamond.scisoft.diffraction.powder.CalibratePointsParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.preferences.DiffractionCalibrationPreferencePage;
 
 public class DiffractionCalibrationSettings extends Dialog {
 
-	private CalibratePointsParameterModel   pointParameters;
-	private SimpleCalibrationParameterModel ellipseParameters;
+	private SimpleCalibrationParameterModel parameters;
 	private CalibrationStandards            standards;
 	private int     calibrationType;
 	private boolean usePointCalibration;
 
 
 	protected DiffractionCalibrationSettings(Shell parentShell, 
-			                                 CalibratePointsParameterModel   pointParameters,
-			                                 SimpleCalibrationParameterModel ellipseParameters,
+			                                 SimpleCalibrationParameterModel parameters,
 			                                 CalibrationStandards            standards,
 			                                 int     calibrationType,
 			                                 boolean usePointCalibration) {
 		super(parentShell);
 		setShellStyle(SWT.APPLICATION_MODAL | SWT.DIALOG_TRIM | SWT.RESIZE);
-		this.pointParameters     = pointParameters;
-		this.ellipseParameters   = ellipseParameters;
+		this.parameters     = parameters;
 		this.standards           = standards;
 		this.calibrationType     = calibrationType;
 		this.usePointCalibration = usePointCalibration;
@@ -106,40 +102,40 @@ public class DiffractionCalibrationSettings extends Dialog {
 		fixEnergyButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				pointParameters.setFloatEnergy(!((Button)e.getSource()).getSelection());
+				parameters.setFloatEnergy(!((Button)e.getSource()).getSelection());
 			}
 		});
-		fixEnergyButton.setSelection(!pointParameters.isFloatEnergy());
+		fixEnergyButton.setSelection(!parameters.isFloatEnergy());
 		
 		Button fixDistanceButton = new Button(pointCalibrateGroup, SWT.CHECK);
 		fixDistanceButton.setText("Fix Distance");
 		fixDistanceButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				pointParameters.setFloatDistance(!((Button)e.getSource()).getSelection());
+				parameters.setFloatDistance(!((Button)e.getSource()).getSelection());
 			}
 		});
-		fixDistanceButton.setSelection(!pointParameters.isFloatDistance());
+		fixDistanceButton.setSelection(!parameters.isFloatDistance());
 		
 		Button fixBeamCentreButton = new Button(pointCalibrateGroup, SWT.CHECK);
 		fixBeamCentreButton.setText("Fix Beam Centre");
 		fixBeamCentreButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				pointParameters.setFloatBeamCentre(!((Button)e.getSource()).getSelection());
+				parameters.setFloatBeamCentre(!((Button)e.getSource()).getSelection());
 			}
 		});
-		fixBeamCentreButton.setSelection(!pointParameters.isFloatBeamCentre());
+		fixBeamCentreButton.setSelection(!parameters.isFloatBeamCentre());
 		
 		Button fixTiltButton = new Button(pointCalibrateGroup, SWT.CHECK);
 		fixTiltButton.setText("Fix Tilt");
 		fixTiltButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				pointParameters.setFloatTilt(!((Button)e.getSource()).getSelection());
+				parameters.setFloatTilt(!((Button)e.getSource()).getSelection());
 			}
 		});
-		fixTiltButton.setSelection(!pointParameters.isFloatTilt());
+		fixTiltButton.setSelection(!parameters.isFloatTilt());
 				
 		Button advanced = new Button(composite, SWT.NONE);
 		advanced.setText("Advanced...");
@@ -171,35 +167,35 @@ public class DiffractionCalibrationSettings extends Dialog {
 		Action fixNoneAction = new Action() {
 			@Override
 			public void run() {
-				ellipseParameters.setFloatDistance(true);
-				ellipseParameters.setFloatEnergy(true);
+				parameters.setFloatDistance(true);
+				parameters.setFloatEnergy(true);
 			}
 		};
 		fixNoneAction.setText("Fix None");
 		fixNoneAction.setToolTipText("No parameter is fixed");
-		fixNoneAction.setChecked(ellipseParameters.isFloatDistance()&&ellipseParameters.isFloatEnergy());
+		fixNoneAction.setChecked(parameters.isFloatDistance()&&parameters.isFloatEnergy());
 
 		Action fixEnergyAction = new Action() {
 			@Override
 			public void run() {
-				ellipseParameters.setFloatDistance(true);
-				ellipseParameters.setFloatEnergy(false);
+				parameters.setFloatDistance(true);
+				parameters.setFloatEnergy(false);
 			}
 		};
 		fixEnergyAction.setText("Fix Energy");
 		fixEnergyAction.setToolTipText("Energy parameter is fixed");
-		fixEnergyAction.setChecked(ellipseParameters.isFloatDistance()&&!ellipseParameters.isFloatEnergy());
+		fixEnergyAction.setChecked(parameters.isFloatDistance()&&!parameters.isFloatEnergy());
 
 		Action fixDistanceAction = new Action() {
 			@Override
 			public void run() {
-				ellipseParameters.setFloatDistance(false);
-				ellipseParameters.setFloatEnergy(true);
+				parameters.setFloatDistance(false);
+				parameters.setFloatEnergy(true);
 			}
 		};
 		fixDistanceAction.setText("Fix Distance");
 		fixDistanceAction.setToolTipText("Distance parameter is fixed");
-		fixDistanceAction.setChecked(!ellipseParameters.isFloatDistance()&&ellipseParameters.isFloatEnergy());
+		fixDistanceAction.setChecked(!parameters.isFloatDistance()&&parameters.isFloatEnergy());
 
 		radioActions.add(fixNoneAction);
 		radioActions.add(fixEnergyAction);

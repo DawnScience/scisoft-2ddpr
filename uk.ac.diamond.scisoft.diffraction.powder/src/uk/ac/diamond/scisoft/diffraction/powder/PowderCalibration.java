@@ -154,7 +154,7 @@ public class PowderCalibration {
 			
 			IDiffractionMetadata meta = createMetadataFromOutput(output, 0, images[0].getShape(),pxSize);
 			
-			CalibratePointsParameterModel paramModel = new CalibratePointsParameterModel(params);
+			SimpleCalibrationParameterModel paramModel = params;
 			
 			List<IPolylineROI> lineROIList = new ArrayList<IPolylineROI>();
 			

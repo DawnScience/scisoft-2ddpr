@@ -61,11 +61,7 @@ public class POIFindingRun implements IRunnableWithProgress {
 
 		final List<IROI> resROIs = PowderCalibrationUtils.getResolutionRings(currentData.getMetaData());
 		final IImageTrace image = getImageTrace(plottingSystem);
-		if (currentData.getRois() == null) {
-			currentData.setRois(new ArrayList<IROI>());
-		} else {
-			currentData.getRois().clear();
-		}
+		currentData.clearROIs();
 		currentData.setUse(false);
 		currentData.setNrois(0);
 		
@@ -117,9 +113,9 @@ public class POIFindingRun implements IRunnableWithProgress {
 				logger.trace("Could not find ellipse with {}: {}", r, ex);
 			} finally {
 				if (n >= 0) {
-					currentData.getRois().add(roi); // can include null placeholder
+					currentData.addROI(roi); // can include null placeholder
 				} else {
-					currentData.getRois().clear();
+					currentData.clearROIs();
 				}
 			}
 		}

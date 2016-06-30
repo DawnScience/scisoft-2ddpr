@@ -24,7 +24,7 @@ public class CalibratePoints {
 	private final static Logger logger = LoggerFactory.getLogger(CalibratePoints.class);
 	
 	
-	public static CalibrationOutput run(List<IPolylineROI> allEllipses, double[] allDSpacings, final IDiffractionMetadata md, final CalibratePointsParameterModel paramModel) {
+	public static CalibrationOutput run(List<IPolylineROI> allEllipses, double[] allDSpacings, final IDiffractionMetadata md, final SimpleCalibrationParameterModel paramModel) {
 		
 //		if (allEllipses.size() < 2) throw new IllegalArgumentException("Need more than 1 ellipse");
 		if (allDSpacings.length ==  0 || allEllipses.size() != allDSpacings.length) throw new IllegalArgumentException("Number of ellipses must equal number of d-spacings");
@@ -80,13 +80,13 @@ public class CalibratePoints {
 
 		private static final long serialVersionUID = 1L;
 		
-		private CalibratePointsParameterModel model;
+		private SimpleCalibrationParameterModel model;
 		private IDiffractionMetadata md;
 		private Dataset qd;
 		private Dataset xd;
 		private Dataset yd;
 
-		public DetectorFunction(int nParms, CalibratePointsParameterModel paramModel, IDiffractionMetadata md, Dataset qd, Dataset xd, Dataset yd) {
+		public DetectorFunction(int nParms, SimpleCalibrationParameterModel paramModel, IDiffractionMetadata md, Dataset qd, Dataset xd, Dataset yd) {
 			super(nParms);
 			this.model = paramModel;
 			this.md = md;

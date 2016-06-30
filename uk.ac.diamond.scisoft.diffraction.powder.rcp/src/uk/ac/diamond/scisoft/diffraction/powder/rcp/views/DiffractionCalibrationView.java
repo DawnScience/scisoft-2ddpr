@@ -2,7 +2,6 @@ package uk.ac.diamond.scisoft.diffraction.powder.rcp.views;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +19,7 @@ import org.dawb.workbench.ui.diffraction.table.IDiffractionDataListener;
 import org.dawnsci.common.widgets.dialog.FileSelectionDialog;
 import org.dawnsci.plotting.tools.diffraction.DiffractionImageAugmenter;
 import org.dawnsci.plotting.tools.preference.diffraction.DiffractionPreferencePage;
+import org.eclipse.dawnsci.analysis.dataset.impl.DatasetUtils;
 import org.eclipse.dawnsci.plotting.api.IPlottingSystem;
 import org.eclipse.dawnsci.plotting.api.PlottingFactory;
 import org.eclipse.jface.action.Action;
@@ -43,6 +43,7 @@ import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -54,7 +55,6 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IViewPart;
@@ -75,7 +75,6 @@ import uk.ac.diamond.scisoft.analysis.crystallography.CalibrantSelectedListener;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrantSelectionEvent;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationStandards;
-import uk.ac.diamond.scisoft.diffraction.powder.CalibratePointsParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.Activator;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.PowderCalibrationUtils;
@@ -84,20 +83,18 @@ import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.FromPointsCalibrationRu
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.FromRingsCalibrationRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.POIFindingRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.RingSelectionGroup;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.wizards.PowderCalibrationWizard;
 
 public class DiffractionCalibrationView extends ViewPart {
 
 	public static final String ID = "uk.ac.diamond.scisoft.diffraction.powder.rcp.diffractionCalibrationView";
 	private final Logger logger = LoggerFactory.getLogger(DiffractionCalibrationView.class);
 
-	private final String DATA_PATH = "DataPath";
 	private final String CALIBRANT = "Calibrant";
 	private final String RINGS = "Rings";
 
 	private DiffractionDataManager manager;
 	
-	private List<String> pathsList = new ArrayList<String>();
-	private CalibrationStandards standards;
 	private Map<String, Integer> calibrantRingsMap = new HashMap<String, Integer>();
 
 	// TODO FIXME - So much member data can lead to bugs
@@ -112,8 +109,7 @@ public class DiffractionCalibrationView extends ViewPart {
 	private DiffractionImageAugmenter augmenter;
 	
 	// Actual data
-	private CalibratePointsParameterModel   pointParameters   = new CalibratePointsParameterModel();
-	private SimpleCalibrationParameterModel ellipseParameters = new SimpleCalibrationParameterModel();
+	private SimpleCalibrationParameterModel calibrationParameters = new SimpleCalibrationParameterModel();
 	
 	private static final String RESIDUAL = "Residual: ";
 
@@ -138,10 +134,6 @@ public class DiffractionCalibrationView extends ViewPart {
 
 		if (memento != null) {
 			for (String k : memento.getAttributeKeys()) {
-				if (k.startsWith(DATA_PATH)) {
-					int i = Integer.parseInt(k.substring(DATA_PATH.length()));
-					pathsList.add(i, memento.getString(k));
-				}
 				if (k.startsWith(CALIBRANT)) {
 					calibrantName = memento.getString(k);
 				}
@@ -155,10 +147,6 @@ public class DiffractionCalibrationView extends ViewPart {
 	@Override
 	public void saveState(IMemento memento) {
 		if (memento != null) {
-			int i = 0;
-			for (DiffractionTableData data : manager.iterable()) {
-				memento.putString(DATA_PATH + String.valueOf(i++), data.getPath());
-			}
 			memento.putString(CALIBRANT, calibrantCombo.getItem(calibrantCombo.getSelectionIndex()));
 			memento.putInteger(RINGS, ringSelection.getRingSpinnerSelection());
 		}
@@ -173,17 +161,16 @@ public class DiffractionCalibrationView extends ViewPart {
 		content.setLayout(new GridLayout(1, false));
 		content.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		initializeListeners();
-		standards = CalibrationFactory.getCalibrationStandards();	
 		manager = new DiffractionDataManager();
 
 		// table of images and found rings
-		diffractionTableViewer = new DiffractionDelegate(content, pathsList, manager);
+		diffractionTableViewer = new DiffractionDelegate(content, manager);
 		diffractionTableViewer.addSelectionChangedListener(selectionChangeListener);
 
 		// create calibrant combo
 		createCalibrantGroup(content);
 
-		ringSelection = new RingSelectionGroup(content, standards.getCalibrant().getHKLs().size());
+		ringSelection = new RingSelectionGroup(content, CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs().size());
 		ringSelection.addRingNumberSpinnerListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -262,6 +249,7 @@ public class DiffractionCalibrationView extends ViewPart {
 					public void run() {
 						diffractionTableViewer.refresh();
 						diffractionTableViewer.updateTableColumnsAndLayout(calibrationTypeIndex);
+						if (event == null) return;
 						diffractionTableViewer.setSelection(new StructuredSelection(event.getSource()),true);
 					}
 				});
@@ -274,9 +262,8 @@ public class DiffractionCalibrationView extends ViewPart {
 		settings.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				DiffractionCalibrationSettings dialog = new DiffractionCalibrationSettings(settings.getShell(),
-						                                                                   pointParameters, 
-						                                                                   ellipseParameters,
-						                                                                   standards,
+																							calibrationParameters, 
+						                                                                   CalibrationFactory.getCalibrationStandards(),
 						                                                                   calibrationTypeIndex,
 						                                                                   usePointCalibration.getSelection());
 				dialog.open();
@@ -286,13 +273,6 @@ public class DiffractionCalibrationView extends ViewPart {
 		residualLabel = new Label(content, SWT.NONE);
 		residualLabel.setText(RESIDUAL);
 		residualLabel.setLayoutData(new GridData());
-
-		// try to load the previous data saved in the memento
-		for (String p : pathsList) {
-			if (!p.endsWith(".nxs")) {
-				manager.loadData(p, null);
-			}
-		}
 
 		CalibrationFactory.addCalibrantSelectionListener(calibrantChangeListener);
 
@@ -414,9 +394,9 @@ public class DiffractionCalibrationView extends ViewPart {
 	}
 	
 	private void setCalibrantChoice() {
-		final List<String> cl = standards.getCalibrantList();
+		final List<String> cl = CalibrationFactory.getCalibrationStandards().getCalibrantList();
 		calibrantCombo.setItems(cl.toArray(new String[cl.size()]));
-		String selCalib = standards.getSelectedCalibrant();
+		String selCalib = CalibrationFactory.getCalibrationStandards().getSelectedCalibrant();
 		final int index = cl.indexOf(selCalib);
 		calibrantCombo.select(index); 
 	}
@@ -485,9 +465,9 @@ public class DiffractionCalibrationView extends ViewPart {
 				int index = calibrantCombo.getSelectionIndex();
 				calibrantName = calibrantCombo.getItem(index);
 				// update the calibrant in diffraction tool
-				standards.setSelectedCalibrant(calibrantName, true);
+				CalibrationFactory.getCalibrationStandards().setSelectedCalibrant(calibrantName, true);
 				// set the maximum number of rings
-				int ringMaxNumber = standards.getCalibrant().getHKLs().size();
+				int ringMaxNumber = CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs().size();
 				ringSelection.setMaximumRingNumber(ringMaxNumber);
 				// Set the calibrant ring number
 				if (calibrantRingsMap.containsKey(calibrantName)) {
@@ -500,10 +480,10 @@ public class DiffractionCalibrationView extends ViewPart {
 				
 			}
 		});
-		for (String c : standards.getCalibrantList()) {
+		for (String c : CalibrationFactory.getCalibrationStandards().getCalibrantList()) {
 			calibrantCombo.add(c);
 		}
-		String s = standards.getSelectedCalibrant();
+		String s = CalibrationFactory.getCalibrationStandards().getSelectedCalibrant();
 		if (s != null) {
 			calibrantCombo.setText(s);
 		}
@@ -538,6 +518,24 @@ public class DiffractionCalibrationView extends ViewPart {
 
 	private void createToolbarActions() {
 		IToolBarManager toolBarMan = this.getViewSite().getActionBars().getToolBarManager();
+		
+		IAction wizAction = new Action("Wizard") {
+			@Override
+			public void run() {
+				try {
+					PowderCalibrationWizard wiz = new PowderCalibrationWizard(manager);
+					wiz.setNeedsProgressMonitor(true);
+					final WizardDialog wd = new WizardDialog(PlatformUI.getWorkbench().getDisplay().getActiveShell(),wiz);
+					
+					wd.setPageSize(new Point(900, 500));
+					wd.create();
+					wd.open();
+				} catch (Exception e) {
+					logger.error("Problem opening import!", e);
+				}
+			}
+		};
+		wizAction.setImageDescriptor(Activator.getImageDescriptor("icons/wand.png"));
 
 		IAction importAction = new Action("Import metadata from file") {
 			@Override
@@ -626,6 +624,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		};
 		resetTableAction.setImageDescriptor(Activator.getImageDescriptor("icons/table_delete.png"));
 
+		toolBarMan.add(wizAction);
 		toolBarMan.add(importAction);
 		toolBarMan.add(exportAction);
 		toolBarMan.add(exportToXLSAction);
@@ -663,8 +662,8 @@ public class DiffractionCalibrationView extends ViewPart {
 				if (manager.isEmpty()) {
 					MessageDialog.openInformation(Display.getCurrent().getActiveShell(), "Load Data", "Please load some data!");
 				}
-				setUpCalbrationModel(ellipseParameters);
-				IRunnableWithProgress job = new AutoCalibrationRun(Display.getDefault(), plottingSystem, manager, manager.getCurrentData(), ellipseParameters);
+				setUpCalbrationModel(calibrationParameters);
+				IRunnableWithProgress job = new AutoCalibrationRun(Display.getDefault(), plottingSystem, manager, manager.getCurrentData(), calibrationParameters);
 
 				ProgressMonitorDialog dia = new ProgressMonitorDialog(Display.getCurrent().getActiveShell());
 				try {
@@ -725,13 +724,21 @@ public class DiffractionCalibrationView extends ViewPart {
 				
 				IRunnableWithProgress job = null;
 				
-				if (usePointCalibration.getSelection() && manager.getSize() == 1) {
-					setUpCalbrationModel(pointParameters);
-					job = new FromPointsCalibrationRun(Display.getDefault(), plottingSystem, manager, manager.getCurrentData(), pointParameters);
+				setUpCalbrationModel(calibrationParameters);
+				
+				if (calibrationParameters.isEllipseCalibration()) {
+					job = new FromRingsCalibrationRun(Display.getDefault(), plottingSystem, manager, manager.getCurrentData(), calibrationParameters);
 				} else {
-					setUpCalbrationModel(ellipseParameters);
-					job = new FromRingsCalibrationRun(Display.getDefault(), plottingSystem, manager, manager.getCurrentData(), ellipseParameters);
+					job = new FromPointsCalibrationRun(Display.getDefault(), plottingSystem, manager, manager.getCurrentData(), calibrationParameters);
 				}
+				
+//				if (usePointCalibration.getSelection() && manager.getSize() == 1) {
+//					setUpCalbrationModel(parameters);
+//					job = new FromPointsCalibrationRun(Display.getDefault(), plottingSystem, manager, manager.getCurrentData(), pointParameters);
+//				} else {
+//					setUpCalbrationModel(ellipseParameters);
+//					job = new FromRingsCalibrationRun(Display.getDefault(), plottingSystem, manager, manager.getCurrentData(), ellipseParameters);
+//				}
 				
 				ProgressMonitorDialog dia = new ProgressMonitorDialog(Display.getCurrent().getActiveShell());
 				try {
@@ -775,8 +782,8 @@ public class DiffractionCalibrationView extends ViewPart {
 			initializeSystems();
 		}
 		plottingSystem.clear();
-		plottingSystem.updatePlot2D(data.getImage(), null, null);
-		plottingSystem.setTitle(data.getName());
+		plottingSystem.updatePlot2D(DatasetUtils.sliceAndConvertLazyDataset(data.getImage()), null, null);
+		plottingSystem.setTitle(data.getName() == null ? "Data" : data.getName());
 		plottingSystem.getAxes().get(0).setTitle("");
 		plottingSystem.getAxes().get(1).setTitle("");
 		plottingSystem.setKeepAspect(true);
