@@ -13,6 +13,10 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PlatformUI;
+import org.osgi.service.event.Event;
+import org.osgi.service.event.EventAdmin;
+
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.LocalServiceManager;
 
 public class OpenLocalFileAction extends Action implements
 		IWorkbenchWindowActionDelegate {
@@ -33,6 +37,12 @@ public class OpenLocalFileAction extends Action implements
 		dialog.open();
 		String[] names =  dialog.getFileNames();
 		if (names != null) {
+			
+			
+			EventAdmin eventAdmin = LocalServiceManager.getEventAdmin();
+			eventAdmin.toString();
+//			eventAdmin.postEvent(new Event("org/dawnsci/events/file/OPEN", props));
+			
 			filterPath =  dialog.getFilterPath();
 			IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
 			IViewPart view = page.findView("uk.ac.diamond.scisoft.diffraction.powder.rcp.diffractionCalibrationView");

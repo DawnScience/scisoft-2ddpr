@@ -41,42 +41,20 @@ import uk.ac.diamond.scisoft.analysis.io.DiffractionMetadata;
 import uk.ac.diamond.scisoft.analysis.io.LoaderFactory;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.AutoCalibrationRun;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.CalibrantSelectionGroup;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.CalibrationOptionsGroup;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.RingSelectionGroup;
 
 public class PowderSetupWizardPage extends WizardPage {
 
 	private IPlottingSystem<Composite> system;
 	private DiffractionDataManager manager;
 	private DiffractionImageAugmenter augmenter;
+	SimpleCalibrationParameterModel model = new SimpleCalibrationParameterModel();
 	
 	protected PowderSetupWizardPage(DiffractionDataManager manager) {
 		super("Powder Calibration Set-Up");
 		this.manager = manager;
-//		manager = new DiffractionDataManager();
-//		
-//		
-//		
-//		String path = "/dls/science/groups/das/ExampleData/i15/I15_Detector_Calibration/PE_Data/29p2keV/CeO2_29p2keV_d359-00016.tif";
-//		String dataset = "image-01";
-//		
-//		manager.loadData(path, dataset);
-//		DiffractionTableData currentData = manager.getCurrentData();
-//		manager.toString();
-		
-//		try {
-//			ILazyDataset image = LoaderFactory.getData(path).getLazyDataset(dataset);
-//			
-//			manager.setImage(image);
-//			
-//			IDiffractionMetadata md = DiffractionDefaultMetadata.getDiffractionMetadata(image.getShape());
-//			image.setMetadata(md);
-//			data.setMetaData(md);
-//			data.setName("CeO2_29p2keV_d359-00016.tif");
-//			
-//		} catch (Exception e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-		
 	}
 
 	@Override
@@ -131,70 +109,37 @@ public class PowderSetupWizardPage extends WizardPage {
 			e.printStackTrace();
 		}
 		
-		Button btn = new Button(left, SWT.None);
-		btn.addSelectionListener(new SelectionListener() {
-			
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				showCalibrantAndBeamCentre(true);
-				
-			}
-			
-			@Override
-			public void widgetDefaultSelected(SelectionEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-		});
-		
-		
-		Group selectCalibComp = new Group(left, SWT.FILL);
-		selectCalibComp.setText("Select calibrant:");
-		selectCalibComp.setLayout(new GridLayout(1, false));
-		selectCalibComp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-
-		Composite comp = new Composite(selectCalibComp, SWT.NONE);
-		comp.setLayout(new GridLayout(2, true));
-		comp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		final Combo calibrantCombo = new Combo(comp, SWT.READ_ONLY);
-		calibrantCombo.setToolTipText("Select a type of calibrant");
-		calibrantCombo.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		calibrantCombo.addSelectionListener(new SelectionAdapter() {
+		final CalibrantSelectionGroup group = new CalibrantSelectionGroup(left);
+		group.addCalibrantSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				if (manager.getCurrentData() == null)
 					return;
-				int index = calibrantCombo.getSelectionIndex();
-				String calibrantName = calibrantCombo.getItem(index);
+				String calibrantName = group.getCalibrant();
 				// update the calibrant in diffraction tool
 				CalibrationFactory.getCalibrationStandards().setSelectedCalibrant(calibrantName, true);
 				// set the maximum number of rings
 				int ringMaxNumber = CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs().size();
-//				ringSelection.setMaximumRingNumber(ringMaxNumber);
-//				// Set the calibrant ring number
-//				if (calibrantRingsMap.containsKey(calibrantName)) {
-//					ringSelection.setRingSpinnerSelection(calibrantRingsMap.get(calibrantName));
-//				} else {
-//					calibrantRingsMap.put(calibrantName, ringMaxNumber);
-//					ringSelection.setRingSpinnerSelection(ringMaxNumber);
-//				}
-				// Tell the ring selection field about the maximum number allowed
 				
 			}
 		});
-		for (String c : CalibrationFactory.getCalibrationStandards().getCalibrantList()) {
-			calibrantCombo.add(c);
-		}
-		String s = CalibrationFactory.getCalibrationStandards().getSelectedCalibrant();
-		if (s != null) {
-			calibrantCombo.setText(s);
-		}
 		
-//		sideProfile1.setLineOrientation(false);
-//		sideProfile1.setPlotEdgeProfile(true);
-//		sideProfile1.setPlotAverageProfile(false);
-//		sideProfile1.setToolSystem(tps);
+		group.addDisplaySelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				showCalibrantAndBeamCentre(group.getShowRings());
+			}
+		});
 		
+		final RingSelectionGroup ringSelection = new RingSelectionGroup(left, CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs().size());
+		ringSelection.addRingNumberSpinnerListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				int ringNumber = ringSelection.getRingSpinnerSelection();
+//				calibrantRingsMap.put(calibrantName, ringNumber);
+			}
+		});
+		CalibrationOptionsGroup options = new CalibrationOptionsGroup(left, model, true,false);
 		
 	}
 	
@@ -213,7 +158,6 @@ public class PowderSetupWizardPage extends WizardPage {
 	@Override
 	public void setVisible(boolean visible) {
 		if (!visible) {
-			SimpleCalibrationParameterModel model = new SimpleCalibrationParameterModel();
 			model.setNumberOfRings(6);
 			DiffractionDataManager m = new DiffractionDataManager();
 

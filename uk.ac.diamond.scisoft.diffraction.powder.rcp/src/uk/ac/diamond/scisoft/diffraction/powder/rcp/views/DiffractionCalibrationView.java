@@ -82,6 +82,7 @@ import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.AutoCalibrationRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.FromPointsCalibrationRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.FromRingsCalibrationRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.POIFindingRun;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.CalibrantSelectionGroup;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.RingSelectionGroup;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.wizards.PowderCalibrationWizard;
 
@@ -115,7 +116,6 @@ public class DiffractionCalibrationView extends ViewPart {
 
 	private IPlottingSystem<Composite> plottingSystem;
 
-	private ISelectionChangedListener selectionChangeListener;
 	private CalibrantSelectedListener calibrantChangeListener;
 	private IPartListener2 partListener;
 
@@ -147,7 +147,7 @@ public class DiffractionCalibrationView extends ViewPart {
 	@Override
 	public void saveState(IMemento memento) {
 		if (memento != null) {
-			memento.putString(CALIBRANT, calibrantCombo.getItem(calibrantCombo.getSelectionIndex()));
+			memento.putString(CALIBRANT, CalibrationFactory.getCalibrationStandards().getSelectedCalibrant());
 			memento.putInteger(RINGS, ringSelection.getRingSpinnerSelection());
 		}
 	}
@@ -165,7 +165,23 @@ public class DiffractionCalibrationView extends ViewPart {
 
 		// table of images and found rings
 		diffractionTableViewer = new DiffractionDelegate(content, manager);
-		diffractionTableViewer.addSelectionChangedListener(selectionChangeListener);
+		diffractionTableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+			@Override
+			public void selectionChanged(SelectionChangedEvent event) {
+				updateSelection(false);
+				if (manager.isEmpty()) {
+					diffractionTableViewer.refresh();
+					updateCurrentData(null); // need to reset this
+					plottingSystem.clear();
+					PowderCalibrationUtils.clearFoundRings(plottingSystem);
+					calibrateImagesButton.setEnabled(false);
+					residualLabel.setText(RESIDUAL);
+					residualLabel.getParent().layout();
+				}
+				
+				setSingleImageOptionsEnabled(manager.getSize() < 2);
+			}
+		});
 
 		// create calibrant combo
 		createCalibrantGroup(content);
@@ -263,8 +279,6 @@ public class DiffractionCalibrationView extends ViewPart {
 			public void widgetSelected(SelectionEvent e) {
 				DiffractionCalibrationSettings dialog = new DiffractionCalibrationSettings(settings.getShell(),
 																							calibrationParameters, 
-						                                                                   CalibrationFactory.getCalibrationStandards(),
-						                                                                   calibrationTypeIndex,
 						                                                                   usePointCalibration.getSelection());
 				dialog.open();
 			}
@@ -338,28 +352,11 @@ public class DiffractionCalibrationView extends ViewPart {
 	}
 
 	private void initializeListeners(){
-		// selection change listener for table viewer
-		selectionChangeListener = new ISelectionChangedListener() {
-			@Override
-			public void selectionChanged(SelectionChangedEvent event) {
-				updateSelection(false);
-				if (manager.isEmpty()) {
-					diffractionTableViewer.refresh();
-					updateCurrentData(null); // need to reset this
-					plottingSystem.clear();
-					PowderCalibrationUtils.clearFoundRings(plottingSystem);
-					calibrateImagesButton.setEnabled(false);
-					residualLabel.setText(RESIDUAL);
-					residualLabel.getParent().layout();
-				}
-				
-				setSingleImageOptionsEnabled(manager.getSize() < 2);
-			}
-		};
 
 		calibrantChangeListener = new CalibrantSelectedListener() {
 			@Override
 			public void calibrantSelectionChanged(CalibrantSelectionEvent evt) {
+				if (calibrantCombo == null) return;
 				final int index = calibrantCombo.getSelectionIndex();
 				if (index>-1 && calibrantCombo.getItems()[index].equals(evt.getCalibrant())) return;
 				setCalibrantChoice();
@@ -446,24 +443,13 @@ public class DiffractionCalibrationView extends ViewPart {
 
 	private void createCalibrantGroup(Composite composite) {
 		
-		Group selectCalibComp = new Group(composite, SWT.FILL);
-		selectCalibComp.setText("Select calibrant:");
-		selectCalibComp.setLayout(new GridLayout(1, false));
-		selectCalibComp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-
-		Composite comp = new Composite(selectCalibComp, SWT.NONE);
-		comp.setLayout(new GridLayout(2, true));
-		comp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		calibrantCombo = new Combo(comp, SWT.READ_ONLY);
-		calibrantCombo.setToolTipText("Select a type of calibrant");
-		calibrantCombo.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		calibrantCombo.addSelectionListener(new SelectionAdapter() {
+		final CalibrantSelectionGroup group = new CalibrantSelectionGroup(composite);
+		group.addCalibrantSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				if (manager.getCurrentData() == null)
 					return;
-				int index = calibrantCombo.getSelectionIndex();
-				calibrantName = calibrantCombo.getItem(index);
+				calibrantName = group.getCalibrant();
 				// update the calibrant in diffraction tool
 				CalibrationFactory.getCalibrationStandards().setSelectedCalibrant(calibrantName, true);
 				// set the maximum number of rings
@@ -476,44 +462,16 @@ public class DiffractionCalibrationView extends ViewPart {
 					calibrantRingsMap.put(calibrantName, ringMaxNumber);
 					ringSelection.setRingSpinnerSelection(ringMaxNumber);
 				}
-				// Tell the ring selection field about the maximum number allowed
 				
 			}
 		});
-		for (String c : CalibrationFactory.getCalibrationStandards().getCalibrantList()) {
-			calibrantCombo.add(c);
-		}
-		String s = CalibrationFactory.getCalibrationStandards().getSelectedCalibrant();
-		if (s != null) {
-			calibrantCombo.setText(s);
-		}
-
-		Button configCalibrantButton = new Button(comp, SWT.NONE);
-		configCalibrantButton.setText("Configure...");
-		configCalibrantButton.setToolTipText("Open Calibrant configuration page");
-		configCalibrantButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		configCalibrantButton.addSelectionListener(new SelectionAdapter() {
+		
+		group.addDisplaySelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				PreferenceDialog pref = PreferencesUtil
-						.createPreferenceDialogOn(PlatformUI.getWorkbench()
-								.getActiveWorkbenchWindow().getShell(),
-								DiffractionPreferencePage.ID, null, null);
-				if (pref != null)
-					pref.open();
+				showCalibrantAndBeamCentre(group.getShowRings());
 			}
 		});
-
-		final Button showCalibAndBeamCtrCheckBox = new Button(selectCalibComp, SWT.CHECK);
-		showCalibAndBeamCtrCheckBox.setText("Show Calibrant and Beam Centre");
-		showCalibAndBeamCtrCheckBox.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				checked = showCalibAndBeamCtrCheckBox.getSelection();
-				showCalibrantAndBeamCentre(checked);
-			}
-		});
-		showCalibAndBeamCtrCheckBox.setSelection(true);
 	}
 
 	private void createToolbarActions() {
@@ -811,9 +769,6 @@ public class DiffractionCalibrationView extends ViewPart {
 	}
 
 	private void removeListeners() {
-		if(diffractionTableViewer != null) {
-			diffractionTableViewer.removeSelectionChangedListener(selectionChangeListener);
-		}
 		CalibrationFactory.removeCalibrantSelectionListener(calibrantChangeListener);
 
 		if (augmenter != null)
@@ -836,17 +791,5 @@ public class DiffractionCalibrationView extends ViewPart {
 	public void setFocus() {
 		if (diffractionTableViewer != null && !diffractionTableViewer.isDisposed())
 			diffractionTableViewer.setFocus();
-	}
-
-	/**
-	 * Needed to retrieve the plotting system
-	 */
-	@Override
-	public Object getAdapter(@SuppressWarnings("rawtypes") Class key) {
-		if (key == IPlottingSystem.class)
-			return plottingSystem;
-		if (key == DiffractionDataManager.class)
-			return manager;
-		return null;
 	}
 }
