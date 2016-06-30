@@ -1,6 +1,5 @@
 package uk.ac.diamond.scisoft.diffraction.powder.rcp.handlers;
 
-import org.dawb.workbench.ui.diffraction.table.DiffractionDataManager;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.ISelection;
@@ -9,6 +8,8 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
+
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
 
 public class OpenPowderAction extends Action {
 	

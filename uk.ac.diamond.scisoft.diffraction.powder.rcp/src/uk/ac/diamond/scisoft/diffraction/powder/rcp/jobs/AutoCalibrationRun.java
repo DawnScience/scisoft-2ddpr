@@ -3,9 +3,6 @@ package uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs;
 import java.util.List;
 
 import org.dawb.common.ui.monitor.ProgressMonitorWrapper;
-import org.dawb.workbench.ui.diffraction.DiffractionCalibrationUtils;
-import org.dawb.workbench.ui.diffraction.table.DiffractionDataManager;
-import org.dawb.workbench.ui.diffraction.table.DiffractionTableData;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.dawnsci.analysis.api.dataset.IDataset;
 import org.eclipse.dawnsci.analysis.api.roi.IROI;
@@ -22,7 +19,10 @@ import uk.ac.diamond.scisoft.diffraction.powder.PowderCalibration;
 import uk.ac.diamond.scisoft.diffraction.powder.PowderCalibrationInfoImpl;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.Activator;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.calibration.DiffractionCalibrationUtils;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.preferences.DiffractionCalibrationConstants;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionTableData;
 
 public class AutoCalibrationRun extends AbstractCalibrationRun {
 

@@ -3,13 +3,13 @@ package uk.ac.diamond.scisoft.diffraction.powder.rcp.views;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import org.dawb.workbench.ui.diffraction.table.DiffractionDataManager;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
 import uk.ac.diamond.sda.navigator.views.IOpenFileAction;
 
 public class PowderFileOpen implements IOpenFileAction {

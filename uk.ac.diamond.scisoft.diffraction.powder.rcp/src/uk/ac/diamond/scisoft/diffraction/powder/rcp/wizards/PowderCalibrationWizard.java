@@ -1,8 +1,9 @@
 package uk.ac.diamond.scisoft.diffraction.powder.rcp.wizards;
 
-import org.dawb.workbench.ui.diffraction.table.DiffractionDataManager;
-import org.dawb.workbench.ui.diffraction.table.DiffractionTableData;
 import org.eclipse.jface.wizard.Wizard;
+
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionTableData;
 
 public class PowderCalibrationWizard extends Wizard {
 

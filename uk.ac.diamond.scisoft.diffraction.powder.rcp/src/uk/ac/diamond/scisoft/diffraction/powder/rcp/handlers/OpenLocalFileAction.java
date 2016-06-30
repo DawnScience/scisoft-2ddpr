@@ -2,7 +2,6 @@ package uk.ac.diamond.scisoft.diffraction.powder.rcp.handlers;
 
 import java.io.File;
 
-import org.dawb.workbench.ui.diffraction.table.DiffractionDataManager;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
@@ -17,6 +16,7 @@ import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
 
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.LocalServiceManager;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
 
 public class OpenLocalFileAction extends Action implements
 		IWorkbenchWindowActionDelegate {

@@ -3,7 +3,6 @@ package uk.ac.diamond.scisoft.diffraction.powder.rcp.wizards;
 import java.lang.reflect.InvocationTargetException;
 
 import org.dawb.common.ui.widgets.ActionBarWrapper;
-import org.dawb.workbench.ui.diffraction.table.DiffractionDataManager;
 import org.dawnsci.plotting.tools.diffraction.DiffractionImageAugmenter;
 import org.eclipse.dawnsci.analysis.dataset.impl.DatasetUtils;
 import org.eclipse.dawnsci.plotting.api.IPlottingSystem;
@@ -33,6 +32,7 @@ import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationStandards;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.AutoCalibrationRun;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
 
 public class PowderResultWizardPage extends WizardPage {
 

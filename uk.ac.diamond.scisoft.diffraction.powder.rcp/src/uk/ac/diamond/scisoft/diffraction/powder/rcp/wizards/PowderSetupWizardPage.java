@@ -3,8 +3,6 @@ package uk.ac.diamond.scisoft.diffraction.powder.rcp.wizards;
 import java.lang.reflect.InvocationTargetException;
 
 import org.dawb.common.ui.widgets.ActionBarWrapper;
-import org.dawb.workbench.ui.diffraction.table.DiffractionDataManager;
-import org.dawb.workbench.ui.diffraction.table.DiffractionTableData;
 import org.dawnsci.plotting.tools.diffraction.DiffractionDefaultMetadata;
 import org.dawnsci.plotting.tools.diffraction.DiffractionImageAugmenter;
 import org.eclipse.dawnsci.analysis.api.dataset.IDataset;
@@ -41,6 +39,8 @@ import uk.ac.diamond.scisoft.analysis.io.DiffractionMetadata;
 import uk.ac.diamond.scisoft.analysis.io.LoaderFactory;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.AutoCalibrationRun;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionTableData;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.CalibrantSelectionGroup;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.CalibrationOptionsGroup;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.RingSelectionGroup;

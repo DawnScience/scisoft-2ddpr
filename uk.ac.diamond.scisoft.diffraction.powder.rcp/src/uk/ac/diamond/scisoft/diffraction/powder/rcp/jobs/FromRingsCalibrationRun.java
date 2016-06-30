@@ -3,8 +3,6 @@ package uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.dawb.workbench.ui.diffraction.table.DiffractionDataManager;
-import org.dawb.workbench.ui.diffraction.table.DiffractionTableData;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.dawnsci.analysis.api.roi.IROI;
 import org.eclipse.dawnsci.analysis.dataset.impl.Dataset;
@@ -21,6 +19,8 @@ import uk.ac.diamond.scisoft.diffraction.powder.CalibrateEllipses;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
 import uk.ac.diamond.scisoft.diffraction.powder.PowderCalibrationInfoImpl;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionTableData;
 
 public class FromRingsCalibrationRun extends AbstractCalibrationRun {
 
