@@ -1,5 +1,9 @@
 package uk.ac.diamond.scisoft.diffraction.powder.rcp.handlers;
 
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.ISelection;
@@ -8,7 +12,10 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
+import org.osgi.service.event.Event;
+import org.osgi.service.event.EventAdmin;
 
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.LocalServiceManager;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
 
 public class OpenPowderAction extends Action {
@@ -51,15 +58,12 @@ public class OpenPowderAction extends Action {
 				IFile file = (IFile)sSelection.getFirstElement();
 				String loc = file.getRawLocation().toOSString();
 				
-				IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-				IViewPart view = page.findView("uk.ac.diamond.scisoft.diffraction.powder.rcp.diffractionCalibrationView");
-				if (view==null) return;
+				String[] fullNames = {loc};
 				
-				//FIXME table viewer should not be doing the data loading!
-				final DiffractionDataManager manager = (DiffractionDataManager)view.getAdapter(DiffractionDataManager.class);
-				if (manager != null) {
-					manager.loadData(loc, null);
-				}
+				EventAdmin eventAdmin = LocalServiceManager.getEventAdmin();
+				Map<String,String[]> props = new HashMap<>();
+				props.put("paths", fullNames);
+				eventAdmin.postEvent(new Event("org/dawnsci/events/file/powder/OPEN", props));
 				
 			}
 		}

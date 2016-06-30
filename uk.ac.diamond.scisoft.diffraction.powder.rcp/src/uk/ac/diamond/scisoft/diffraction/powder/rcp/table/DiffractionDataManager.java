@@ -10,7 +10,9 @@ package uk.ac.diamond.scisoft.diffraction.powder.rcp.table;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Dictionary;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
@@ -20,9 +22,7 @@ import org.dawnsci.plotting.tools.diffraction.DiffractionUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.dawnsci.analysis.api.dataset.IDataset;
 import org.eclipse.dawnsci.analysis.api.dataset.ILazyDataset;
 import org.eclipse.dawnsci.analysis.api.diffraction.DetectorProperties;
 import org.eclipse.dawnsci.analysis.api.diffraction.DiffractionCrystalEnvironment;
@@ -30,16 +30,22 @@ import org.eclipse.dawnsci.analysis.api.diffraction.IDetectorPropertyListener;
 import org.eclipse.dawnsci.analysis.api.io.IDataHolder;
 import org.eclipse.dawnsci.analysis.api.io.ILoaderService;
 import org.eclipse.dawnsci.analysis.api.metadata.IMetadata;
+import org.eclipse.dawnsci.analysis.api.processing.OperationException;
 import org.eclipse.dawnsci.analysis.dataset.impl.Dataset;
 import org.eclipse.dawnsci.analysis.dataset.impl.DoubleDataset;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.dialogs.ListDialog;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.service.event.Event;
+import org.osgi.service.event.EventConstants;
+import org.osgi.service.event.EventHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.ac.diamond.scisoft.analysis.io.LoaderFactory;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.LocalServiceManager;
 
 public class DiffractionDataManager {
 	
@@ -59,6 +65,24 @@ public class DiffractionDataManager {
 		this.model = model;
 		service    = Activator.getService(ILoaderService.class);
 		listeners  = new HashSet<IDiffractionDataListener>();
+		
+		BundleContext ctx = FrameworkUtil.getBundle(DiffractionDataManager.class).getBundleContext();
+		EventHandler fileLoadedHandler = new EventHandler() {
+			
+			@Override
+			public void handleEvent(Event event) {
+				Object property = event.getProperty("paths");
+				if (property instanceof String[]){
+					String[] names = (String[])property;
+					for (String name : names) DiffractionDataManager.this.loadData(name, null);
+				}
+				
+			}
+		};
+		
+		Dictionary<String, String> props = new Hashtable<>();
+		props.put(EventConstants.EVENT_TOPIC, "org/dawnsci/events/file/powder/OPEN");
+		ctx.registerService(EventHandler.class, fileLoadedHandler, props);
 	}
 	
 	public void setModel(List<DiffractionTableData> model) {
@@ -173,7 +197,7 @@ public class DiffractionDataManager {
 			
 			
 			try {
-				dh = LoaderFactory.getData(path);
+				dh = LocalServiceManager.getLoaderService().getData(path, null);
 
 			} catch (Exception e1) {
 				model.remove(data);
@@ -201,7 +225,7 @@ public class DiffractionDataManager {
 			
 			if (image == null &&  fullName == null) {
 				try {
-					IMetadata metaData = LoaderFactory.getMetadata(path, null);
+					IMetadata metaData = LocalServiceManager.getLoaderService().getMetadata(path, null);
 					Map<String, int[]> dataShapes = metaData.getDataShapes();
 					final List<String> dataNames = new ArrayList<String>();
 					for (String name : dataShapes.keySet()) {

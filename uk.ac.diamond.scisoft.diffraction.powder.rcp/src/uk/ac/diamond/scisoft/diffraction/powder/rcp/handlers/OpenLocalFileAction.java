@@ -1,6 +1,8 @@
 package uk.ac.diamond.scisoft.diffraction.powder.rcp.handlers;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
@@ -36,24 +38,16 @@ public class OpenLocalFileAction extends Action implements
 		dialog.setFilterPath(filterPath);
 		dialog.open();
 		String[] names =  dialog.getFileNames();
+		
+		
 		if (names != null) {
-			
+			String[] fullNames = new String[names.length];
+			for (int i = 0; i < names.length; i++) fullNames[i] = dialog.getFilterPath() + File.separator + names[i];
 			
 			EventAdmin eventAdmin = LocalServiceManager.getEventAdmin();
-			eventAdmin.toString();
-//			eventAdmin.postEvent(new Event("org/dawnsci/events/file/OPEN", props));
-			
-			filterPath =  dialog.getFilterPath();
-			IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-			IViewPart view = page.findView("uk.ac.diamond.scisoft.diffraction.powder.rcp.diffractionCalibrationView");
-			if (view==null) return;
-
-			final DiffractionDataManager manager = (DiffractionDataManager)view.getAdapter(DiffractionDataManager.class);
-			if (manager != null) {
-				for (String name : names) {
-					manager.loadData(dialog.getFilterPath() + File.separator + name, null);
-				}
-			}
+			Map<String,String[]> props = new HashMap<>();
+			props.put("paths", fullNames);
+			eventAdmin.postEvent(new Event("org/dawnsci/events/file/powder/OPEN", props));
 		}
 	}
 
