@@ -4,7 +4,7 @@ import java.text.DecimalFormat;
 
 import org.eclipse.dawnsci.analysis.api.diffraction.IPowderCalibrationInfo;
 import org.eclipse.dawnsci.analysis.dataset.impl.Dataset;
-import org.eclipse.dawnsci.analysis.dataset.impl.DoubleDataset;
+import org.eclipse.dawnsci.analysis.dataset.impl.DatasetFactory;
 
 public class CalibrationOutput {
 	
@@ -33,11 +33,11 @@ public class CalibrationOutput {
 	public CalibrationOutput(double wavelength, double beamCentreX, double beamCentreY,
 			double tilt, double tiltAngle, double distance, double residual, CalibrationErrorOutput errors) {
 		this(wavelength,
-				new DoubleDataset(new double[]{beamCentreX}, new int[]{1}),
-				new DoubleDataset(new double[]{beamCentreY}, new int[]{1}),
-				new DoubleDataset(new double[]{tilt}, new int[]{1}),
-				new DoubleDataset(new double[]{tiltAngle}, new int[]{1}),
-				new DoubleDataset(new double[]{distance}, new int[]{1}),
+				DatasetFactory.createFromObject(new double[]{beamCentreX}),
+				DatasetFactory.createFromObject(new double[]{beamCentreY}),
+				DatasetFactory.createFromObject(new double[]{tilt}),
+				DatasetFactory.createFromObject(new double[]{tiltAngle}),
+				DatasetFactory.createFromObject(new double[]{distance}),
 				residual, errors);
 	}
 

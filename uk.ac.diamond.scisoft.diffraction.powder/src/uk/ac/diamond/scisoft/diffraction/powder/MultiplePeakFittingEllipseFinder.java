@@ -286,7 +286,7 @@ public class MultiplePeakFittingEllipseFinder {
 							1,3);
 					cf = peaks.get(0);
 				} else {
-					DoubleDataset xData = DoubleDataset.createRange(sub.getSize());
+					DoubleDataset xData = DatasetFactory.createRange(DoubleDataset.class, sub.getSize());
 						int maxPos = sub.maxPos()[0];
 						cf.getFunction(0).getParameter(1).setValue(maxPos);
 					Fitter.ApacheNelderMeadFit(new Dataset[]{xData}, sub, cf);

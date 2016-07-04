@@ -36,9 +36,9 @@ public class CalibratePoints {
 			total += roi.getNumberOfPoints();
 		}
 		
-		final DoubleDataset qd = new DoubleDataset(new int[]{total});
-		final DoubleDataset xd = new DoubleDataset(new int[]{total});
-		final DoubleDataset yd = new DoubleDataset(new int[]{total});
+		final DoubleDataset qd = DatasetFactory.zeros(DoubleDataset.class, total);
+		final DoubleDataset xd = DatasetFactory.zeros(DoubleDataset.class, total);
+		final DoubleDataset yd = DatasetFactory.zeros(DoubleDataset.class, total);
 		int k = 0;
 		for (int i = 0; i < allEllipses.size(); i++) {
 			IPolylineROI roi = allEllipses.get(i);
@@ -117,7 +117,7 @@ public class CalibratePoints {
 			IDiffractionMetadata argMd = model.getMetadata(getParameterValues(), md);
 			QSpace q = new QSpace(argMd.getDetector2DProperties(), argMd.getDiffractionCrystalEnvironment());
 			
-			DoubleDataset qOut = new DoubleDataset(qd);
+			DoubleDataset qOut = qd.copy(DoubleDataset.class);
 			
 			for (int i = 0 ; i < qOut.getSize(); i++) {
 				data.set(q.qFromPixelPosition(xd.getDouble(i), yd.getDouble(i)).length(), i);

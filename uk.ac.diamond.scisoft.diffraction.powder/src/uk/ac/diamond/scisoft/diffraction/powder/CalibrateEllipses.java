@@ -6,7 +6,6 @@ import java.util.List;
 import org.eclipse.dawnsci.analysis.dataset.impl.Dataset;
 import org.eclipse.dawnsci.analysis.dataset.impl.DatasetFactory;
 import org.eclipse.dawnsci.analysis.dataset.impl.DatasetUtils;
-import org.eclipse.dawnsci.analysis.dataset.impl.DoubleDataset;
 import org.eclipse.dawnsci.analysis.dataset.impl.Maths;
 import org.eclipse.dawnsci.analysis.dataset.roi.EllipticalROI;
 import org.slf4j.Logger;
@@ -144,7 +143,7 @@ public class CalibrateEllipses {
 			}
 			
 			allMajor[i] = ellipseParams.get(i).majorAxes;
-			allD[i] = new DoubleDataset(allDSpacings.get(i), allDSpacings.get(i).length);
+			allD[i] = DatasetFactory.createFromObject(allDSpacings.get(i));
 			allDeltaDist[i] = DatasetFactory.ones(new int[]{size},Dataset.FLOAT64).imultiply(normDist.getDouble(i));
 			allDSin[i] = DatasetFactory.ones(new int[]{size},Dataset.FLOAT64).imultiply(beamC[0]);
 			dSint.set(beamC[0], i);
@@ -163,8 +162,8 @@ public class CalibrateEllipses {
 		Dataset calculatedMajors;
 		
 		if (knownValue == -1) {
-			Dataset xcen = new DoubleDataset(beamcentres[0].clone(), beamcentres[0].length);
-			Dataset ycen = new DoubleDataset(beamcentres[1].clone(), beamcentres[1].length);
+			Dataset xcen = DatasetFactory.createFromObject(beamcentres[0].clone());
+			Dataset ycen = DatasetFactory.createFromObject(beamcentres[1].clone());
 			
 			Dataset hyp  = Maths.hypot(xcen.isubtract(xcen.getDouble(xcen.getSize()-1)),ycen.isubtract(ycen.getDouble(ycen.getSize()-1)));
 			
@@ -207,8 +206,8 @@ public class CalibrateEllipses {
 		
 		Dataset tiltAngles = getTiltAngles(ellipseParams, mcs);
 		
-		Dataset beamCentreX = new DoubleDataset(beamcentres[0], new int[]{beamcentres[0].length});
-		Dataset beamCentreY = new DoubleDataset(beamcentres[1], new int[]{beamcentres[1].length});
+		Dataset beamCentreX = DatasetFactory.createFromObject(beamcentres[0]);
+		Dataset beamCentreY = DatasetFactory.createFromObject(beamcentres[1]);
 		
 		return new CalibrationOutput(wavelength, beamCentreX, beamCentreY, tilts, tiltAngles, distances,ssRes/ssTot,null);
 	}
