@@ -1,9 +1,12 @@
 package uk.ac.diamond.scisoft.diffraction.powder.rcp.wizards;
 
 import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.TraverseEvent;
+import org.eclipse.swt.events.TraverseListener;
+import org.eclipse.swt.widgets.Composite;
 
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
-import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionTableData;
 
 public class PowderCalibrationWizard extends Wizard {
 
@@ -14,19 +17,6 @@ public class PowderCalibrationWizard extends Wizard {
 		setUpPages();
 	}
 	
-	public PowderCalibrationWizard() {
-		
-		DiffractionDataManager manager = new DiffractionDataManager();
-		
-		String path = "/dls/science/groups/das/ExampleData/i15/I15_Detector_Calibration/PE_Data/29p2keV/CeO2_29p2keV_d359-00016.tif";
-		String dataset = "image-01";
-		
-		manager.loadData(path, dataset);
-		manager.getCurrentData();
-		setUpPages();
-		
-	}
-	
 	private void setUpPages(){
 
 		addPage(new PowderDataWizardPage(manager));
@@ -35,7 +25,21 @@ public class PowderCalibrationWizard extends Wizard {
 	}
 	
 	@Override
+	public void createPageControls(Composite pageContainer){
+		super.createPageControls(pageContainer);
+		getShell().addTraverseListener(new TraverseListener() {
+			   @Override
+			   public void keyTraversed(TraverseEvent event) {
+			     if (event.detail == SWT.TRAVERSE_RETURN) {
+			        event.doit = false;
+			     }
+			   }
+			});
+	}
+	
+	@Override
 	public boolean performFinish() {
+		
 		return true;
 	}
 

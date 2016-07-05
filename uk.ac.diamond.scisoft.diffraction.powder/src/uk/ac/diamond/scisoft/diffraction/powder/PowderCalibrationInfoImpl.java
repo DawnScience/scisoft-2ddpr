@@ -13,6 +13,7 @@ public class PowderCalibrationInfoImpl implements IPowderCalibrationInfo {
 	private IDataset indices;
 	private double residual;
 	private String[] citation;
+	private String resultDescription;
 	
 	public PowderCalibrationInfoImpl() {
 		this.calibrantName = "Not supplied";
@@ -78,6 +79,17 @@ public class PowderCalibrationInfoImpl implements IPowderCalibrationInfo {
 	public void setCitationInformation(String[] cite) {
 		citation = cite;
 	}
+
+	@Override
+	public String getResultDescription() {
+		return resultDescription;
+	}
+	
+	public void setResultDescription(String description) {
+		this.resultDescription = description;
+	}
+	
+	
 
 
 }

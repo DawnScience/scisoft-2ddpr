@@ -183,6 +183,7 @@ public class PowderCalibration {
 			Dataset infoSpaceds = DatasetFactory.createFromObject(infoIndex);
 			
 			info[i].setPostCalibrationInformation(desc, infoSpace, infoSpaceds, output.getResidual());
+			info[i].setResultDescription(output.getCalibrationOutputDescription());
 			
 		}
 		output.setCalibrationInfo(info);

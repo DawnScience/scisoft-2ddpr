@@ -113,6 +113,7 @@ public class FromRingsCalibrationRun extends AbstractCalibrationRun {
 			Dataset infoSpaceds = DatasetFactory.createFromObject(infoIndex);
 			
 			info[i].setPostCalibrationInformation(description, infoSpace, infoSpaceds, output.getResidual());
+			info[i].setResultDescription(output.getCalibrationOutputDescription());
 			
 		}
 		output.setCalibrationInfo(info);

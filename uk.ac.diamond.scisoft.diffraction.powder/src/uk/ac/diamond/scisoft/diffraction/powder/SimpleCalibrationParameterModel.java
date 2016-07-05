@@ -1,6 +1,7 @@
 package uk.ac.diamond.scisoft.diffraction.powder;
 
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.eclipse.dawnsci.analysis.api.diffraction.DetectorProperties;
 import org.eclipse.dawnsci.analysis.api.diffraction.DiffractionCrystalEnvironment;
@@ -20,6 +21,21 @@ public class SimpleCalibrationParameterModel {
 
 	int nRings;
 	Set<Integer> ringSet;
+	
+	
+	public SimpleCalibrationParameterModel() {}
+
+	public SimpleCalibrationParameterModel(SimpleCalibrationParameterModel toCopy) {
+		this.floatEnergy = toCopy.floatEnergy;
+		this.floatDistance = toCopy.floatDistance;
+		this.floatBeamCentre = toCopy.floatBeamCentre;
+		this.floatTilt = toCopy.floatTilt;
+		this.useRingSet = toCopy.useRingSet;
+		this.finalGlobalOptimisation = toCopy.finalGlobalOptimisation;
+		this.isEllipseCalibration = toCopy.isEllipseCalibration;
+		this.nRings = toCopy.nRings;
+		this.ringSet = ringSet == null ? null : new TreeSet<Integer>(ringSet);
+	}
 	
 	public boolean isFloatDistance() {
 		return floatDistance;
@@ -144,6 +160,40 @@ public class SimpleCalibrationParameterModel {
 		return initParam;
 	}
 	
+	public CalibrationErrorOutput getErrorOutput(double[] errors) {
+		
+		if (errors == null) return null;
+		
+		int count = 0;
+		
+		if (floatEnergy) count++;
+		if (floatDistance) count++;
+		if (floatBeamCentre) count+=2;
+		if (floatTilt) count+=2;
+		
+		CalibrationErrorOutput ceo = new CalibrationErrorOutput();
+		
+		if (errors.length != count) return null;
+		
+		count = 0;
+		
+		if (floatEnergy) ceo.setWavelength(errors[count++]);
+		if (floatDistance) ceo.setDistance(errors[count++]);
+		if (floatBeamCentre) {
+			ceo.setBeamCentreX(errors[count++]);
+			ceo.setBeamCentreY(errors[count++]);
+		}
+		if (floatTilt) {
+			//TODO check if normal angles [2] is zero, if not calc better vals
+			ceo.setTilt(errors[count++]);
+			ceo.setTiltAngle(errors[count++]);
+		}
+		
+		
+		
+		return ceo;
+	}
+	
 	public int getNumberOfFloatingParameters() {
 		
 		int count = 0;
@@ -177,5 +227,54 @@ public class SimpleCalibrationParameterModel {
 
 	public void setEllipseCalibration(boolean isEllipseCalibration) {
 		this.isEllipseCalibration = isEllipseCalibration;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (finalGlobalOptimisation ? 1231 : 1237);
+		result = prime * result + (floatBeamCentre ? 1231 : 1237);
+		result = prime * result + (floatDistance ? 1231 : 1237);
+		result = prime * result + (floatEnergy ? 1231 : 1237);
+		result = prime * result + (floatTilt ? 1231 : 1237);
+		result = prime * result + (isEllipseCalibration ? 1231 : 1237);
+		result = prime * result + nRings;
+		result = prime * result + ((ringSet == null) ? 0 : ringSet.hashCode());
+		result = prime * result + (useRingSet ? 1231 : 1237);
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		SimpleCalibrationParameterModel other = (SimpleCalibrationParameterModel) obj;
+		if (finalGlobalOptimisation != other.finalGlobalOptimisation)
+			return false;
+		if (floatBeamCentre != other.floatBeamCentre)
+			return false;
+		if (floatDistance != other.floatDistance)
+			return false;
+		if (floatEnergy != other.floatEnergy)
+			return false;
+		if (floatTilt != other.floatTilt)
+			return false;
+		if (isEllipseCalibration != other.isEllipseCalibration)
+			return false;
+		if (nRings != other.nRings)
+			return false;
+		if (ringSet == null) {
+			if (other.ringSet != null)
+				return false;
+		} else if (!ringSet.equals(other.ringSet))
+			return false;
+		if (useRingSet != other.useRingSet)
+			return false;
+		return true;
 	}
 }

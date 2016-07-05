@@ -8,6 +8,8 @@ import org.eclipse.dawnsci.plotting.api.IPlottingSystem;
 import org.eclipse.dawnsci.plotting.api.PlotType;
 import org.eclipse.dawnsci.plotting.api.PlottingFactory;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
@@ -20,6 +22,7 @@ import org.eclipse.swt.widgets.Display;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.AutoCalibrationRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDelegate;
 
 public class PowderDataWizardPage extends WizardPage {
 
@@ -28,6 +31,8 @@ public class PowderDataWizardPage extends WizardPage {
 	
 	protected PowderDataWizardPage(DiffractionDataManager manager) {
 		super("Powder Calibration Data");
+		setTitle("Super duper wizard page");
+		setDescription("Wizard page that shows data");
 		this.manager = manager;
 	}
 
@@ -42,6 +47,15 @@ public class PowderDataWizardPage extends WizardPage {
 		left.setLayout(new GridLayout(2, false));
 		Composite right = new Composite(sashForm, SWT.NONE);
 		right.setLayout(new GridLayout());
+		
+		DiffractionDelegate diffractionTableViewer = new DiffractionDelegate(left, manager);
+		diffractionTableViewer.updateTableColumnsAndLayout(0);
+		diffractionTableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+			@Override
+			public void selectionChanged(SelectionChangedEvent event) {
+				//TODO
+			}
+		});
 		
 		Composite plotComp = new Composite(right, SWT.NONE);
 		plotComp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 4, 1));

@@ -39,6 +39,7 @@ public class RingSelectionGroup {
 			}
 		});
 		spinnerRadio.setSelection(true);
+		
 		ringNumberSpinner = new Spinner(group, SWT.BORDER);
 		ringNumberSpinner.setMaximum(maximumRingNumber);
 		ringNumberSpinner.setMinimum(2);

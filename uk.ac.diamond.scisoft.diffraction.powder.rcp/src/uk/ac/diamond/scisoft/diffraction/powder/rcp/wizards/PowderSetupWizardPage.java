@@ -10,6 +10,7 @@ import org.eclipse.dawnsci.analysis.api.dataset.ILazyDataset;
 import org.eclipse.dawnsci.analysis.api.diffraction.DetectorProperties;
 import org.eclipse.dawnsci.analysis.api.diffraction.DiffractionCrystalEnvironment;
 import org.eclipse.dawnsci.analysis.api.metadata.IDiffractionMetadata;
+import org.eclipse.dawnsci.analysis.dataset.impl.Dataset;
 import org.eclipse.dawnsci.analysis.dataset.impl.DatasetUtils;
 import org.eclipse.dawnsci.plotting.api.IPlottingSystem;
 import org.eclipse.dawnsci.plotting.api.PlotType;
@@ -50,7 +51,9 @@ public class PowderSetupWizardPage extends WizardPage {
 	private IPlottingSystem<Composite> system;
 	private DiffractionDataManager manager;
 	private DiffractionImageAugmenter augmenter;
-	SimpleCalibrationParameterModel model = new SimpleCalibrationParameterModel();
+	private SimpleCalibrationParameterModel model = new SimpleCalibrationParameterModel();
+	private SimpleCalibrationParameterModel lastRunModel = null;
+	private IToolPage toolPage;
 	
 	protected PowderSetupWizardPage(DiffractionDataManager manager) {
 		super("Powder Calibration Set-Up");
@@ -82,7 +85,9 @@ public class PowderSetupWizardPage extends WizardPage {
 		try {
 			system = PlottingFactory.createPlottingSystem();
 			system.createPlotPart(displayPlotComp, "PlotDataWizard", actionBarWrapper, PlotType.IMAGE, null);
-			system.createPlot2D(DatasetUtils.sliceAndConvertLazyDataset(manager.getCurrentData().getImage()), null,null);
+			Dataset ds = DatasetUtils.sliceAndConvertLazyDataset(manager.getCurrentData().getImage());
+			ds.setMetadata(manager.getCurrentData().getMetaData());
+			system.createPlot2D(ds, null,null);
 			augmenter = new DiffractionImageAugmenter(system);
 			augmenter.setDiffractionMetadata(manager.getCurrentData().getMetaData());
 			augmenter.activate();
@@ -95,7 +100,6 @@ public class PowderSetupWizardPage extends WizardPage {
 		}
 
 		IToolPageSystem tps = (IToolPageSystem)system.getAdapter(IToolPageSystem.class);
-		IToolPage toolPage;
 		try {
 			toolPage = ToolPageFactory.getToolPage("uk.ac.diamond.scisoft.diffraction.powder.rcp.powderDiffractionTool");
 			toolPage.setPlottingSystem(system);
@@ -136,6 +140,7 @@ public class PowderSetupWizardPage extends WizardPage {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				int ringNumber = ringSelection.getRingSpinnerSelection();
+				model.setNumberOfRings(ringNumber);
 //				calibrantRingsMap.put(calibrantName, ringNumber);
 			}
 		});
@@ -158,21 +163,26 @@ public class PowderSetupWizardPage extends WizardPage {
 	@Override
 	public void setVisible(boolean visible) {
 		if (!visible) {
-			model.setNumberOfRings(6);
-			DiffractionDataManager m = new DiffractionDataManager();
+			if (!model.equals(lastRunModel)) {
+				model.setFinalGlobalOptimisation(true);
+				IRunnableWithProgress job = new AutoCalibrationRun(Display.getDefault(), system,manager , manager.getCurrentData(), model);
+				lastRunModel = new SimpleCalibrationParameterModel(model);
 
-			IRunnableWithProgress job = new AutoCalibrationRun(Display.getDefault(), system,manager , manager.getCurrentData(), model);
-			try {
-				getContainer().run(true, true, job);
-			} catch (InvocationTargetException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				try {
+					getContainer().run(true, true, job);
+				} catch (InvocationTargetException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
-        super.setVisible(visible);
-    }
+		if (visible) toolPage.activate();
+		else toolPage.deactivate();
+		
+		super.setVisible(visible);
+	}
 
 }

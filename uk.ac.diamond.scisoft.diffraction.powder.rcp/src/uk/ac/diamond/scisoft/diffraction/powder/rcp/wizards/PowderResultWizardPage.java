@@ -2,8 +2,12 @@ package uk.ac.diamond.scisoft.diffraction.powder.rcp.wizards;
 
 import java.lang.reflect.InvocationTargetException;
 
+import javax.swing.plaf.metal.MetalBorders.TextFieldBorder;
+
 import org.dawb.common.ui.widgets.ActionBarWrapper;
 import org.dawnsci.plotting.tools.diffraction.DiffractionImageAugmenter;
+import org.eclipse.dawnsci.analysis.api.diffraction.IPowderCalibrationInfo;
+import org.eclipse.dawnsci.analysis.dataset.impl.Dataset;
 import org.eclipse.dawnsci.analysis.dataset.impl.DatasetUtils;
 import org.eclipse.dawnsci.plotting.api.IPlottingSystem;
 import org.eclipse.dawnsci.plotting.api.PlotType;
@@ -15,6 +19,7 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -27,12 +32,14 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
 
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationStandards;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.AutoCalibrationRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDelegate;
 
 public class PowderResultWizardPage extends WizardPage {
 
@@ -40,7 +47,8 @@ public class PowderResultWizardPage extends WizardPage {
 	private IPlottingSystem<Composite> system;
 	private DiffractionDataManager manager;
 	private DiffractionImageAugmenter augmenter;
-	IToolPage toolPage;
+	private IToolPage toolPage;
+	private StyledText resultText;
 
 	protected PowderResultWizardPage(DiffractionDataManager manager) {
 		super("Powder Calibration Set-Up");
@@ -84,7 +92,7 @@ public class PowderResultWizardPage extends WizardPage {
 		final Composite centre = new Composite(sashForm, SWT.NONE);
 		centre.setLayout(new GridLayout());
 		Composite right = new Composite(sashForm, SWT.NONE);
-		right.setLayout(new FillLayout());
+		right.setLayout(new FillLayout());	
 		
 		Composite plotComp = new Composite(centre, SWT.NONE);
 		plotComp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 4, 1));
@@ -98,7 +106,9 @@ public class PowderResultWizardPage extends WizardPage {
 		try {
 			system = PlottingFactory.createPlottingSystem();
 			system.createPlotPart(displayPlotComp, "PlotDataWizard", actionBarWrapper, PlotType.IMAGE, null);
-			system.createPlot2D(DatasetUtils.sliceAndConvertLazyDataset(manager.getCurrentData().getImage()), null,null);
+			Dataset ds = DatasetUtils.sliceAndConvertLazyDataset(manager.getCurrentData().getImage());
+			ds.setMetadata(manager.getCurrentData().getMetaData());
+			system.createPlot2D(ds, null,null);
 			augmenter = new DiffractionImageAugmenter(system);
 			augmenter.setDiffractionMetadata(manager.getCurrentData().getMetaData());
 			augmenter.activate();
@@ -125,14 +135,30 @@ public class PowderResultWizardPage extends WizardPage {
 			e.printStackTrace();
 		}
 		
-		new Label(left, SWT.None).setText("Add cool stuff here:");
+		
+		resultText = new StyledText(left, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.READ_ONLY |SWT.V_SCROLL);
+		resultText.setAlwaysShowScrollBars(false);
+		resultText.setLayoutData(new GridData(GridData.FILL_BOTH));
+		
 	}
 
+	@Override
+	public boolean canFlipToNextPage() {
+		IPowderCalibrationInfo calInfo = manager.getCurrentData().getCalibrationInfo();
+		if (calInfo != null) {
+			String resultDescription = calInfo.getResultDescription();
+			if (resultDescription != null) resultText.setText(resultDescription);
+			
+		}
+        return super.canFlipToNextPage();
+    }
+	
 	
 	@Override
 	public void setVisible(boolean visible) {
 		if (visible) toolPage.activate();
 		else toolPage.deactivate();
+		
 		
 //		if (!visible) {
 //			SimpleCalibrationParameterModel model = new SimpleCalibrationParameterModel();

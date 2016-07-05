@@ -18,6 +18,7 @@ import org.eclipse.swt.widgets.Display;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.HKL;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibratePoints;
+import uk.ac.diamond.scisoft.diffraction.powder.CalibrationErrorOutput;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
 import uk.ac.diamond.scisoft.diffraction.powder.PowderCalibrationInfoImpl;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
@@ -91,7 +92,7 @@ public class FromPointsCalibrationRun extends AbstractCalibrationRun {
 		PowderCalibrationInfoImpl info = createPowderCalibrationInfo(currentData, false);
 		
 		info.setPostCalibrationInformation(description, infoSpace, infoSpaceds, output.getResidual());
-		
+		info.setResultDescription(output.getCalibrationOutputDescription());
 		output.setCalibrationInfo(new IPowderCalibrationInfo[]{info});
 		
 		display.syncExec(new Runnable() {

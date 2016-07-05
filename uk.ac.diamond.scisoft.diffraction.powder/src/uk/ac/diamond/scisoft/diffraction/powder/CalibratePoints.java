@@ -62,8 +62,10 @@ public class CalibratePoints {
 		}
 
 		IDiffractionMetadata outMd = paramModel.getMetadata(df.getParameterValues(), md);
+		CalibrationErrorOutput ceo = null;
 
 		if (lma.guessParametersErrors() != null) {
+			ceo = paramModel.getErrorOutput(lma.guessParametersErrors());
 			logger.info("Guess errors: " + Arrays.toString(lma.guessParametersErrors()));
 		}
 		
@@ -73,7 +75,7 @@ public class CalibratePoints {
 									outMd.getDetector2DProperties().getNormalAnglesInDegrees()[0]*-1,
 									outMd.getDetector2DProperties().getNormalAnglesInDegrees()[2]*-1,
 									outMd.getDetector2DProperties().getBeamCentreDistance(),
-									df.residual(true, qd, null, new IDataset[]{yd})/yd.getSize(),lma.guessParametersErrors());
+									df.residual(true, qd, null, new IDataset[]{yd})/yd.getSize(),ceo);
 	}
 	
 	public class DetectorFunction extends AFunction {
