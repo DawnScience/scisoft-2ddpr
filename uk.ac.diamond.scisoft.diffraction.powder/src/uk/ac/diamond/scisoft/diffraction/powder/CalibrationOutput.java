@@ -3,8 +3,8 @@ package uk.ac.diamond.scisoft.diffraction.powder;
 import java.text.DecimalFormat;
 
 import org.eclipse.dawnsci.analysis.api.diffraction.IPowderCalibrationInfo;
-import org.eclipse.dawnsci.analysis.dataset.impl.Dataset;
-import org.eclipse.dawnsci.analysis.dataset.impl.DatasetFactory;
+import org.eclipse.january.dataset.Dataset;
+import org.eclipse.january.dataset.DatasetFactory;
 
 public class CalibrationOutput {
 	

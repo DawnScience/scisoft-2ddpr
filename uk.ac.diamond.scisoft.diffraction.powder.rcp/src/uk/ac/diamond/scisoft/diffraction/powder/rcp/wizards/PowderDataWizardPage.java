@@ -1,14 +1,11 @@
 package uk.ac.diamond.scisoft.diffraction.powder.rcp.wizards;
 
-import java.lang.reflect.InvocationTargetException;
-
 import org.dawb.common.ui.widgets.ActionBarWrapper;
-import org.eclipse.dawnsci.analysis.api.dataset.DatasetException;
-import org.eclipse.dawnsci.analysis.dataset.impl.DatasetUtils;
 import org.eclipse.dawnsci.plotting.api.IPlottingSystem;
 import org.eclipse.dawnsci.plotting.api.PlotType;
 import org.eclipse.dawnsci.plotting.api.PlottingFactory;
-import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.january.DatasetException;
+import org.eclipse.january.dataset.DatasetUtils;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.wizard.WizardPage;
@@ -18,10 +15,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 
-import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
-import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.AutoCalibrationRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDelegate;
 
