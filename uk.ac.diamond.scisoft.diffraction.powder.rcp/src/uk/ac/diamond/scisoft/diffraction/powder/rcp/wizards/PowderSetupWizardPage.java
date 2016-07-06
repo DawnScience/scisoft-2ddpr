@@ -57,6 +57,8 @@ public class PowderSetupWizardPage extends WizardPage {
 	
 	protected PowderSetupWizardPage(DiffractionDataManager manager) {
 		super("Powder Calibration Set-Up");
+		setTitle("Powder XRD/SAX Calibration - Set-Up");
+		setDescription("Select the calibration standard, rings to use and whether to perform automatic or manual calibration, click next to run calibration.");
 		this.manager = manager;
 	}
 
@@ -183,6 +185,13 @@ public class PowderSetupWizardPage extends WizardPage {
 		else toolPage.deactivate();
 		
 		super.setVisible(visible);
+	}
+	
+	@Override
+	public void dispose(){
+		super.dispose();
+		toolPage.deactivate();
+		toolPage.dispose();
 	}
 
 }

@@ -31,8 +31,8 @@ public class PowderDataWizardPage extends WizardPage {
 	
 	protected PowderDataWizardPage(DiffractionDataManager manager) {
 		super("Powder Calibration Data");
-		setTitle("Super duper wizard page");
-		setDescription("Wizard page that shows data");
+		setTitle("Powder XRD/SAX Calibration - Data Review");
+		setDescription("Review the images, and distances ready for calibration, click next to continue.");
 		this.manager = manager;
 	}
 

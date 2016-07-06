@@ -16,23 +16,27 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
-import org.dawb.common.ui.selection.SelectionUtils;
 import org.dawb.workbench.ui.Activator;
+import org.dawnsci.plotting.tools.diffraction.DiffractionDefaultMetadata;
 import org.dawnsci.plotting.tools.diffraction.DiffractionUtils;
+import org.dawnsci.plotting.tools.preference.diffraction.DiffractionRingsComposite;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.dawnsci.analysis.api.dataset.IDataset;
 import org.eclipse.dawnsci.analysis.api.dataset.ILazyDataset;
+import org.eclipse.dawnsci.analysis.api.dataset.SliceND;
 import org.eclipse.dawnsci.analysis.api.diffraction.DetectorProperties;
 import org.eclipse.dawnsci.analysis.api.diffraction.DiffractionCrystalEnvironment;
 import org.eclipse.dawnsci.analysis.api.diffraction.IDetectorPropertyListener;
 import org.eclipse.dawnsci.analysis.api.io.IDataHolder;
 import org.eclipse.dawnsci.analysis.api.io.ILoaderService;
 import org.eclipse.dawnsci.analysis.api.metadata.IMetadata;
-import org.eclipse.dawnsci.analysis.api.processing.OperationException;
+import org.eclipse.dawnsci.analysis.dataset.impl.AbstractDataset;
 import org.eclipse.dawnsci.analysis.dataset.impl.Dataset;
 import org.eclipse.dawnsci.analysis.dataset.impl.DoubleDataset;
+import org.eclipse.dawnsci.analysis.dataset.slicer.SliceViewIterator;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.widgets.Display;
@@ -45,6 +49,7 @@ import org.osgi.service.event.EventHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import uk.ac.diamond.scisoft.analysis.io.DiffractionMetadata;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.LocalServiceManager;
 
 public class DiffractionDataManager {
@@ -221,15 +226,17 @@ public class DiffractionDataManager {
 				}
 			}
 			
-			final String[] outName = new String[1];
+			final String[] outName = new String[2];
 			
 			if (image == null &&  fullName == null) {
 				try {
 					IMetadata metaData = LocalServiceManager.getLoaderService().getMetadata(path, null);
-					Map<String, int[]> dataShapes = metaData.getDataShapes();
+					final Map<String, int[]> dataShapes = metaData.getDataShapes();
 					final List<String> dataNames = new ArrayList<String>();
 					for (String name : dataShapes.keySet()) {
-						if (dataShapes.get(name).length > 1) {
+						int[] shape = dataShapes.get(name);
+						int[] ss = AbstractDataset.squeezeShape(shape, false);
+						if (ss.length >= 2) {
 							dataNames.add(name);
 						}
 					}
@@ -247,6 +254,39 @@ public class DiffractionDataManager {
 							if (dia.open() == ListDialog.OK) {
 								outName[0] = dia.getResult()[0].toString();
 							}
+							
+							int[] shape = dataShapes.get(outName[0]);
+							
+							int[] ss = AbstractDataset.squeezeShape(shape,false);
+							
+							if (ss.length != 2) {
+								if (ss.length == 3) {
+									int size = ss[0];
+									final List<String> dataNames = new ArrayList<String>();
+									for (String name : dataShapes.keySet()) {
+										shape = dataShapes.get(name);
+										ss = AbstractDataset.squeezeShape(shape, false);
+										if (shape.length == 1 && shape[0] == size) {
+											dataNames.add(name);
+										}
+									}
+									
+									dia = new ListDialog(Display.getDefault().getActiveShell());
+									dia.setTitle("Multiple Frame Dataset!");
+									dia.setMessage("Select Detector Distance Data:");
+									dia.setContentProvider(new ArrayContentProvider());
+									dia.setLabelProvider(new LabelProvider());
+									dia.setInput(dataNames);
+									if (dia.open() == ListDialog.OK) {
+										outName[1] = dia.getResult()[0].toString();
+									}
+									
+								} else {
+									return;
+								}
+							}
+							
+							
 						}
 					});
 					
@@ -255,29 +295,125 @@ public class DiffractionDataManager {
 				}
 			}
 			
-			if (outName[0] != null) image = SelectionUtils.loadData(path, outName[0]);
+//			if (outName[0] != null) image = SelectionUtils.loadData(path, outName[0]);
 			
-			if (image == null){
-				model.remove(data);
-				fireDiffractionDataListeners(null);
-				return Status.CANCEL_STATUS;
-			}
+			return setUpImage(path, outName, data) ? Status.OK_STATUS : Status.CANCEL_STATUS;
 			
-			int j = path.lastIndexOf(File.separator);
-			String fileName = j > 0 ? path.substring(j + 1) : null;
-			image.setName(fileName + ":" + image.getName());
-			data.setImage(image);
-			String[] statusString = new String[1];
-			data.setMetaData(DiffractionUtils.getDiffractionMetadata(image, path, service, statusString));
-			data.getImage().setMetadata(data.getMetaData());
-			
-			fireDiffractionDataListeners(new DiffractionDataChanged(data));
-
-			return Status.OK_STATUS;
-		}
+//			if (image == null){
+//				model.remove(data);
+//				fireDiffractionDataListeners(null);
+//				return Status.CANCEL_STATUS;
+//			}
+//			
+//			int j = path.lastIndexOf(File.separator);
+//			String fileName = j > 0 ? path.substring(j + 1) : null;
+//			image.setName(fileName + ":" + image.getName());
+//			data.setImage(image);
+//			String[] statusString = new String[1];
+//			data.setMetaData(DiffractionUtils.getDiffractionMetadata(image, path, service, statusString));
+//			data.getImage().setMetadata(data.getMetaData());
+//			
+//			fireDiffractionDataListeners(new DiffractionDataChanged(data));
+//
+//			return Status.OK_STATUS;
+//		}
 
 	}
+	}
+	
+	private boolean setUpImage(String path, String[] datasetNames, DiffractionTableData data){
+		if (datasetNames == null) return false;
+		
+		if (datasetNames[1] == null) {
+			return setUpImage(path,datasetNames[0],data);
+		}
+		
+		ILazyDataset ld = null;
+		IDataset dist = null;
+		try {
+			ld = LocalServiceManager.getLoaderService().getData(path, null).getLazyDataset(datasetNames[0]);
+			dist = LocalServiceManager.getLoaderService().getData(path, null).getLazyDataset(datasetNames[1]).getSlice();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		if (ld == null) return false;
+		
+		ld = ld.getSliceView();
+		ld.squeezeEnds();
+		
+		SliceViewIterator it = new SliceViewIterator(ld, null, new int[]{1,2});
+		
+		int j = path.lastIndexOf(File.separator);
+		String fileName = j > 0 ? path.substring(j + 1) : null;
+		it.hasNext();
+		IDataset next = it.next().getSlice().squeeze();
+		
+		int count = 0;
+		
+		next.setName(fileName + ":" + next.getName());
+		data.setImage(next);
+		data.setName(fileName + ": " + count);
+		data.setMetaData(DiffractionDefaultMetadata.getDiffractionMetadata(next.getShape()));
+		data.getImage().setMetadata(data.getMetaData());
+		data.setDistance(dist.getDouble(count++));
+		
+		while (it.hasNext()) {
+			ILazyDataset n = it.next().getSlice().squeeze();
+			n.setName(fileName + ":" + n.getName() + count);
+			DiffractionTableData d = new DiffractionTableData();
+			d.setImage(n);
+			d.setName(fileName + ": " + count);
+			d.setMetaData(DiffractionDefaultMetadata.getDiffractionMetadata(n.getShape()));
+			d.getImage().setMetadata(d.getMetaData());
+			d.setDistance(dist.getDouble(count++));
+			model.add(d);
+		}
+		
+		fireDiffractionDataListeners(new DiffractionDataChanged(data));
 
+		return true;
+	}
+
+	private boolean setUpImage(String path, String datasetName, DiffractionTableData data){
+			
+		ILazyDataset ld = null;
+		try {
+			if (datasetName != null) {
+				ld = LocalServiceManager.getLoaderService().getData(path, null).getLazyDataset(datasetName);
+			} else {
+				ld = LocalServiceManager.getLoaderService().getData(path, null).getLazyDataset(0);
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		if (ld == null) return false;
+		
+		ld = ld.getSliceView();
+		ld.squeezeEnds();
+		
+		
+//		if (image == null){
+//			model.remove(data);
+//			fireDiffractionDataListeners(null);
+//			return Status.CANCEL_STATUS;
+//		}
+		
+		int j = path.lastIndexOf(File.separator);
+		String fileName = j > 0 ? path.substring(j + 1) : null;
+		ld.setName(fileName + ":" + ld.getName());
+		data.setImage(ld.getSlice());
+		String[] statusString = new String[1];
+		data.setMetaData(DiffractionUtils.getDiffractionMetadata(ld, path, service, statusString));
+		data.getImage().setMetadata(data.getMetaData());
+		
+		fireDiffractionDataListeners(new DiffractionDataChanged(data));
+
+		return true;
+	}
 
 	public void dispose() {
 		if (model!=null) model.clear(); // Helps garbage collector.

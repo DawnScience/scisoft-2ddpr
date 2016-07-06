@@ -18,7 +18,6 @@ public class PowderCalibrationWizard extends Wizard {
 	}
 	
 	private void setUpPages(){
-
 		addPage(new PowderDataWizardPage(manager));
 		addPage(new PowderSetupWizardPage(manager));
 		addPage(new PowderResultWizardPage(manager));
