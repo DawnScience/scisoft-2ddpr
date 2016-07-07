@@ -14,24 +14,12 @@ Require-Bundle: org.eclipse.ui,
  org.dawnsci.common.widgets;bundle-version="1.2.0",
  org.dawnsci.plotting.tools;bundle-version="1.2.0",
  uk.ac.diamond.org.jscience4,
- org.dawb.common.services;bundle-version="1.2.0",
- org.eclipse.dawnsci.analysis.api;bundle-version="1.0.0",
  uk.ac.diamond.scisoft.diffraction.powder;bundle-version="1.0.0",
- org.eclipse.ui.navigator.resources;bundle-version="3.4.400",
- uk.ac.diamond.sda.navigator;bundle-version="1.3.0",
- org.dawb.common.util;bundle-version="1.2.0",
- org.dawnsci.intro;bundle-version="1.2.0"
+ uk.ac.diamond.sda.navigator;bundle-version="1.3.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
-Import-Package: javax.measure.quantity;version="4.3.1",
- javax.vecmath,
- org.eclipse.core.resources,
+Import-Package: org.eclipse.core.resources,
  org.eclipse.draw2d,
- org.eclipse.nebula.widgets.formattedtext,
- org.eclipse.ui.actions,
- org.eclipse.ui.ide,
- org.eclipse.ui.intro.config,
  org.eclipse.ui.navigator,
  org.eclipse.ui.part,
- org.mihalis.opal.checkBoxGroup;version="0.9.5.2",
  org.slf4j;version="[1.7.2,2.0.0)"
