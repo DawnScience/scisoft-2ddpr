@@ -4,7 +4,7 @@
    <extension
          point="org.eclipse.ui.views">
       <view
-            class="uk.ac.diamond.scisoft.analysis.rcp.views.PlotView"
+            class="org.eclipse.dawnsci.plotting.api.VanillaPlottingSystemView"
             id="uk.ac.diamond.scisoft.diffraction.powder.rcp.calibrationplot"
             name="Calibration Plot"
             restorable="true">
