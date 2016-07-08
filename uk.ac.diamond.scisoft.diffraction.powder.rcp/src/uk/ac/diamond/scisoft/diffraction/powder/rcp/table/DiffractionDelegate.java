@@ -8,8 +8,6 @@
  */
 package uk.ac.diamond.scisoft.diffraction.powder.rcp.table;
 
-import java.util.List;
-
 import org.dawb.common.ui.selection.SelectedTreeItemInfo;
 import org.dawb.common.ui.selection.SelectionUtils;
 import org.dawb.workbench.ui.Activator;

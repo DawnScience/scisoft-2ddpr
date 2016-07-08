@@ -398,6 +398,8 @@ public class DiffractionDataManager {
 		
 		if (ld == null) return false;
 		
+		IDataset d = ld.getSlice().squeeze();
+		
 //		if (image == null){
 //			model.remove(data);
 //			fireDiffractionDataListeners(null);
@@ -407,10 +409,9 @@ public class DiffractionDataManager {
 		int j = path.lastIndexOf(File.separator);
 		String fileName = j > 0 ? path.substring(j + 1) : null;
 		String[] statusString = new String[1];
-		IDiffractionMetadata md = DiffractionUtils.getDiffractionMetadata(ld, path, service, statusString);
+		IDiffractionMetadata md = DiffractionUtils.getDiffractionMetadata(d, path, service, statusString);
 		
 		ld.setName(fileName + ":" + ld.getName());
-		IDataset d = ld.getSlice();
 		d.setMetadata(md);
 		ld.setMetadata(md);
 		data.setImage(d);

@@ -48,7 +48,6 @@ public class PowderCalibrationSetupWidget {
 	
 	
 	public void createControl(final Composite left) {
-		CalibrationFactory.addCalibrantSelectionListener(augmenter);
 		final CalibrantSelectionGroup group = new CalibrantSelectionGroup(left);
 		
 		group.addDisplaySelectionListener(new SelectionAdapter() {
@@ -169,7 +168,11 @@ public class PowderCalibrationSetupWidget {
 	
 	private void showCalibrantAndBeamCentre(boolean show) {
 		if (augmenter == null) return;
-		if (show && !augmenter.isActive()) {
+		if (manager.isEmpty()) {
+			augmenter.deactivate(false);
+			return;
+		}
+		if (show) {
 			augmenter.activate();
 			augmenter.drawBeamCentre(true);
 			CalibrationStandards standards = CalibrationFactory.getCalibrationStandards();
