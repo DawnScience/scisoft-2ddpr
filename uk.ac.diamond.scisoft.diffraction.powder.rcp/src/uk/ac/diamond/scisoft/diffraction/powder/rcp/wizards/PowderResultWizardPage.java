@@ -60,31 +60,6 @@ public class PowderResultWizardPage extends WizardPage {
 		setTitle("Powder XRD/SAX Calibration - Results");
 		setDescription("Review calibration results, export to NeXus file.");
 		this.manager = manager;
-//		manager = new DiffractionDataManager();
-//		
-//		
-//		
-//		String path = "/dls/science/groups/das/ExampleData/i15/I15_Detector_Calibration/PE_Data/29p2keV/CeO2_29p2keV_d359-00016.tif";
-//		String dataset = "image-01";
-//		
-//		manager.loadData(path, dataset);
-//		DiffractionTableData currentData = manager.getCurrentData();
-//		manager.toString();
-		
-//		try {
-//			ILazyDataset image = LoaderFactory.getData(path).getLazyDataset(dataset);
-//			
-//			manager.setImage(image);
-//			
-//			IDiffractionMetadata md = DiffractionDefaultMetadata.getDiffractionMetadata(image.getShape());
-//			image.setMetadata(md);
-//			data.setMetaData(md);
-//			data.setName("CeO2_29p2keV_d359-00016.tif");
-//			
-//		} catch (Exception e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
 		
 	}
 
@@ -119,7 +94,6 @@ public class PowderResultWizardPage extends WizardPage {
 			augmenter = new DiffractionImageAugmenter(system);
 			augmenter.setDiffractionMetadata(manager.getCurrentData().getMetaData());
 			augmenter.activate();
-			augmenter.drawBeamCentre(true);
 			CalibrationStandards standards = CalibrationFactory.getCalibrationStandards();
 			augmenter.drawCalibrantRings(true, standards.getCalibrant());
 			
@@ -142,8 +116,11 @@ public class PowderResultWizardPage extends WizardPage {
 			e.printStackTrace();
 		}
 		
-		DiffractionDelegate diffractionTableViewer = new DiffractionDelegate(left, manager);
-		diffractionTableViewer.updateTableColumnsAndLayout(0);
+		if (manager.getSize() > 1){
+			DiffractionDelegate diffractionTableViewer = new DiffractionDelegate(left, manager);
+			diffractionTableViewer.updateTableColumnsAndLayout(0);
+		}
+		
 		resultText = new StyledText(left, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.READ_ONLY |SWT.V_SCROLL);
 		resultText.setAlwaysShowScrollBars(false);
 		resultText.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -193,8 +170,17 @@ public class PowderResultWizardPage extends WizardPage {
 	
 	@Override
 	public void setVisible(boolean visible) {
-		if (visible) toolPage.activate();
-		else toolPage.deactivate();
+		if (visible) {
+			
+			toolPage.activate();
+			augmenter.activate();
+			augmenter.drawBeamCentre(false);
+			
+		}
+		else {
+			toolPage.deactivate();
+			augmenter.deactivate(false);
+		}
 		
 		
 //		if (!visible) {

@@ -11,17 +11,23 @@ import uk.ac.diamond.scisoft.analysis.io.DiffractionMetadata;
 
 public class SimpleCalibrationParameterModel {
 	
-	boolean floatEnergy = true;
-	boolean floatDistance = true;
-	boolean floatBeamCentre = true;
-	boolean floatTilt = true;
-	boolean useRingSet = false;
-	boolean finalGlobalOptimisation = false;
-	boolean isEllipseCalibration = false;
-
-	int nRings;
-	Set<Integer> ringSet;
+	public static final int CENTRE_MASK_RADIUS = 50;
+	public static final int MINIMUM_SPACING =  10;
+	public static final int NUMBER_OF_POINTS =  256;
 	
+	private boolean floatEnergy = true;
+	private boolean floatDistance = true;
+	private boolean floatBeamCentre = true;
+	private boolean floatTilt = true;
+	private boolean isPointCalibration = false;
+	private boolean isAutomaticCalibration = false;
+	
+	private int nPointsPerRing = NUMBER_OF_POINTS;
+	private int minimumSpacing = MINIMUM_SPACING;
+	private int nIgnoreCentre = CENTRE_MASK_RADIUS;
+	
+	private int nRings;
+	private Set<Integer> ringSet;
 	
 	public SimpleCalibrationParameterModel() {}
 
@@ -30,13 +36,20 @@ public class SimpleCalibrationParameterModel {
 		this.floatDistance = toCopy.floatDistance;
 		this.floatBeamCentre = toCopy.floatBeamCentre;
 		this.floatTilt = toCopy.floatTilt;
-		this.useRingSet = toCopy.useRingSet;
-		this.finalGlobalOptimisation = toCopy.finalGlobalOptimisation;
-		this.isEllipseCalibration = toCopy.isEllipseCalibration;
+		this.isPointCalibration = toCopy.isPointCalibration;
+		this.isAutomaticCalibration = toCopy.isAutomaticCalibration;
 		this.nRings = toCopy.nRings;
 		this.ringSet = ringSet == null ? null : new TreeSet<Integer>(ringSet);
 	}
 	
+	public boolean isAutomaticCalibration() {
+		return isAutomaticCalibration;
+	}
+
+	public void setAutomaticCalibration(boolean isAutomaticCalibration) {
+		this.isAutomaticCalibration = isAutomaticCalibration;
+	}
+
 	public boolean isFloatDistance() {
 		return floatDistance;
 	}
@@ -70,19 +83,15 @@ public class SimpleCalibrationParameterModel {
 	}
 	
 	public boolean isUseRingSet() {
-		return useRingSet;
+		return !(ringSet == null || ringSet.isEmpty());
 	}
 	
-	public void setUseRingSet(boolean useRingSet) {
-		this.useRingSet = useRingSet;
-	}
-	
-	public boolean isFinalGlobalOptimisation() {
-		return finalGlobalOptimisation;
+	public boolean isPointCalibration() {
+		return isPointCalibration;
 	}
 
-	public void setFinalGlobalOptimisation(boolean optimise) {
-		finalGlobalOptimisation = optimise;
+	public void setIsPointCalibration(boolean optimise) {
+		isPointCalibration = optimise;
 	}
 	
 	public IDiffractionMetadata getMetadata(double[] params, IDiffractionMetadata md) {
@@ -222,26 +231,24 @@ public class SimpleCalibrationParameterModel {
 	}
 	
 	public boolean isEllipseCalibration() {
-		return isEllipseCalibration;
-	}
-
-	public void setEllipseCalibration(boolean isEllipseCalibration) {
-		this.isEllipseCalibration = isEllipseCalibration;
+		return !isPointCalibration;
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + (finalGlobalOptimisation ? 1231 : 1237);
+		result = prime * result + (isPointCalibration ? 1231 : 1237);
 		result = prime * result + (floatBeamCentre ? 1231 : 1237);
 		result = prime * result + (floatDistance ? 1231 : 1237);
 		result = prime * result + (floatEnergy ? 1231 : 1237);
 		result = prime * result + (floatTilt ? 1231 : 1237);
-		result = prime * result + (isEllipseCalibration ? 1231 : 1237);
+		result = prime * result + (isAutomaticCalibration ? 1231 : 1237);
+		result = prime * result + minimumSpacing;
+		result = prime * result + nIgnoreCentre;
+		result = prime * result + nPointsPerRing;
 		result = prime * result + nRings;
 		result = prime * result + ((ringSet == null) ? 0 : ringSet.hashCode());
-		result = prime * result + (useRingSet ? 1231 : 1237);
 		return result;
 	}
 
@@ -254,7 +261,7 @@ public class SimpleCalibrationParameterModel {
 		if (getClass() != obj.getClass())
 			return false;
 		SimpleCalibrationParameterModel other = (SimpleCalibrationParameterModel) obj;
-		if (finalGlobalOptimisation != other.finalGlobalOptimisation)
+		if (isPointCalibration != other.isPointCalibration)
 			return false;
 		if (floatBeamCentre != other.floatBeamCentre)
 			return false;
@@ -264,7 +271,13 @@ public class SimpleCalibrationParameterModel {
 			return false;
 		if (floatTilt != other.floatTilt)
 			return false;
-		if (isEllipseCalibration != other.isEllipseCalibration)
+		if (isAutomaticCalibration != other.isAutomaticCalibration)
+			return false;
+		if (minimumSpacing != other.minimumSpacing)
+			return false;
+		if (nIgnoreCentre != other.nIgnoreCentre)
+			return false;
+		if (nPointsPerRing != other.nPointsPerRing)
 			return false;
 		if (nRings != other.nRings)
 			return false;
@@ -273,8 +286,8 @@ public class SimpleCalibrationParameterModel {
 				return false;
 		} else if (!ringSet.equals(other.ringSet))
 			return false;
-		if (useRingSet != other.useRingSet)
-			return false;
 		return true;
 	}
+
+	
 }

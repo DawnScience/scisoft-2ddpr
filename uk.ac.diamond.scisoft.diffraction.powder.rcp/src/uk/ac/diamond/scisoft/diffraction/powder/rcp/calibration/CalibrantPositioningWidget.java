@@ -15,6 +15,7 @@ import org.dawb.workbench.ui.Activator;
 import org.dawb.workbench.ui.views.RepeatingMouseAdapter;
 import org.dawb.workbench.ui.views.SlowFastRunnable;
 import org.eclipse.dawnsci.analysis.api.diffraction.DetectorProperties;
+import org.eclipse.dawnsci.analysis.api.metadata.IDiffractionMetadata;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -41,11 +42,8 @@ import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.IRefreshable;
  */
 public class CalibrantPositioningWidget {
 
-	private DiffractionDataManager manager;
 	private Control[] controls;
-	private DiffractionTableData currentData;
-	private IRefreshable tableViewer;
-	private IRunnableWithProgress ringFinder;
+	private IDiffractionMetadata metadata;
 
 	/**
 	 * Creates a widget group with all the calibrant positioning widgets
@@ -55,9 +53,8 @@ public class CalibrantPositioningWidget {
 	 * @param model
 	 *         List of all diffraction data present in the TableViewer (used to update beam centre)
 	 */
-	public CalibrantPositioningWidget(Composite parent, final DiffractionDataManager manager) {
-		
-		this.manager = manager;
+	public CalibrantPositioningWidget(Composite parent, IDiffractionMetadata diffractionMetadata) {
+		this.metadata = diffractionMetadata;
 		final Display display = Display.getDefault();
 
 		Composite controllerHolder = new Composite(parent, SWT.FILL);
@@ -79,13 +76,11 @@ public class CalibrantPositioningWidget {
 				new SlowFastRunnable() {
 					@Override
 					public void run() {
-						DiffractionCalibrationUtils.changeRings(currentData, ManipulateMode.UP, isFast());
+						DiffractionCalibrationUtils.changeRings(metadata, ManipulateMode.UP, isFast());
 					}
 
 					@Override
 					public void stop() {
-						if (tableViewer != null)
-							tableViewer.refresh();
 					}
 				}));
 		upButton.setLayoutData(new GridData(SWT.CENTER, SWT.BOTTOM, false, false));
@@ -99,13 +94,11 @@ public class CalibrantPositioningWidget {
 				new SlowFastRunnable() {
 					@Override
 					public void run() {
-						DiffractionCalibrationUtils.changeRings(currentData, ManipulateMode.LEFT, isFast());
+						DiffractionCalibrationUtils.changeRings(metadata, ManipulateMode.LEFT, isFast());
 					}
 
 					@Override
 					public void stop() {
-						if (tableViewer != null)
-							tableViewer.refresh();
 					}
 				}));
 		leftButton.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
@@ -119,13 +112,11 @@ public class CalibrantPositioningWidget {
 				new SlowFastRunnable() {
 					@Override
 					public void run() {
-						DiffractionCalibrationUtils.changeRings(currentData, ManipulateMode.RIGHT, isFast());
+						DiffractionCalibrationUtils.changeRings(metadata, ManipulateMode.RIGHT, isFast());
 					}
 
 					@Override
 					public void stop() {
-						if (tableViewer != null)
-							tableViewer.refresh();
 					}
 				}));
 		rightButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
@@ -139,13 +130,11 @@ public class CalibrantPositioningWidget {
 				new SlowFastRunnable() {
 					@Override
 					public void run() {
-						DiffractionCalibrationUtils.changeRings(currentData, ManipulateMode.DOWN, isFast());
+						DiffractionCalibrationUtils.changeRings(metadata, ManipulateMode.DOWN, isFast());
 					}
 
 					@Override
 					public void stop() {
-						if (tableViewer != null)
-							tableViewer.refresh();
 					}
 				}));
 		downButton.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, false, false));
@@ -170,13 +159,11 @@ public class CalibrantPositioningWidget {
 				new SlowFastRunnable() {
 					@Override
 					public void run() {
-						DiffractionCalibrationUtils.changeRings(currentData, ManipulateMode.ENLARGE, isFast());
+						DiffractionCalibrationUtils.changeRings(metadata, ManipulateMode.ENLARGE, isFast());
 					}
 
 					@Override
 					public void stop() {
-						if (tableViewer != null)
-							tableViewer.refresh();
 					}
 				}));
 		plusButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true));
@@ -187,13 +174,11 @@ public class CalibrantPositioningWidget {
 				new SlowFastRunnable() {
 					@Override
 					public void run() {
-						DiffractionCalibrationUtils.changeRings(currentData, ManipulateMode.SHRINK, isFast());
+						DiffractionCalibrationUtils.changeRings(metadata, ManipulateMode.SHRINK, isFast());
 					}
 
 					@Override
 					public void stop() {
-						if (tableViewer != null)
-							tableViewer.refresh();
 					}
 				}));
 		minusButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true));
@@ -211,13 +196,11 @@ public class CalibrantPositioningWidget {
 				new SlowFastRunnable() {
 					@Override
 					public void run() {
-						DiffractionCalibrationUtils.changeRings(currentData, ManipulateMode.ELONGATE, isFast());
+						DiffractionCalibrationUtils.changeRings(metadata, ManipulateMode.ELONGATE, isFast());
 					}
 
 					@Override
 					public void stop() {
-						if (tableViewer != null)
-							tableViewer.refresh();
 					}
 				}));
 		elongateButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true));
@@ -228,13 +211,11 @@ public class CalibrantPositioningWidget {
 				new SlowFastRunnable() {
 					@Override
 					public void run() {
-						DiffractionCalibrationUtils.changeRings(currentData, ManipulateMode.SQUASH, isFast());
+						DiffractionCalibrationUtils.changeRings(metadata, ManipulateMode.SQUASH, isFast());
 					}
 
 					@Override
 					public void stop() {
-						if (tableViewer != null)
-							tableViewer.refresh();
 					}
 				}));
 		squashButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true));
@@ -252,13 +233,11 @@ public class CalibrantPositioningWidget {
 				new SlowFastRunnable() {
 					@Override
 					public void run() {
-						DiffractionCalibrationUtils.changeRings(currentData, ManipulateMode.CLOCKWISE, isFast());
+						DiffractionCalibrationUtils.changeRings(metadata, ManipulateMode.CLOCKWISE, isFast());
 					}
 
 					@Override
 					public void stop() {
-						if (tableViewer != null)
-							tableViewer.refresh();
 					}
 				}));
 		clockButton.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false));
@@ -269,80 +248,26 @@ public class CalibrantPositioningWidget {
 				new SlowFastRunnable() {
 					@Override
 					public void run() {
-						DiffractionCalibrationUtils.changeRings(currentData, ManipulateMode.ANTICLOCKWISE, isFast());
+						DiffractionCalibrationUtils.changeRings(metadata, ManipulateMode.ANTICLOCKWISE, isFast());
 					}
 
 					@Override
 					public void stop() {
-						if (tableViewer != null)
-							tableViewer.refresh();
 					}
 				}));
+		
 		antiClockButton.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false));
-
-		Button setBeamCentreButton = new Button(controllerHolder, SWT.PUSH);
-		setBeamCentreButton.setText("Apply beam centre");
-		setBeamCentreButton.setToolTipText("Apply current beam centre to all the images");
-		setBeamCentreButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
-		setBeamCentreButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				if (currentData == null) return;
-				DetectorProperties properties = currentData.getMetaData().getDetector2DProperties();
-				double[] coords = properties.getBeamCentreCoords();
-				if (manager.isValidModel())	return;
-				for (DiffractionTableData dd : manager.iterable()) {
-					dd.getMetaData().getDetector2DProperties().setBeamCentreCoords(coords);
-				}
-			}
-		});
-
-		Button findRingButton = new Button(controllerHolder, SWT.PUSH);
-		findRingButton.setText("Match rings to image");
-		findRingButton.setToolTipText("Use pixel values to find rings in image near calibration rings");
-		findRingButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
-		findRingButton.addSelectionListener(new SelectionAdapter() {
-
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				if (CalibrantPositioningWidget.this.ringFinder != null) {
-					
-					ProgressMonitorDialog dia = new ProgressMonitorDialog(Display.getCurrent().getActiveShell());
-					try {
-						dia.run(true, true, CalibrantPositioningWidget.this.ringFinder);
-					} catch (InvocationTargetException e1) {
-						// TODO Auto-generated catch block
-						MessageDialog.openError(Display.getCurrent().getActiveShell(), "Calibration Error", "An error occured during ring finding, please contact your support representative: "+ e1.getTargetException().getLocalizedMessage());
-					} catch (InterruptedException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-					updateAfterRingFinding();
-				}
-			}
-		});
 	}
 
 	/**
 	 * Update the diffraction data
 	 * @param data
 	 */
-	public void setDiffractionData(DiffractionTableData data) {
-		this.currentData = data;
+	public void setDiffractionMeataData(IDiffractionMetadata metadata) {
+		this.metadata = metadata;
 	}
 
-	private void setCalibrateButtons() {
 
-			// enable calibrate button if all images have rings
-			for (DiffractionTableData d : manager.iterable()) {
-				if (d.getNrois() <= 0) {
-					setCalibrateOptionsEnabled(false);
-					return;
-				}
-			}
-			setCalibrateOptionsEnabled(true);
-		
-	}
 
 	private void setCalibrateOptionsEnabled(boolean b) {
 		if (controls == null)
@@ -359,25 +284,5 @@ public class CalibrantPositioningWidget {
 	 */
 	public void setControlsToUpdate(Control... controls) {
 		this.controls = controls;
-	}
-
-	/**
-	 * Set the Table viewer to update (refresh)
-	 * @param tableViewer
-	 */
-	public void setRefreshable (IRefreshable tableViewer) {
-		this.tableViewer = tableViewer;
-	}
-	
-	public void setRingFinder(IRunnableWithProgress ringFinder) {
-		this.ringFinder = ringFinder;
-	}
-	
-	private void updateAfterRingFinding(){
-		if (currentData != null && currentData.getNrois() > 0) {
-			setCalibrateButtons();
-		}
-		if (tableViewer != null)
-			tableViewer.refresh();
 	}
 }

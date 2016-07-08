@@ -54,12 +54,9 @@ public class DiffractionDelegate implements IRefreshable {
 
 	private TableViewer viewer;
 	
-	private Action deleteAction;
-	//private List<DiffractionTableData> model = new ArrayList<DiffractionTableData>();
 	private DiffractionDataManager manager;
 	private Composite parent;
 	private IDetectorPropertyListener detectorPropertyListener;
-	private DropTargetAdapter dropListener;
 	private Table table;
 	private int tabIndex = 0;
 
@@ -96,6 +93,10 @@ public class DiffractionDelegate implements IRefreshable {
 	
 		final MenuManager mgr = new MenuManager();
 		mgr.setRemoveAllWhenShown(true);
+		
+		final Action deleteAction = getDeleteAction();
+		final Action clearAction = getClearAllAction();
+		
 		mgr.addMenuListener(new IMenuListener() {
 			@Override
 			public void menuAboutToShow(IMenuManager manager) {
@@ -113,6 +114,7 @@ public class DiffractionDelegate implements IRefreshable {
 						mgr.add(deleteAction);
 					}
 				}
+				mgr.add(clearAction);
 			}
 		});
 		viewer.getControl().setMenu(mgr.createContextMenu(viewer.getControl()));
@@ -122,26 +124,14 @@ public class DiffractionDelegate implements IRefreshable {
 		dt.setTransfer(new Transfer[] { TextTransfer.getInstance(),
 				FileTransfer.getInstance(), ResourceTransfer.getInstance(),
 				LocalSelectionTransfer.getTransfer() });
-		dt.addDropListener(dropListener);
+		dt.addDropListener(getDropListener());
 
 //		Label infoEditableLabel = new Label(parent, SWT.NONE);
 //		infoEditableLabel.setText("* Click to change value");
 	}
 
-	private void initialize(){
-		detectorPropertyListener = new IDetectorPropertyListener() {
-			@Override
-			public void detectorPropertiesChanged(DetectorPropertyEvent evt) {
-				Display.getDefault().asyncExec(new Runnable() {
-					@Override
-					public void run() {
-						viewer.refresh();
-					}
-				});
-			}
-		};
-
-		dropListener = new DropTargetAdapter() {
+	private DropTargetAdapter getDropListener() {
+		return new DropTargetAdapter() {
 			@Override
 			public void drop(DropTargetEvent event) {
 				Object dropData = event.data;
@@ -163,8 +153,10 @@ public class DiffractionDelegate implements IRefreshable {
 				}
 			}
 		};
-
-		deleteAction = new Action("Delete item", Activator.getImageDescriptor("icons/delete_obj.png")) {
+	}
+	
+	private Action getDeleteAction() {
+		return new Action("Remove item", Activator.getImageDescriptor("icons/delete_obj.png")) {
 			@Override
 			public void run() {
 				StructuredSelection selection = (StructuredSelection) viewer.getSelection();
@@ -187,8 +179,30 @@ public class DiffractionDelegate implements IRefreshable {
 			}
 		};
 	}
-
-
+	
+	private Action getClearAllAction() {
+		return new Action("Clear All", Activator.getImageDescriptor("icons/delete_obj.png")) {
+			@Override
+			public void run() {
+				manager.clear();
+				updateTableColumnsAndLayout(tabIndex);
+			}
+		};
+	}
+	
+	private void initialize(){
+		detectorPropertyListener = new IDetectorPropertyListener() {
+			@Override
+			public void detectorPropertiesChanged(DetectorPropertyEvent evt) {
+				Display.getDefault().asyncExec(new Runnable() {
+					@Override
+					public void run() {
+						viewer.refresh();
+					}
+				});
+			}
+		};
+	}
 
 	/**
 	 * Add DetectorPropertyListener for the given DiffractionTableData

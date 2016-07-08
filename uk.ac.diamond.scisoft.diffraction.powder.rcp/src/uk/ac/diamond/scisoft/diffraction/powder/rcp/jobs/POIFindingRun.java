@@ -1,15 +1,19 @@
 package uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.dawb.common.ui.monitor.ProgressMonitorWrapper;
 import org.dawnsci.plotting.tools.diffraction.DiffractionUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.dawnsci.analysis.api.dataset.IDataset;
+import org.eclipse.dawnsci.analysis.api.monitor.IMonitor;
 import org.eclipse.dawnsci.analysis.api.roi.IParametricROI;
 import org.eclipse.dawnsci.analysis.api.roi.IROI;
+import org.eclipse.dawnsci.analysis.dataset.impl.Dataset;
+import org.eclipse.dawnsci.analysis.dataset.impl.DatasetUtils;
 import org.eclipse.dawnsci.analysis.dataset.roi.EllipticalROI;
 import org.eclipse.dawnsci.analysis.dataset.roi.HyperbolicROI;
 import org.eclipse.dawnsci.plotting.api.IPlottingSystem;
@@ -20,6 +24,8 @@ import org.eclipse.swt.widgets.Display;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import uk.ac.diamond.scisoft.diffraction.powder.ICalibrationUIProgressUpdate;
+import uk.ac.diamond.scisoft.diffraction.powder.MultiplePeakFittingEllipseFinder;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.Activator;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.PowderCalibrationUtils;
@@ -31,7 +37,8 @@ public class POIFindingRun implements IRunnableWithProgress {
 
 	IPlottingSystem<?> plottingSystem;
 	DiffractionTableData currentData;
-	RingSelectionGroup param;
+	SimpleCalibrationParameterModel model;
+	ICalibrationUIProgressUpdate uiUpdater;
 	
 	private static final int MAX_SIZE = 50;
 	
@@ -39,12 +46,12 @@ public class POIFindingRun implements IRunnableWithProgress {
 	
 	static String REGION_PREFIX = "Pixel peaks";
 	
-	public POIFindingRun(final IPlottingSystem<?> plottingSystem,
+	public POIFindingRun(ICalibrationUIProgressUpdate uiUpdater,
 			final DiffractionTableData currentData,
-			final RingSelectionGroup param) {
-		this.plottingSystem = plottingSystem;
+			final SimpleCalibrationParameterModel model) {
+		this.uiUpdater =  uiUpdater;
 		this.currentData = currentData;
-		this.param = param;
+		this.model = model;
 	}
 	
 	@Override
@@ -52,26 +59,16 @@ public class POIFindingRun implements IRunnableWithProgress {
 		
 		monitor.beginTask("Finding Points of Interest...", IProgressMonitor.UNKNOWN);
 		
-		SimpleCalibrationParameterModel model = extractModelFromWidget(param);
-		
-		IStatus stat = Status.OK_STATUS;
-		
 		if (currentData == null && currentData.getMetaData() == null)
 			return;
 
 		final List<IROI> resROIs = PowderCalibrationUtils.getResolutionRings(currentData.getMetaData());
-		final IImageTrace image = getImageTrace(plottingSystem);
+		
 		currentData.clearROIs();
 		currentData.setUse(false);
 		currentData.setNrois(0);
 		
-		Display.getDefault().syncExec(new Runnable() {
-			
-			@Override
-			public void run() {
-				PowderCalibrationUtils.clearFoundRings(plottingSystem);
-			}
-		});
+		if (uiUpdater != null) uiUpdater.removeRings();
 		
 		int numberToFit = resROIs.size();
 		
@@ -94,21 +91,19 @@ public class POIFindingRun implements IRunnableWithProgress {
 				
 				if (r instanceof IParametricROI) {
 					try {
-					roi = fitParametricROI(resROIs,(IParametricROI)r, image, i, minSpacing, nPoints, monitor);
+					roi = fitParametricROI(resROIs,(IParametricROI)r, currentData.getImage(), i, minSpacing, nPoints, monitor);
 					} catch (NullPointerException ex) {
-						stat = Status.CANCEL_STATUS;
 						n = -1; // indicate, to finally clause, problem with getting image or other issues
 						return;
 					}
 				}
 				
-				if (roi != null) {
+				if (roi != null && uiUpdater != null) {
 					n++;
-					stat = PowderCalibrationUtils.drawFoundRing(plottingSystem, roi,monitor) ? Status.OK_STATUS : Status.CANCEL_STATUS;
+					uiUpdater.drawFoundRing(roi);
 				}
 
-				if (!stat.isOK())
-					break;
+
 			} catch (IllegalArgumentException ex) {
 				logger.trace("Could not find ellipse with {}: {}", r, ex);
 			} finally {
@@ -125,14 +120,6 @@ public class POIFindingRun implements IRunnableWithProgress {
 		}
 		return;
 	}
-	
-	public void setRingParameters(RingSelectionGroup param) {
-		this.param = param;
-	}
-	
-	public void setCurrentData(DiffractionTableData currentData) {
-		this.currentData = currentData;
-	}
 
 	protected IImageTrace getImageTrace(IPlottingSystem<?> system) {
 		Collection<ITrace> traces = system.getTraces();
@@ -145,13 +132,13 @@ public class POIFindingRun implements IRunnableWithProgress {
 		return null;
 	}
 	
-	private IROI fitParametricROI(List<IROI> resROIs, IParametricROI r, IImageTrace image, int i, int minSpacing, int nPoints, IProgressMonitor monitor) {
+	private IROI fitParametricROI(List<IROI> resROIs, IParametricROI r, IDataset image, int i, int minSpacing, int nPoints, IProgressMonitor monitor) {
 		
 		IParametricROI[] inOut = getInnerAndOuterRangeROIs(resROIs, r,i,minSpacing);
 		
 		if (inOut == null) return null;
 		
-		return DiffractionUtils.runConicPeakFit(monitor, Display.getDefault(), plottingSystem, image, r,inOut,nPoints);
+		return MultiplePeakFittingEllipseFinder.runConicPeakFit(new ProgressMonitorWrapper(monitor),DatasetUtils.convertToDataset(image), r,inOut,nPoints);
 	}
 	
 	private IParametricROI[] getInnerAndOuterRangeROIs(List<IROI> resROIs, IParametricROI r, int i, int minSpacing) {
@@ -234,20 +221,7 @@ public class POIFindingRun implements IRunnableWithProgress {
 		return inOut;
 	}
 	
-	private SimpleCalibrationParameterModel extractModelFromWidget(final RingSelectionGroup ringSelection) {
-		
-		final SimpleCalibrationParameterModel model = new SimpleCalibrationParameterModel();
-		
-		Display.getDefault().syncExec(new Runnable() {
-			
-			@Override
-			public void run() {
-				model.setUseRingSet(!ringSelection.isUsingRingSpinner());
-				model.setNumberOfRings(ringSelection.getRingSpinnerSelection());
-				model.setRingSet(ringSelection.getRingSelectionText().getUniqueRingNumbers());
-			}
-		});
-		
-		return model;
+	public void updateData(DiffractionTableData data) {
+		this.currentData = data;
 	}
 }

@@ -36,6 +36,7 @@ import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -74,6 +75,7 @@ import uk.ac.diamond.scisoft.diffraction.powder.rcp.PowderCalibrationUtils;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.calibration.CalibrantPositioningWidget;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.calibration.DiffractionCalibrationUtils;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.AutoCalibrationRun;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.CalibrationUIProgressUpdateImpl;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.FromPointsCalibrationRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.FromRingsCalibrationRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.POIFindingRun;
@@ -83,6 +85,8 @@ import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDelegate;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionTableData;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.IDiffractionDataListener;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.CalibrantSelectionGroup;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.IRunner;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.PowderCalibrationSetupWidget;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.RingSelectionGroup;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.wizards.PowderCalibrationWizard;
 
@@ -100,14 +104,9 @@ public class DiffractionCalibrationView extends ViewPart {
 
 	// TODO FIXME - So much member data can lead to bugs
 	private DiffractionDelegate diffractionTableViewer;
-	private Button calibrateImagesButton;
-	private Combo calibrantCombo;
-	private CalibrantPositioningWidget calibrantPositioning;
 	private Label residualLabel;
-	private Button usePointCalibration;
-	private Button optimiseAfter;
-	private POIFindingRun ringFindJob;
 	private DiffractionImageAugmenter augmenter;
+	private PowderCalibrationSetupWidget widget;
 	
 	// Actual data
 	private SimpleCalibrationParameterModel calibrationParameters = new SimpleCalibrationParameterModel();
@@ -116,13 +115,10 @@ public class DiffractionCalibrationView extends ViewPart {
 
 	private IPlottingSystem<Composite> plottingSystem;
 
-	private CalibrantSelectedListener calibrantChangeListener;
 	private IPartListener2 partListener;
 
-	private boolean checked = true;
 	private String calibrantName;
 	private int ringNumberSaved;
-	private RingSelectionGroup ringSelection;
 
 	private String lastPath = null;
 	
@@ -148,16 +144,29 @@ public class DiffractionCalibrationView extends ViewPart {
 	public void saveState(IMemento memento) {
 		if (memento != null) {
 			memento.putString(CALIBRANT, CalibrationFactory.getCalibrationStandards().getSelectedCalibrant());
-			memento.putInteger(RINGS, ringSelection.getRingSpinnerSelection());
+//			memento.putInteger(RINGS, ringSelection.getRingSpinnerSelection());
 		}
 	}
 
 	@Override
 	public void createPartControl(final Composite parent) {
 
-		final ScrolledComposite scrollComposite = new ScrolledComposite(parent, SWT.H_SCROLL | SWT.V_SCROLL);
+//		final ScrolledComposite scrollComposite = new ScrolledComposite(parent, SWT.H_SCROLL | SWT.V_SCROLL);
+		IViewPart plotView = getView(DiffractionPlotView.ID);
+		plottingSystem = (IPlottingSystem<Composite>)plotView.getAdapter(IPlottingSystem.class);
+		if (plottingSystem != null && plottingSystem.isDisposed()) { // if we close the perspective then reopen it
+			plottingSystem = PlottingFactory.getPlottingSystem(DiffractionPlotView.DIFFRACTION_PLOT_TITLE);
+		}
 
-		final Composite content = new Composite(scrollComposite, SWT.NONE);
+		// set the focus on the plotting system to trigger the tools (powder tool)
+		IWorkbenchPart part = plottingSystem.getPart();
+		if (part != null) {
+			part.getSite().getPage().activate(part);
+		}
+		augmenter = new DiffractionImageAugmenter(plottingSystem);
+		
+		
+		final Composite content = new Composite(parent, SWT.NONE);
 		content.setLayout(new GridLayout(1, false));
 		content.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		initializeListeners();
@@ -174,86 +183,37 @@ public class DiffractionCalibrationView extends ViewPart {
 					updateCurrentData(null); // need to reset this
 					plottingSystem.clear();
 					PowderCalibrationUtils.clearFoundRings(plottingSystem);
-					calibrateImagesButton.setEnabled(false);
+//					calibrateImagesButton.setEnabled(false);
 					residualLabel.setText(RESIDUAL);
 					residualLabel.getParent().layout();
 				}
+				widget.update();
+			}
+		});
+
+		
+		IRunner runner = new IRunner() {
+			@Override
+			public void run(IRunnableWithProgress runnable) {
+				ProgressMonitorDialog dia = new ProgressMonitorDialog(Display.getCurrent().getActiveShell());
+				try {
+					dia.run(true, true, runnable);
+				} catch (InvocationTargetException e1) {
+					// TODO Auto-generated catch block
+					MessageDialog.openError(Display.getCurrent().getActiveShell(), "Calibration Error", "An error occured during ring finding, please contact your support representative: "+ e1.getTargetException().getLocalizedMessage());
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 				
-				setSingleImageOptionsEnabled(manager.getSize() < 2);
 			}
-		});
+		};
+		
+		
+		widget = new PowderCalibrationSetupWidget(manager, calibrationParameters, augmenter, plottingSystem, runner);
+		widget.setShowSteering(true);
+		widget.createControl(content);
 
-		// create calibrant combo
-		createCalibrantGroup(content);
-
-		ringSelection = new RingSelectionGroup(content, CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs().size());
-		ringSelection.addRingNumberSpinnerListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				int ringNumber = ringSelection.getRingSpinnerSelection();
-				// Fill the Map with ring number for the selected calibrant
-				calibrantRingsMap.put(calibrantName, ringNumber);
-			}
-		});
-		
-		new Label(content, SWT.NONE);
-		
-		final Group run  = new Group(content, SWT.NONE);
-		run.setText("Run Calibration");
-		run.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		run.setLayout(new GridLayout(1, false));
-		GridUtils.removeMargins(run);
-		
-		final Composite choiceLine = new Composite(run, SWT.NONE);
-		choiceLine.setLayout(new GridLayout(2, false));
-		choiceLine.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		
-        final Button autoRadio = new Button(choiceLine, SWT.RADIO);
-        autoRadio.setText("Automatic");
-        autoRadio.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
-        autoRadio.setSelection(true);
-        
-        final Button manualRadio = new Button(choiceLine, SWT.RADIO);
-        manualRadio.setText("Manual");
-        manualRadio.setLayoutData(new GridData(SWT.LEFT, SWT.FILL, true, false));
-        manualRadio.setSelection(false);
-		
-		final Composite choiceContent = new Composite(run, SWT.NONE);
-		final StackLayout stackLayout = new StackLayout();
-		choiceContent.setLayout(stackLayout);
-		choiceContent.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		
-		final Composite auto   = getAutoControl(choiceContent);
-		stackLayout.topControl = auto; // TODO Remember...
-		final Composite manual = getManualControl(choiceContent);
-
-		scrollComposite.setContent(content);
-		scrollComposite.setExpandVertical(true);
-		scrollComposite.setExpandHorizontal(true);
-		scrollComposite.addControlListener(new ControlAdapter() {
-			@Override
-			public void controlResized(ControlEvent e) {
-				Rectangle r = scrollComposite.getClientArea();
-				int height = content.computeSize(r.width, SWT.DEFAULT).y;
-				scrollComposite.setMinHeight(height);
-				scrollComposite.setMinWidth(content.computeSize(SWT.DEFAULT, r.height).x);
-			}
-		});
-
-        autoRadio.addSelectionListener(new SelectionAdapter() {
-        	public void widgetSelected(SelectionEvent e) {
-        		autoRadio.setSelection(true);
-                manualRadio.setSelection(false);
-                setCalibrationChoice(auto, 0, stackLayout);
-        	}
-		});
-        manualRadio.addSelectionListener(new SelectionAdapter() {
-        	public void widgetSelected(SelectionEvent e) {
-                autoRadio.setSelection(false);
-                manualRadio.setSelection(true);
-                setCalibrationChoice(manual, 1, stackLayout);
-        	}
-		});
 		manager.addFileListener(new IDiffractionDataListener() {
 			
 			@Override
@@ -271,27 +231,47 @@ public class DiffractionCalibrationView extends ViewPart {
 				});
 			}
 		});
-		
-		final Link settings = new Link(content, SWT.RIGHT);
-		settings.setText("<a>Calibration Settings</a>");
-		settings.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false));
-		settings.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e) {
-				DiffractionCalibrationSettings dialog = new DiffractionCalibrationSettings(settings.getShell(),
-																							calibrationParameters, 
-						                                                                   usePointCalibration.getSelection());
-				dialog.open();
-			}
-		});
+
 		
 		residualLabel = new Label(content, SWT.NONE);
 		residualLabel.setText(RESIDUAL);
 		residualLabel.setLayoutData(new GridData());
+		
+		Button goBabyGoButton = new Button(content, SWT.PUSH);
+		goBabyGoButton.setImage(Activator.getImage("icons/CalibrationRun.png"));
+		goBabyGoButton.setText("Run Calibration");
+		goBabyGoButton.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, true, true));
+		goBabyGoButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				if (manager.isEmpty()) {
+					MessageDialog.openInformation(Display.getCurrent().getActiveShell(), "Load Data", "Please load some data!");
+				}
+//				setUpCalbrationModel(calibrationParameters);
 
-		CalibrationFactory.addCalibrantSelectionListener(calibrantChangeListener);
+				ProgressMonitorDialog dia = new ProgressMonitorDialog(Display.getCurrent().getActiveShell());
+				
+				IRunnableWithProgress job = DiffractionCalibrationUtils.getCalibrationRunnable(calibrationParameters, manager, plottingSystem);
+				
+				try {
+					dia.run(true, true, job);
+				} catch (InvocationTargetException e1) {
+					logger.error(e1.getMessage());
+					MessageDialog.openError(Display.getCurrent().getActiveShell(), "Calibration Error", "An error occured during auto calibration!" + System.lineSeparator() +
+							"Check the correct calibrant is selected, try changing the number of rings or use manual calibration." + System.lineSeparator()
+							 + "Specific error :" + e1.getTargetException().getMessage());
+					
+				} catch (InterruptedException e1) {
+					logger.error("Error running Job:" + e1.getMessage());
+				}
+				
+				updateAfterCalibration();
+				
+			}
+		});
 
-		calibrantPositioning.setControlsToUpdate(calibrateImagesButton);
-		calibrantPositioning.setRefreshable(diffractionTableViewer);
+//		calibrantPositioning.setControlsToUpdate(calibrateImagesButton);
+//		calibrantPositioning.setRefreshable(diffractionTableViewer);
 
 		//initialize the calibrant ring Map
 		calibrantRingsMap.put(calibrantName, ringNumberSaved);
@@ -330,42 +310,14 @@ public class DiffractionCalibrationView extends ViewPart {
 	 */
 	private void initializeSystems() {
 
-		IViewPart plotView = getView(DiffractionPlotView.ID);
-		plottingSystem = (IPlottingSystem<Composite>)plotView.getAdapter(IPlottingSystem.class);
-		if (plottingSystem != null && plottingSystem.isDisposed()) { // if we close the perspective then reopen it
-			plottingSystem = PlottingFactory.getPlottingSystem(DiffractionPlotView.DIFFRACTION_PLOT_TITLE);
-		}
-
-		// set the focus on the plotting system to trigger the tools (powder tool)
-		IWorkbenchPart part = plottingSystem.getPart();
-		if (part != null) {
-			part.getSite().getPage().activate(part);
-		}
-		augmenter = new DiffractionImageAugmenter(plottingSystem);
 		augmenter.activate();
 		augmenter.drawBeamCentre(true);
 		CalibrationStandards standards = CalibrationFactory.getCalibrationStandards();
 		augmenter.drawCalibrantRings(true, standards.getCalibrant());
-		
-		ringFindJob = new POIFindingRun(plottingSystem, manager.getCurrentData(), ringSelection);
-		calibrantPositioning.setRingFinder(ringFindJob);
+//		calibrantPositioning.setRingFinder(ringFindJob);
 	}
 
 	private void initializeListeners(){
-
-		calibrantChangeListener = new CalibrantSelectedListener() {
-			@Override
-			public void calibrantSelectionChanged(CalibrantSelectionEvent evt) {
-				if (calibrantCombo == null) return;
-				final int index = calibrantCombo.getSelectionIndex();
-				if (index>-1 && calibrantCombo.getItems()[index].equals(evt.getCalibrant())) return;
-				setCalibrantChoice();
-				ringSelection.setMaximumRingNumber(CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs().size());
-
-				if (manager.getCurrentData() != null)
-					showCalibrantAndBeamCentre(checked);
-			}
-		};
 
 		partListener = new PartListener2Stub() {
 			@Override
@@ -383,26 +335,6 @@ public class DiffractionCalibrationView extends ViewPart {
 		};
 
 		this.getViewSite().getPage().addPartListener(partListener);
-	}
-
-	private void setSingleImageOptionsEnabled(boolean enabled) {
-		usePointCalibration.setEnabled(enabled);
-		optimiseAfter.setEnabled(enabled);
-	}
-	
-	private void setCalibrantChoice() {
-		final List<String> cl = CalibrationFactory.getCalibrationStandards().getCalibrantList();
-		calibrantCombo.setItems(cl.toArray(new String[cl.size()]));
-		String selCalib = CalibrationFactory.getCalibrationStandards().getSelectedCalibrant();
-		final int index = cl.indexOf(selCalib);
-		calibrantCombo.select(index); 
-	}
-
-	private void setUpCalbrationModel(SimpleCalibrationParameterModel model) {
-		model.setNumberOfRings(ringSelection.getRingSpinnerSelection());
-		model.setRingSet(ringSelection.getRingSelectionText().getUniqueRingNumbers());
-		model.setUseRingSet(!ringSelection.isUsingRingSpinner());
-		model.setFinalGlobalOptimisation(optimiseAfter.getSelection());
 	}
 	
 	protected void updateSelection(boolean force) {
@@ -422,56 +354,6 @@ public class DiffractionCalibrationView extends ViewPart {
 			drawSelectedData(selectedData);
 			//showCalibrantAndBeamCentre(checked);
 		}
-	}
-
-	/**
-	 * Shows/Hides the calibrant and beam centre
-	 * @param show
-	 * @param currentData
-	 */
-	private void showCalibrantAndBeamCentre(boolean show) {
-		if (augmenter == null) return;
-		if (show && !augmenter.isActive()) {
-			augmenter.activate();
-			augmenter.drawBeamCentre(true);
-			CalibrationStandards standards = CalibrationFactory.getCalibrationStandards();
-			augmenter.drawCalibrantRings(true, standards.getCalibrant());
-		} else {
-			augmenter.deactivate(false);
-		}
-	}
-
-	private void createCalibrantGroup(Composite composite) {
-		
-		final CalibrantSelectionGroup group = new CalibrantSelectionGroup(composite);
-		group.addCalibrantSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				if (manager.getCurrentData() == null)
-					return;
-				calibrantName = group.getCalibrant();
-				// update the calibrant in diffraction tool
-				CalibrationFactory.getCalibrationStandards().setSelectedCalibrant(calibrantName, true);
-				// set the maximum number of rings
-				int ringMaxNumber = CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs().size();
-				ringSelection.setMaximumRingNumber(ringMaxNumber);
-				// Set the calibrant ring number
-				if (calibrantRingsMap.containsKey(calibrantName)) {
-					ringSelection.setRingSpinnerSelection(calibrantRingsMap.get(calibrantName));
-				} else {
-					calibrantRingsMap.put(calibrantName, ringMaxNumber);
-					ringSelection.setRingSpinnerSelection(ringMaxNumber);
-				}
-				
-			}
-		});
-		
-		group.addDisplaySelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				showCalibrantAndBeamCentre(group.getShowRings());
-			}
-		});
 	}
 
 	private void createToolbarActions() {
@@ -590,132 +472,6 @@ public class DiffractionCalibrationView extends ViewPart {
 		toolBarMan.add(resetTableAction);
 	}
 
-	/**
-	 * Gets the control for the automatic tab
-	 * 
-	 * @param content
-	 *            the parent tab folder
-	 * @return Control
-	 */
-	private Composite getAutoControl(Composite content) {
-		
-		Composite composite = new Composite(content, SWT.NONE);
-		composite.setLayout(new GridLayout(1, false));
-				
-		new Label(composite, SWT.NONE);
-
-		optimiseAfter = new Button(composite, SWT.CHECK);
-		optimiseAfter.setLayoutData(new GridData(SWT.LEFT, SWT.BOTTOM, false, false));
-		optimiseAfter.setText("Finish with point calibration optimisation");
-		
-		new Label(composite, SWT.NONE);
-	
-		Button goBabyGoButton = new Button(composite, SWT.PUSH);
-		goBabyGoButton.setImage(Activator.getImage("icons/CalibrationRun.png"));
-		goBabyGoButton.setText("Run Calibration");
-		goBabyGoButton.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, true, true));
-		goBabyGoButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				if (manager.isEmpty()) {
-					MessageDialog.openInformation(Display.getCurrent().getActiveShell(), "Load Data", "Please load some data!");
-				}
-				setUpCalbrationModel(calibrationParameters);
-				IRunnableWithProgress job = new AutoCalibrationRun(Display.getDefault(), plottingSystem, manager, manager.getCurrentData(), calibrationParameters);
-
-				ProgressMonitorDialog dia = new ProgressMonitorDialog(Display.getCurrent().getActiveShell());
-				try {
-					dia.run(true, true, job);
-				} catch (InvocationTargetException e1) {
-					logger.error(e1.getMessage());
-					MessageDialog.openError(Display.getCurrent().getActiveShell(), "Calibration Error", "An error occured during auto calibration!" + System.lineSeparator() +
-							"Check the correct calibrant is selected, try changing the number of rings or use manual calibration." + System.lineSeparator()
-							 + "Specific error :" + e1.getTargetException().getMessage());
-					
-				} catch (InterruptedException e1) {
-					logger.error("Error running Job:" + e1.getMessage());
-				}
-				
-				updateAfterCalibration();
-				
-			}
-		});
-
-		return composite;
-	}
-
-	/**
-	 * Gets the control for the manual tab
-	 * 
-	 * @param content
-	 *            the parent tab folder
-	 * @param model
-	 * @return Control
-	 */
-	private Composite getManualControl(Composite content) {
-		
-		Composite composite = new Composite(content, SWT.NONE);
-		composite.setLayout(new GridLayout());
-		composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		
-		
-		calibrantPositioning = new CalibrantPositioningWidget(composite, manager);
-
-		new Label(composite, SWT.NONE);
-
-		usePointCalibration = new Button(composite, SWT.CHECK | SWT.WRAP);
-		usePointCalibration.setLayoutData(new GridData(SWT.LEFT, SWT.BOTTOM, false, false, 2, 1));
-		usePointCalibration.setText("Use point parameters");
-		usePointCalibration.setToolTipText("Tick to use point instead of ellipse parameters");
-		usePointCalibration.setSelection(false);
-		
-		new Label(composite, SWT.NONE);
-
-		calibrateImagesButton = new Button(composite, SWT.PUSH);
-		calibrateImagesButton.setImage(Activator.getImage("icons/CalibrationRun.png"));
-		calibrateImagesButton.setText("Run Calibration");
-		calibrateImagesButton.setToolTipText("Calibrate detector in chosen images");
-		calibrateImagesButton.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, false, true));
-		calibrateImagesButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				
-				IRunnableWithProgress job = null;
-				
-				setUpCalbrationModel(calibrationParameters);
-				
-				if (calibrationParameters.isEllipseCalibration()) {
-					job = new FromRingsCalibrationRun(Display.getDefault(), plottingSystem, manager, manager.getCurrentData(), calibrationParameters);
-				} else {
-					job = new FromPointsCalibrationRun(Display.getDefault(), plottingSystem, manager, manager.getCurrentData(), calibrationParameters);
-				}
-				
-//				if (usePointCalibration.getSelection() && manager.getSize() == 1) {
-//					setUpCalbrationModel(parameters);
-//					job = new FromPointsCalibrationRun(Display.getDefault(), plottingSystem, manager, manager.getCurrentData(), pointParameters);
-//				} else {
-//					setUpCalbrationModel(ellipseParameters);
-//					job = new FromRingsCalibrationRun(Display.getDefault(), plottingSystem, manager, manager.getCurrentData(), ellipseParameters);
-//				}
-				
-				ProgressMonitorDialog dia = new ProgressMonitorDialog(Display.getCurrent().getActiveShell());
-				try {
-					dia.run(true, true, job);
-				} catch (InvocationTargetException e1) {
-					e1.printStackTrace();
-					MessageDialog.openError(Display.getCurrent().getActiveShell(), "Calibration Error", "An error occured: " + e1.getTargetException().getMessage());
-				} catch (InterruptedException e1) {
-					e1.printStackTrace();
-					logger.error("Error running Job:" + e1.getMessage());
-				}
-				updateAfterCalibration();
-			}
-		});
-		calibrateImagesButton.setEnabled(false);
-		
-		return composite;
-	}
-	
 	private void updateAfterCalibration() {
 		if (manager.isEmpty()) return;
 		updateSelection(true);
@@ -740,7 +496,7 @@ public class DiffractionCalibrationView extends ViewPart {
 			initializeSystems();
 		}
 		plottingSystem.clear();
-		plottingSystem.updatePlot2D(DatasetUtils.sliceAndConvertLazyDataset(data.getImage()), null, null);
+		plottingSystem.updatePlot2D(data.getImage(), null, null);
 		plottingSystem.setTitle(data.getName() == null ? "Data" : data.getName());
 		plottingSystem.getAxes().get(0).setTitle("");
 		plottingSystem.getAxes().get(1).setTitle("");
@@ -749,11 +505,12 @@ public class DiffractionCalibrationView extends ViewPart {
 
 		updateCurrentData(data);
 
-		calibrantPositioning.setDiffractionData(manager.getCurrentData());
+//		calibrantPositioning.setDiffractionData(manager.getCurrentData());
+//		calibrantPositioning.setRingFinder(ringFindJob);
 		if (data.getMetaData() != null) {
 		augmenter.setDiffractionMetadata(manager.getCurrentData().getMetaData());
 		
-		if (!augmenter.isActive() && checked) augmenter.activate();
+//		if (!augmenter.isActive() && checked) augmenter.activate();
 		
 		diffractionTableViewer.addDetectorPropertyListener(data);
 		}
@@ -764,12 +521,12 @@ public class DiffractionCalibrationView extends ViewPart {
 	
 	private void updateCurrentData(DiffractionTableData data) {
 		manager.setCurrentData(data);
-		if (ringFindJob != null) ringFindJob.setCurrentData(manager.getCurrentData());
+		widget.update();
 		
 	}
 
 	private void removeListeners() {
-		CalibrationFactory.removeCalibrantSelectionListener(calibrantChangeListener);
+//		CalibrationFactory.removeCalibrantSelectionListener(calibrantChangeListener);
 
 		if (augmenter != null)
 			augmenter.deactivate(false);

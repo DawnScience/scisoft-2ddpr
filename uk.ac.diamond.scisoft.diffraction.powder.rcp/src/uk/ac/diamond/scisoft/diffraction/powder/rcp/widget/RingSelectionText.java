@@ -84,6 +84,10 @@ public class RingSelectionText {
 			return false;
 		return true;
 	}
+	
+	public void addModifyListener(ModifyListener listener){
+		ringText.addModifyListener(listener);
+	}
 
 	/**
 	 * Test if the int entered is unique

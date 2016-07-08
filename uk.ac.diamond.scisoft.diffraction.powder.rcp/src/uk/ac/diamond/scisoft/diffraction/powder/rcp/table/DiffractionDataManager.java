@@ -32,6 +32,7 @@ import org.eclipse.dawnsci.analysis.api.diffraction.DiffractionCrystalEnvironmen
 import org.eclipse.dawnsci.analysis.api.diffraction.IDetectorPropertyListener;
 import org.eclipse.dawnsci.analysis.api.io.IDataHolder;
 import org.eclipse.dawnsci.analysis.api.io.ILoaderService;
+import org.eclipse.dawnsci.analysis.api.metadata.IDiffractionMetadata;
 import org.eclipse.dawnsci.analysis.api.metadata.IMetadata;
 import org.eclipse.dawnsci.analysis.dataset.impl.AbstractDataset;
 import org.eclipse.dawnsci.analysis.dataset.impl.Dataset;
@@ -92,6 +93,10 @@ public class DiffractionDataManager {
 	
 	public void setModel(List<DiffractionTableData> model) {
 		this.model = model;
+	}
+	
+	public void clear(){
+		model.clear();
 	}
 	
 	public boolean isEmpty() {
@@ -360,13 +365,14 @@ public class DiffractionDataManager {
 		data.setDistance(dist.getDouble(count++));
 		
 		while (it.hasNext()) {
-			ILazyDataset n = it.next().getSlice().squeeze();
+			IDataset n = it.next().getSlice().squeeze();
+			IDiffractionMetadata md = DiffractionDefaultMetadata.getDiffractionMetadata(n.getShape());
+			n.setMetadata(md);
 			n.setName(fileName + ":" + n.getName() + count);
 			DiffractionTableData d = new DiffractionTableData();
 			d.setImage(n);
 			d.setName(fileName + ": " + count);
-			d.setMetaData(DiffractionDefaultMetadata.getDiffractionMetadata(n.getShape()));
-			d.getImage().setMetadata(d.getMetaData());
+			d.setMetaData(md);
 			d.setDistance(dist.getDouble(count++));
 			model.add(d);
 		}
@@ -392,10 +398,6 @@ public class DiffractionDataManager {
 		
 		if (ld == null) return false;
 		
-		ld = ld.getSliceView();
-		ld.squeezeEnds();
-		
-		
 //		if (image == null){
 //			model.remove(data);
 //			fireDiffractionDataListeners(null);
@@ -404,11 +406,15 @@ public class DiffractionDataManager {
 		
 		int j = path.lastIndexOf(File.separator);
 		String fileName = j > 0 ? path.substring(j + 1) : null;
-		ld.setName(fileName + ":" + ld.getName());
-		data.setImage(ld.getSlice());
 		String[] statusString = new String[1];
-		data.setMetaData(DiffractionUtils.getDiffractionMetadata(ld, path, service, statusString));
-		data.getImage().setMetadata(data.getMetaData());
+		IDiffractionMetadata md = DiffractionUtils.getDiffractionMetadata(ld, path, service, statusString);
+		
+		ld.setName(fileName + ":" + ld.getName());
+		IDataset d = ld.getSlice();
+		d.setMetadata(md);
+		ld.setMetadata(md);
+		data.setImage(d);
+		data.setMetaData(md);
 		
 		fireDiffractionDataListeners(new DiffractionDataChanged(data));
 

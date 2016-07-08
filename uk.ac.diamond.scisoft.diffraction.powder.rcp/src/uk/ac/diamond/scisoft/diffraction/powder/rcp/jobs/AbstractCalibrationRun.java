@@ -11,6 +11,7 @@ import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
 import uk.ac.diamond.scisoft.diffraction.powder.PowderCalibration;
 import uk.ac.diamond.scisoft.diffraction.powder.PowderCalibrationInfoImpl;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.PowderCalibrationUtils;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionTableData;
 
@@ -57,29 +58,14 @@ public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 	public AbstractCalibrationRun(Display display,
 			IPlottingSystem<?> plottingSystem,
 			DiffractionDataManager manager,
-			DiffractionTableData currentData,
 			SimpleCalibrationParameterModel params) {
 		
 		this.display = display;
 		this.plottingSystem = plottingSystem;
 		this.manager = manager;
 		this.params = params;
-		this.currentData = currentData;
+		this.currentData = manager.getCurrentData();
 	}
-	
-	/**
-	 * 
-	 * @param plottingSystem
-	 */
-	public void removeFoundRings(IPlottingSystem<?> plottingSystem) {
-		for (IRegion r : plottingSystem.getRegions()) {
-			String n = r.getName();
-			if (n.startsWith(REGION_PREFIX)) {
-				plottingSystem.removeRegion(r);
-				}
-		}
-	}
-	
 	
 	protected void updateOnFinish(final CalibrationOutput output) {
 		display.syncExec(new Runnable() {
@@ -93,7 +79,7 @@ public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 					i++;
 				}
 
-				removeFoundRings(plottingSystem);
+				PowderCalibrationUtils.clearFoundRings(plottingSystem);
 			}
 		});
 	}

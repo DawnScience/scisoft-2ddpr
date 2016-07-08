@@ -26,6 +26,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.dawnsci.analysis.api.diffraction.DetectorProperties;
 import org.eclipse.dawnsci.analysis.api.diffraction.DiffractionCrystalEnvironment;
+import org.eclipse.dawnsci.analysis.api.metadata.IDiffractionMetadata;
 import org.eclipse.dawnsci.analysis.api.persistence.IPersistenceService;
 import org.eclipse.dawnsci.analysis.api.persistence.IPersistentFile;
 import org.eclipse.dawnsci.analysis.api.persistence.IPersistentNodeFactory;
@@ -43,6 +44,7 @@ import org.eclipse.dawnsci.plotting.api.region.RegionUtils;
 import org.eclipse.dawnsci.plotting.api.trace.IImageTrace;
 import org.eclipse.dawnsci.plotting.api.trace.ITrace;
 import org.eclipse.draw2d.ColorConstants;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.slf4j.Logger;
@@ -50,6 +52,10 @@ import org.slf4j.LoggerFactory;
 
 import uk.ac.diamond.scisoft.analysis.fitting.Fitter;
 import uk.ac.diamond.scisoft.analysis.fitting.functions.Polynomial;
+import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.AutoCalibrationRun;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.FromPointsCalibrationRun;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.FromRingsCalibrationRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionTableData;
 
@@ -198,10 +204,10 @@ public class DiffractionCalibrationUtils {
 					IRegion region = plotter.createRegion(RegionUtils.getUniqueName(REGION_PREFIX, plotter), circle ? RegionType.CIRCLEFIT : RegionType.ELLIPSEFIT);
 					region.setROI(froi);
 					region.setRegionColor(circle ? ColorConstants.cyan : ColorConstants.orange);
-					monitor.subTask("Add region");
+					if (monitor != null) monitor.subTask("Add region");
 					region.setUserRegion(false);
 					plotter.addRegion(region);
-					monitor.worked(1);
+					if (monitor != null) monitor.worked(1);
 				} catch (Exception e) {
 					status[0] = false;
 				}
@@ -216,11 +222,11 @@ public class DiffractionCalibrationUtils {
 	 * @param mode
 	 * @param fast
 	 */
-	public static void changeRings(DiffractionTableData currentData, ManipulateMode mode, boolean fast) {
-		if (currentData == null || currentData.getMetaData() == null)
+	public static void changeRings(IDiffractionMetadata metadata, ManipulateMode mode, boolean fast) {
+		if (metadata == null)
 			return;
 
-		DetectorProperties detprop = currentData.getMetaData().getDetector2DProperties();
+		DetectorProperties detprop = metadata.getDetector2DProperties();
 		if (detprop == null)
 			return;
 
@@ -559,6 +565,20 @@ public class DiffractionCalibrationUtils {
 			}
 		}
 		return "##,##0." + result;
+	}
+	
+	public static IRunnableWithProgress getCalibrationRunnable(SimpleCalibrationParameterModel model, DiffractionDataManager manager, IPlottingSystem<?> system){
+		
+		if (!model.isAutomaticCalibration()) {
+			
+			if (model.isPointCalibration()) {
+				return new FromPointsCalibrationRun(Display.getDefault(), system, manager,model);
+			} else {
+				return new FromRingsCalibrationRun(Display.getDefault(), system, manager, model);
+			}
+		} 
+		
+		return new AutoCalibrationRun(Display.getDefault(), system ,manager , model);
 	}
 
 	/**

@@ -27,9 +27,8 @@ public class FromRingsCalibrationRun extends AbstractCalibrationRun {
 	private static final String description = "Manual powder diffraction image calibration using ellipse parameters";
 	
 	public FromRingsCalibrationRun(Display display,
-			IPlottingSystem<?> plottingSystem,DiffractionDataManager manager,
-			DiffractionTableData currentData, SimpleCalibrationParameterModel params) {
-		super(display, plottingSystem, manager, currentData, params);
+			IPlottingSystem<?> plottingSystem,DiffractionDataManager manager, SimpleCalibrationParameterModel params) {
+		super(display, plottingSystem, manager, params);
 	}
 
 	@Override

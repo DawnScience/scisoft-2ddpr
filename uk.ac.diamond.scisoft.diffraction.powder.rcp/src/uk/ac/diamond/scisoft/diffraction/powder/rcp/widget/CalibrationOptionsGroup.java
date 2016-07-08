@@ -8,6 +8,7 @@ import org.dawnsci.common.widgets.utils.GridUtils;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -24,22 +25,30 @@ import uk.ac.diamond.scisoft.diffraction.powder.rcp.preferences.DiffractionCalib
 
 public class CalibrationOptionsGroup {
 
+	Group ellipseParamGroup;
+	Group pointCalibrateGroup;
+	private StackLayout stackLayout; 
+	
 	public CalibrationOptionsGroup(Composite content, final SimpleCalibrationParameterModel parameters, boolean showEllipseOptions, boolean showPointOptions) {
 
 		Composite composite = new Composite(content, SWT.NONE);
-		composite.setLayout(new GridLayout(2, false));
-		composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		composite.setLayout(new GridLayout(1, false));
+		stackLayout = new StackLayout();
+		composite.setLayout(stackLayout);
+		composite.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, true, false));
 
-		Group ellipseParamGroup = new Group(composite, SWT.FILL);
+		ellipseParamGroup = new Group(composite, SWT.FILL);
 		ellipseParamGroup.setText("Ellipse Calibration Options");
 		ellipseParamGroup.setToolTipText("Set the Ellipse Parameters");
 		ellipseParamGroup.setLayout(new GridLayout());
 		ellipseParamGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+		
+		stackLayout.topControl = ellipseParamGroup;
 
 		RadioGroupWidget calibEllipseParamRadios = new RadioGroupWidget(ellipseParamGroup);
 		calibEllipseParamRadios.setActions(getEllipseParamActions(parameters), true);
 
-		final Group pointCalibrateGroup = new Group(composite, SWT.FILL);
+		pointCalibrateGroup = new Group(composite, SWT.FILL);
 		pointCalibrateGroup.setText("Manual Point Calibration Options");
 		pointCalibrateGroup.setToolTipText("Set the Point Parameters");
 		pointCalibrateGroup.setLayout(new GridLayout());
@@ -85,7 +94,7 @@ public class CalibrationOptionsGroup {
 		});
 		fixTiltButton.setSelection(!parameters.isFloatTilt());
 
-		Button advanced = new Button(composite, SWT.NONE);
+		Button advanced = new Button(content, SWT.NONE);
 		advanced.setText("Advanced...");
 		advanced.setToolTipText("Open preference page for advanced settings");
 		advanced.setLayoutData(new GridData(SWT.LEFT, SWT.BOTTOM, true, false));
@@ -101,13 +110,23 @@ public class CalibrationOptionsGroup {
 			}
 		});
 
-		enableControl(ellipseParamGroup, showEllipseOptions);
-		GridUtils.setVisible(ellipseParamGroup, showEllipseOptions);
-		enableControl(pointCalibrateGroup, showPointOptions);
-		GridUtils.setVisible(pointCalibrateGroup, showPointOptions);
+//		enableControl(ellipseParamGroup, showEllipseOptions);
+//		GridUtils.setVisible(ellipseParamGroup, showEllipseOptions);
+//		enableControl(pointCalibrateGroup, showPointOptions);
+//		GridUtils.setVisible(pointCalibrateGroup, showPointOptions);
 
 	}
 
+	public void showOptions(boolean ellipse, boolean points) {
+		if (ellipse) stackLayout.topControl = ellipseParamGroup;
+		else stackLayout.topControl = pointCalibrateGroup;
+		
+		
+		enableControl(ellipseParamGroup, ellipse);
+		GridUtils.setVisible(ellipseParamGroup, ellipse);
+		enableControl(pointCalibrateGroup, points);
+		GridUtils.setVisible(pointCalibrateGroup, points);
+	}
 
 	private List<Action> getEllipseParamActions(final SimpleCalibrationParameterModel parameters) {
 		List<Action> radioActions = new ArrayList<Action>();

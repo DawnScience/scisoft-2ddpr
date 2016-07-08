@@ -12,6 +12,7 @@ package uk.ac.diamond.scisoft.diffraction.powder.rcp.table;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.dawnsci.analysis.api.dataset.IDataset;
 import org.eclipse.dawnsci.analysis.api.dataset.ILazyDataset;
 import org.eclipse.dawnsci.analysis.api.diffraction.IPowderCalibrationInfo;
 import org.eclipse.dawnsci.analysis.api.metadata.IDiffractionMetadata;
@@ -25,7 +26,7 @@ public class DiffractionTableData {
 	private String path;
 	private String name;
 	private IDiffractionMetadata metaData;
-	private ILazyDataset image;
+	private IDataset image;
 	private double distance = 0;
 	private boolean use = false;
 	private IPowderCalibrationInfo calibrationInfo;
@@ -60,10 +61,10 @@ public class DiffractionTableData {
 		this.metaData = md;
 	}
 	
-	public ILazyDataset getImage() {
+	public IDataset getImage() {
 		return image;
 	}
-	public void setImage(ILazyDataset image) {
+	public void setImage(IDataset image) {
 		this.image = image;
 	}
 	

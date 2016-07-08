@@ -1,6 +1,8 @@
 package uk.ac.diamond.scisoft.diffraction.powder.rcp.widget;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -11,14 +13,19 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Spinner;
 
+import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
+
 public class RingSelectionGroup {
 
 	private Spinner ringNumberSpinner;
 	private RingSelectionText ringSelectionText;
 	private Button spinnerRadio;
 	private Button textRadio;
+	private SimpleCalibrationParameterModel model;
 
-	public RingSelectionGroup(Composite parent, int maximumRingNumber) {
+	public RingSelectionGroup(Composite parent, int maximumRingNumber, final SimpleCalibrationParameterModel model) {
+		
+		this.model = model;
 
 		Group group = new Group(parent, SWT.FILL);
 		group.setLayout(new GridLayout(2, false));
@@ -35,6 +42,7 @@ public class RingSelectionGroup {
 					textRadio.setSelection(false);
 					ringNumberSpinner.setEnabled(true);
 					ringSelectionText.setEnabled(false);
+					model.setRingSet(null);
 				}
 			}
 		});
@@ -44,6 +52,14 @@ public class RingSelectionGroup {
 		ringNumberSpinner.setMaximum(maximumRingNumber);
 		ringNumberSpinner.setMinimum(2);
 		ringNumberSpinner.setSelection(100);
+		ringNumberSpinner.addSelectionListener(new SelectionAdapter() {
+			
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				model.setNumberOfRings(ringNumberSpinner.getSelection());
+			}
+		
+		});
 
 		textRadio = new Button(group, SWT.RADIO);
 		textRadio.setText("Select specific ring numbers:");
@@ -55,6 +71,7 @@ public class RingSelectionGroup {
 					spinnerRadio.setSelection(false);
 					ringNumberSpinner.setEnabled(false);
 					ringSelectionText.setEnabled(true);
+					model.setRingSet(ringSelectionText.getUniqueRingNumbers());
 				}
 			}
 		});
@@ -64,6 +81,14 @@ public class RingSelectionGroup {
 		ringSelectionText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		ringSelectionText.setToolTipText("Enter unique ring numbers separated by commas");
 		ringSelectionText.setEnabled(false);
+		ringSelectionText.addModifyListener(new ModifyListener() {
+			
+			@Override
+			public void modifyText(ModifyEvent e) {
+				model.setRingSet(ringSelectionText.getUniqueRingNumbers());
+				
+			}
+		});
 	}
 
 	public void addRingNumberSpinnerListener(SelectionListener selectionAdapter) {
@@ -83,7 +108,7 @@ public class RingSelectionGroup {
 	}
 
 	public boolean isUsingRingSpinner() {
-		return ringNumberSpinner.isEnabled();
+		return spinnerRadio.getSelection();
 	}
 
 	/**
@@ -93,5 +118,6 @@ public class RingSelectionGroup {
 	public void setMaximumRingNumber(int maximumRingNumber) {
 		ringNumberSpinner.setMaximum(maximumRingNumber);
 		ringSelectionText.setMaximumRingNumber(maximumRingNumber);
+		model.setNumberOfRings(maximumRingNumber);
 	}
 }

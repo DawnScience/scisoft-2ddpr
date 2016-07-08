@@ -60,7 +60,7 @@ public class PowderCalibration {
 		SimpleCalibrationParameterModel params = new SimpleCalibrationParameterModel();
 		params.setNumberOfRings(nRings);
 		params.setFloatEnergy(false);
-		params.setFinalGlobalOptimisation(true);
+		params.setIsPointCalibration(true);
 		
 		return calibrateMultipleImages(new IDataset[] {image}, DatasetFactory.zeros(new int[]{1}, Dataset.FLOAT64), pixel,
 				spacings,  wavelength, options, params, null, null, info == null ? null : new PowderCalibrationInfoImpl[]{info});
@@ -76,7 +76,7 @@ public class PowderCalibration {
 		int[] options = new int[]{CENTRE_MASK_RADIUS, MINIMUM_SPACING, NUMBER_OF_POINTS};
 		SimpleCalibrationParameterModel params = new SimpleCalibrationParameterModel();
 		params.setNumberOfRings(nRings);
-		params.setFinalGlobalOptimisation(true);
+		params.setIsPointCalibration(true);
 		
 		return calibrateMultipleImages(new IDataset[] {image}, DatasetFactory.zeros(new int[]{1}, Dataset.FLOAT64), pixel,
 				spacings,  0, options, params, null, null, info == null ? null : new PowderCalibrationInfoImpl[]{info});
@@ -150,7 +150,7 @@ public class PowderCalibration {
 		
 		String desc = description;
 		
-		if (allEllipses.size() == 1 && params.isFinalGlobalOptimisation()) {
+		if (allEllipses.size() == 1 && params.isPointCalibration()) {
 			
 			IDiffractionMetadata meta = createMetadataFromOutput(output, 0, images[0].getShape(),pxSize);
 			

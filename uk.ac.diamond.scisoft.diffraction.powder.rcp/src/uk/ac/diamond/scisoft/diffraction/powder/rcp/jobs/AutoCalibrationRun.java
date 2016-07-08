@@ -19,6 +19,7 @@ import uk.ac.diamond.scisoft.diffraction.powder.PowderCalibration;
 import uk.ac.diamond.scisoft.diffraction.powder.PowderCalibrationInfoImpl;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.Activator;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.PowderCalibrationUtils;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.calibration.DiffractionCalibrationUtils;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.preferences.DiffractionCalibrationConstants;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
@@ -28,9 +29,14 @@ public class AutoCalibrationRun extends AbstractCalibrationRun {
 
 
 	public AutoCalibrationRun(Display display, IPlottingSystem<?> plottingSystem,
-			DiffractionDataManager manager, DiffractionTableData currentData,
-			SimpleCalibrationParameterModel param) {
-		super(display, plottingSystem, manager, currentData, param);
+			DiffractionDataManager manager, SimpleCalibrationParameterModel param) {
+		super(display, plottingSystem, manager, param);
+	}
+	
+	public AutoCalibrationRun(Display display, IPlottingSystem<?> plottingSystem,
+			DiffractionDataManager manager, DiffractionTableData currentData, SimpleCalibrationParameterModel param) {
+		super(display, plottingSystem, manager, param);
+		this.currentData = currentData;
 	}
 
 	@Override
@@ -50,7 +56,7 @@ public class AutoCalibrationRun extends AbstractCalibrationRun {
 				display.syncExec(new Runnable() {
 					@Override
 					public void run() {
-						removeFoundRings(plottingSystem);
+						PowderCalibrationUtils.clearFoundRings(plottingSystem);
 					}
 				});
 				

@@ -22,6 +22,7 @@ import uk.ac.diamond.scisoft.diffraction.powder.CalibrationErrorOutput;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
 import uk.ac.diamond.scisoft.diffraction.powder.PowderCalibrationInfoImpl;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.PowderCalibrationUtils;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionTableData;
 
@@ -30,9 +31,8 @@ public class FromPointsCalibrationRun extends AbstractCalibrationRun {
 	private static final String description = "Manual powder diffraction image calibration using point parameters";
 	
 	public FromPointsCalibrationRun(Display display,
-			IPlottingSystem<?> plottingSystem, DiffractionDataManager manager,
-			DiffractionTableData currentData, SimpleCalibrationParameterModel params) {
-		super(display, plottingSystem, manager, currentData, params);
+			IPlottingSystem<?> plottingSystem, DiffractionDataManager manager, SimpleCalibrationParameterModel params) {
+		super(display, plottingSystem, manager, params);
 		// TODO Auto-generated constructor stub
 	}
 
@@ -111,7 +111,7 @@ public class FromPointsCalibrationRun extends AbstractCalibrationRun {
 				
 				currentData.setCalibrationInfo(output.getCalibrationInfo()[0]);
 
-				removeFoundRings(plottingSystem);
+				PowderCalibrationUtils.clearFoundRings(plottingSystem);
 			}
 		});
 		return;
