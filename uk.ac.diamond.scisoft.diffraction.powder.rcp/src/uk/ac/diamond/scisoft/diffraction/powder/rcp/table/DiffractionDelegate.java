@@ -50,7 +50,7 @@ import org.eclipse.ui.part.ResourceTransfer;
  * @author wqk87977
  *
  */
-public class DiffractionDelegate implements IRefreshable {
+public class DiffractionDelegate {
 
 	private TableViewer viewer;
 	

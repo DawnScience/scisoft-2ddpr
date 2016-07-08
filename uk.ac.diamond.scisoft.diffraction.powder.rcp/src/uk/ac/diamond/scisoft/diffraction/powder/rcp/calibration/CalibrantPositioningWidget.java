@@ -33,7 +33,6 @@ import org.eclipse.swt.widgets.Label;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.calibration.DiffractionCalibrationUtils.ManipulateMode;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionTableData;
-import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.IRefreshable;
 
 /**
  * 
