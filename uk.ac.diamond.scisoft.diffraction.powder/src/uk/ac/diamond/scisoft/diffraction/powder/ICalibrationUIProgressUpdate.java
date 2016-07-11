@@ -10,4 +10,6 @@ public interface ICalibrationUIProgressUpdate {
 	public void drawFoundRing(IROI roi);
 	
 	public void removeRings();
+	
+	public void completed();
 }

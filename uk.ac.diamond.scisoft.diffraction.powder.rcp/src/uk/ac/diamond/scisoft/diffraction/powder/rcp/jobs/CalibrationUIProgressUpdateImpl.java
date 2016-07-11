@@ -43,5 +43,10 @@ public class CalibrationUIProgressUpdateImpl implements ICalibrationUIProgressUp
 	public void drawFoundRing(IROI roi) {
 		DiffractionCalibrationUtils.drawFoundRing(null, display, plottingSystem, roi, false);
 	}
+	
+	@Override
+	public void completed() {
+		
+	}
 
 }

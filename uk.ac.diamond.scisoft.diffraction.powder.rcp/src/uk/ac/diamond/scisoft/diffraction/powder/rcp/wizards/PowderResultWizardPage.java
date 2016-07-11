@@ -60,7 +60,7 @@ public class PowderResultWizardPage extends WizardPage {
 		setTitle("Powder XRD/SAX Calibration - Results");
 		setDescription("Review calibration results, export to NeXus file.");
 		this.manager = manager;
-		
+		setPageComplete(false);
 	}
 
 	@Override
@@ -162,7 +162,6 @@ public class PowderResultWizardPage extends WizardPage {
 		if (calInfo != null) {
 			String resultDescription = calInfo.getResultDescription();
 			if (resultDescription != null) resultText.setText(resultDescription);
-			
 		}
         return super.canFlipToNextPage();
     }
@@ -171,7 +170,7 @@ public class PowderResultWizardPage extends WizardPage {
 	@Override
 	public void setVisible(boolean visible) {
 		if (visible) {
-			
+			setPageComplete(true);
 			toolPage.activate();
 			augmenter.activate();
 			augmenter.drawBeamCentre(false);

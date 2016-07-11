@@ -49,9 +49,11 @@ import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionTableData;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.CalibrantSelectionGroup;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.CalibrationOptionsGroup;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.ICalibrationStateListener;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.IRunner;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.PowderCalibrationSetupWidget;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.RingSelectionGroup;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.StateChangedEvent;
 
 public class PowderSetupWizardPage extends WizardPage {
 
@@ -69,6 +71,7 @@ public class PowderSetupWizardPage extends WizardPage {
 		this.manager = manager;
 		model = new SimpleCalibrationParameterModel();
 		model.setIsPointCalibration(true);
+		setPageComplete(true);
 	}
 
 	@Override
@@ -138,129 +141,48 @@ public class PowderSetupWizardPage extends WizardPage {
 					e1.printStackTrace();
 				}
 				
+				getContainer().updateButtons();
+				
 			}
 		};
 		
 		
 		PowderCalibrationSetupWidget widget = new PowderCalibrationSetupWidget(manager, model, augmenter, system, runner);
 		widget.createControl(left);
-		
-//		model.setNumberOfRings(CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs().size());
-//		
-//		final CalibrantSelectionGroup group = new CalibrantSelectionGroup(left);
-//		group.addCalibrantSelectionListener(new SelectionAdapter() {
-//			@Override
-//			public void widgetSelected(SelectionEvent e) {
-//				if (manager.getCurrentData() == null)
-//					return;
-//				String calibrantName = group.getCalibrant();
-//				// update the calibrant in diffraction tool
-//				CalibrationFactory.getCalibrationStandards().setSelectedCalibrant(calibrantName, true);
-//				// set the maximum number of rings
-//				int ringMaxNumber = CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs().size();
-//				
-//			}
-//		});
-//		
-//		group.addDisplaySelectionListener(new SelectionAdapter() {
-//			@Override
-//			public void widgetSelected(SelectionEvent e) {
-//				showCalibrantAndBeamCentre(group.getShowRings());
-//			}
-//		});
-//		
-//		final RingSelectionGroup ringSelection = new RingSelectionGroup(left, CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs().size(), model);
-//		ringSelection.addRingNumberSpinnerListener(new SelectionAdapter() {
-//			@Override
-//			public void widgetSelected(SelectionEvent e) {
-//				int ringNumber = ringSelection.getRingSpinnerSelection();
-//				model.setNumberOfRings(ringNumber);
-//				augmenter.setMaxCalibrantRings(ringNumber);
-//				augmenter.activate();
-////				calibrantRingsMap.put(calibrantName, ringNumber);
-//			}
-//		});
-//		
-//		final Button autoRadio = new Button(left, SWT.RADIO);
-//		autoRadio.setText("Automatic");
-//		autoRadio.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
-//
-//		final Button manualRadio = new Button(left, SWT.RADIO);
-//		manualRadio.setText("Manual");
-//		manualRadio.setLayoutData(new GridData(SWT.LEFT, SWT.FILL, true, false));
-//		manualRadio.setSelection(false);
-//		
-//		final Composite autoManStack = new Composite(left, SWT.NONE);
-//		final StackLayout stackLayout = new StackLayout();
-//		autoManStack.setLayout(stackLayout);
-//		final Label auto = new Label(autoManStack,SWT.WRAP);
-//		auto.setText("Automatic Calibration");
-//		stackLayout.topControl = auto;
-//		autoManStack.layout();
-//		final Button findRings = new Button(autoManStack, SWT.PUSH);
-//		findRings.setText("Find Rings");
-//
-//		final POIFindingRun poiFindingRun = new POIFindingRun(new CalibrationUIProgressUpdateImpl(system, Display.getCurrent()), manager.getCurrentData(), model);
-//		findRings.addSelectionListener(new SelectionAdapter() {
-//			
-//			@Override
-//			public void widgetSelected(SelectionEvent e) {
-//				poiFindingRun.updateData(manager.getCurrentData());
-//				try {
-//					getContainer().run(true, true, poiFindingRun);
-//				} catch (InvocationTargetException e1) {
-//					// TODO Auto-generated catch block
-//					e1.printStackTrace();
-//				} catch (InterruptedException e1) {
-//					// TODO Auto-generated catch block
-//					e1.printStackTrace();
-//				}
-//			}
-//			
-//		});
-//		
-//		
-//		final Button usePoints = new Button(left, SWT.CHECK);
-//		usePoints.setText("Point calibration");
-//		usePoints.setSelection(true);
-//		usePoints.addSelectionListener(new SelectionAdapter() {
-//			
-//			@Override
-//			public void widgetSelected(SelectionEvent e) {
-//				boolean s = ((Button)e.getSource()).getSelection();
-//				model.setIsPointCalibration(s);
-//				left.layout();
-//			}
-//		});
-//		
-//		final CalibrationOptionsGroup options = new CalibrationOptionsGroup(left, model, true,true);
-//		
-//		autoRadio.addSelectionListener(new SelectionAdapter() {
-//			
-//			@Override
-//			public void widgetSelected(SelectionEvent e) {
-//				boolean s = ((Button)e.getSource()).getSelection();
-//				options.showOptions(s, !s);
-//				stackLayout.topControl = s ? auto : findRings;
-//				autoManStack.layout();
-//				
-//			}
-//		});
-//		
-//		autoRadio.setSelection(true);
+		widget.addCalibrationStateListener(new ICalibrationStateListener() {
+			
+			@Override
+			public void calibrationStateChanged(StateChangedEvent event) {
+						
+				threadSafeFlip();
+				
+			}
+		});
+
 		sashForm.setWeights(new int[]{20,40,40});
 	}
 	
-	private void showCalibrantAndBeamCentre(boolean show) {
-		if (augmenter == null) return;
-		if (show && !augmenter.isActive()) {
-			augmenter.activate();
-			augmenter.drawBeamCentre(true);
-			CalibrationStandards standards = CalibrationFactory.getCalibrationStandards();
-			augmenter.drawCalibrantRings(true, standards.getCalibrant());
-		} else {
-			augmenter.deactivate(false);
+	private void threadSafeFlip(){
+		if (Display.getCurrent() == null) {
+			Display.getDefault().syncExec(new Runnable() {
+				
+				@Override
+				public void run() {
+					threadSafeFlip();
+				}
+			});
+			return;
 		}
+		
+		canFlipToNextPage();
+		getWizard().getContainer().updateButtons();
+	}
+	
+	@Override
+	public boolean canFlipToNextPage() {
+		if (model.isAutomaticCalibration()) return true;
+		if (manager.getCurrentData().getNonNullROISize() > 0) return true;
+		return false;
 	}
 
 	@Override

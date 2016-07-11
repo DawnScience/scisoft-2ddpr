@@ -34,6 +34,7 @@ public class PowderDataWizardPage extends WizardPage {
 		setTitle("Powder XRD/SAX Calibration - Data Review");
 		setDescription("Review the images, and distances ready for calibration, click next to continue.");
 		this.manager = manager;
+		setPageComplete(true);
 	}
 
 	@Override

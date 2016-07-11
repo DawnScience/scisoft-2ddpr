@@ -1,5 +1,8 @@
 package uk.ac.diamond.scisoft.diffraction.powder.rcp.widget;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.dawnsci.plotting.tools.diffraction.DiffractionImageAugmenter;
 import org.eclipse.dawnsci.analysis.api.metadata.IDiffractionMetadata;
 import org.eclipse.dawnsci.plotting.api.IPlottingSystem;
@@ -24,6 +27,8 @@ import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager
 
 public class PowderCalibrationSetupWidget {
 	
+	private Set<ICalibrationStateListener> listeners;
+	
 	private DiffractionDataManager manager;
 	private SimpleCalibrationParameterModel model;
 	private DiffractionImageAugmenter augmenter;
@@ -44,6 +49,7 @@ public class PowderCalibrationSetupWidget {
 		this.augmenter = augmenter;
 		this.system = system;
 		this.runner = runner;
+		listeners = new HashSet<>();
 	}
 	
 	
@@ -65,10 +71,13 @@ public class PowderCalibrationSetupWidget {
 				int ringNumber = ringSelection.getRingSpinnerSelection();
 				model.setNumberOfRings(ringNumber);
 				augmenter.setMaxCalibrantRings(ringNumber);
-				augmenter.activate();
-//				calibrantRingsMap.put(calibrantName, ringNumber);
+				augmenter.setRingSet(ringSelection.getRingSelectionText().getUniqueRingNumbers());
+				//force redraw
+				if (augmenter.isActive()) augmenter.activate();
+//				augmenter.activate();
 			}
 		});
+		
 		
 		group.addCalibrantSelectionListener(new SelectionAdapter() {
 			@Override
@@ -117,7 +126,13 @@ public class PowderCalibrationSetupWidget {
 		stackLayout.topControl = auto;
 		autoManStack.layout();
 
-		poiFindingRun = new POIFindingRun(new CalibrationUIProgressUpdateImpl(system, Display.getCurrent()), manager.getCurrentData(), model);
+		poiFindingRun = new POIFindingRun(new CalibrationUIProgressUpdateImpl(system, Display.getCurrent()){
+			@Override
+			public void completed() {
+				fireListeners(new StateChangedEvent(this, canRun()));
+			}
+			
+		}, manager.getCurrentData(), model);
 		findRings.addSelectionListener(new SelectionAdapter() {
 			
 			@Override
@@ -144,6 +159,7 @@ public class PowderCalibrationSetupWidget {
 				boolean showPoint = s && !model.isAutomaticCalibration(); 
 				options.showOptions(!showPoint, showPoint);
 				autoManStack.layout();
+				fireListeners(new StateChangedEvent(this, canRun()));
 			}
 		});
 		
@@ -159,6 +175,7 @@ public class PowderCalibrationSetupWidget {
 				stackLayout.topControl = s ? auto : manualComposite;
 				autoManStack.layout();
 				model.setAutomaticCalibration(s);
+				fireListeners(new StateChangedEvent(this, canRun()));
 				
 			}
 		});
@@ -191,7 +208,30 @@ public class PowderCalibrationSetupWidget {
 	public void setShowSteering(boolean showSteering) {
 		this.showSteering = showSteering;
 	}
-
 	
+	private void fireListeners(StateChangedEvent event) {
+		for (ICalibrationStateListener l : listeners) l.calibrationStateChanged(event);
+	}
+	
+	public void addCalibrationStateListener(ICalibrationStateListener listener) {
+		listeners.add(listener);
+	}
+
+	public void removeCalibrationStateListener(ICalibrationStateListener listener) {
+		listeners.remove(listener);
+	}
+	
+	private boolean canRun() {
+		
+		if (model.isAutomaticCalibration()) return true;
+		
+		if (manager.getCurrentData().getNonNullROISize() > 0) return true;
+		
+		return false;
+	}
+	
+	public boolean isAutomatic() {
+		return model.isAutomaticCalibration();
+	}
 
 }

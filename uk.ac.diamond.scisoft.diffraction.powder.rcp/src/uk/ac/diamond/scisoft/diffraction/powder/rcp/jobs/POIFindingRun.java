@@ -118,6 +118,8 @@ public class POIFindingRun implements IRunnableWithProgress {
 		if (currentData.getNrois() > 0) {
 			currentData.setUse(true);
 		}
+		
+		if (uiUpdater != null) uiUpdater.completed();
 		return;
 	}
 

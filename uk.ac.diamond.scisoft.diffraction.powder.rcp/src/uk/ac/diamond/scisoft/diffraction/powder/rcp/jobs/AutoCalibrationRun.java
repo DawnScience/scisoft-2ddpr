@@ -66,6 +66,10 @@ public class AutoCalibrationRun extends AbstractCalibrationRun {
 			public void drawFoundRing(IROI roi) {
 				DiffractionCalibrationUtils.drawFoundRing(monitor, display, plottingSystem, roi, false);
 			}
+			
+			@Override
+			public void completed() {
+			}
 		};
 		
 		monitor.beginTask("Calibrating...", IProgressMonitor.UNKNOWN);
