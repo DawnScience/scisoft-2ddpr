@@ -19,7 +19,6 @@ import java.util.List;
 
 import javax.vecmath.Vector3d;
 
-import org.dawb.common.services.ServiceManager;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -53,6 +52,7 @@ import org.slf4j.LoggerFactory;
 import uk.ac.diamond.scisoft.analysis.fitting.Fitter;
 import uk.ac.diamond.scisoft.analysis.fitting.functions.Polynomial;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.LocalServiceManager;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.AutoCalibrationRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.FromPointsCalibrationRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.FromRingsCalibrationRun;
@@ -484,7 +484,7 @@ public class DiffractionCalibrationUtils {
 		
 		DiffractionTableData cd = manager.getCurrentData();
 		NexusFile nexusFile = NexusFileHDF5.createNexusFile(filepath, false);
-		IPersistenceService service = (IPersistenceService)ServiceManager.getService(IPersistenceService.class);
+		IPersistenceService service = (IPersistenceService)LocalServiceManager.getPersistenceService();
 //		IPersistentFile file = service.createPersistentFile(filepath);
 		try {	
 			IPersistentNodeFactory pnf = service.getPersistentNodeFactory();
