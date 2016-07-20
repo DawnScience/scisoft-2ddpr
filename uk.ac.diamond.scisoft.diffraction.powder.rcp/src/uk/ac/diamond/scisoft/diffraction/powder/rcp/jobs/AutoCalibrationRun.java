@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.dawb.common.ui.monitor.ProgressMonitorWrapper;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.dawnsci.analysis.api.dataset.DatasetException;
 import org.eclipse.dawnsci.analysis.api.dataset.IDataset;
 import org.eclipse.dawnsci.analysis.api.roi.IROI;
 import org.eclipse.dawnsci.analysis.dataset.impl.Dataset;
@@ -97,7 +98,11 @@ public class AutoCalibrationRun extends AbstractCalibrationRun {
 		
 		int count = 0;
 		for (DiffractionTableData data : manager.iterable()) {
-			images[count] = DatasetUtils.sliceAndConvertLazyDataset(data.getImage());
+			try {
+				images[count] = DatasetUtils.sliceAndConvertLazyDataset(data.getImage());
+			} catch (DatasetException e) {
+				continue;
+			}
 			//TODO use better detector name for nexus paths
 			info[count++] = createPowderCalibrationInfo(data, true);
 		}

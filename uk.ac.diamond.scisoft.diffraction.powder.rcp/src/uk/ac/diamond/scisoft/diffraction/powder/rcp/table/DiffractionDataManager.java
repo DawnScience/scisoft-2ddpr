@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.dawnsci.analysis.api.dataset.DatasetException;
 import org.eclipse.dawnsci.analysis.api.dataset.IDataset;
 import org.eclipse.dawnsci.analysis.api.dataset.ILazyDataset;
 import org.eclipse.dawnsci.analysis.api.dataset.SliceND;
@@ -352,20 +353,28 @@ public class DiffractionDataManager {
 		
 		int j = path.lastIndexOf(File.separator);
 		String fileName = j > 0 ? path.substring(j + 1) : null;
-		it.hasNext();
-		IDataset next = it.next().getSlice().squeeze();
-		
 		int count = 0;
-		
-		next.setName(fileName + ":" + next.getName());
-		data.setImage(next);
-		data.setName(fileName + ": " + count);
-		data.setMetaData(DiffractionDefaultMetadata.getDiffractionMetadata(next.getShape()));
-		data.getImage().setMetadata(data.getMetaData());
-		data.setDistance(dist.getDouble(count++));
-		
+		if (it.hasNext()) {
+			try {
+				IDataset next = it.next().getSlice().squeeze();
+				next.setName(fileName + ":" + next.getName());
+				data.setImage(next);
+				data.setName(fileName + ": " + count);
+				data.setMetaData(DiffractionDefaultMetadata.getDiffractionMetadata(next.getShape()));
+				data.getImage().setMetadata(data.getMetaData());
+				data.setDistance(dist.getDouble(count++));
+			} catch (DatasetException e) {
+				logger.error("Could not get data from lazy dataset", e);
+			}
+		}	
 		while (it.hasNext()) {
-			IDataset n = it.next().getSlice().squeeze();
+			IDataset n;
+			try {
+				n = it.next().getSlice().squeeze();
+			} catch (DatasetException e) {
+				logger.error("Could not get data from lazy dataset", e);
+				continue;
+			}
 			IDiffractionMetadata md = DiffractionDefaultMetadata.getDiffractionMetadata(n.getShape());
 			n.setMetadata(md);
 			n.setName(fileName + ":" + n.getName() + count);
@@ -398,7 +407,13 @@ public class DiffractionDataManager {
 		
 		if (ld == null) return false;
 		
-		IDataset d = ld.getSlice().squeeze();
+		IDataset d;
+		try {
+			d = ld.getSlice().squeeze();
+		} catch (DatasetException e) {
+			logger.error("Could not get data from lazy dataset", e);
+			return false;
+		}
 		
 //		if (image == null){
 //			model.remove(data);
