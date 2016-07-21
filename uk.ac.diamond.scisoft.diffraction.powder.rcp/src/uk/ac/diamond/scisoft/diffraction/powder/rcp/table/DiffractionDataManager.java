@@ -19,7 +19,6 @@ import java.util.Map;
 import org.dawb.workbench.ui.Activator;
 import org.dawnsci.plotting.tools.diffraction.DiffractionDefaultMetadata;
 import org.dawnsci.plotting.tools.diffraction.DiffractionUtils;
-import org.dawnsci.plotting.tools.preference.diffraction.DiffractionRingsComposite;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -32,11 +31,11 @@ import org.eclipse.dawnsci.analysis.api.io.ILoaderService;
 import org.eclipse.dawnsci.analysis.api.metadata.IDiffractionMetadata;
 import org.eclipse.dawnsci.analysis.dataset.slicer.SliceViewIterator;
 import org.eclipse.january.DatasetException;
-import org.eclipse.january.dataset.AbstractDataset;
 import org.eclipse.january.dataset.Dataset;
 import org.eclipse.january.dataset.DatasetFactory;
 import org.eclipse.january.dataset.IDataset;
 import org.eclipse.january.dataset.ILazyDataset;
+import org.eclipse.january.dataset.ShapeUtils;
 import org.eclipse.january.metadata.IMetadata;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -50,7 +49,6 @@ import org.osgi.service.event.EventHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.ac.diamond.scisoft.analysis.io.DiffractionMetadata;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.LocalServiceManager;
 
 public class DiffractionDataManager {
@@ -240,7 +238,7 @@ public class DiffractionDataManager {
 					final List<String> dataNames = new ArrayList<String>();
 					for (String name : dataShapes.keySet()) {
 						int[] shape = dataShapes.get(name);
-						int[] ss = AbstractDataset.squeezeShape(shape, false);
+						int[] ss = ShapeUtils.squeezeShape(shape, false);
 						if (ss.length >= 2) {
 							dataNames.add(name);
 						}
@@ -262,7 +260,7 @@ public class DiffractionDataManager {
 							
 							int[] shape = dataShapes.get(outName[0]);
 							
-							int[] ss = AbstractDataset.squeezeShape(shape,false);
+							int[] ss = ShapeUtils.squeezeShape(shape,false);
 							
 							if (ss.length != 2) {
 								if (ss.length == 3) {
@@ -270,7 +268,7 @@ public class DiffractionDataManager {
 									final List<String> dataNames = new ArrayList<String>();
 									for (String name : dataShapes.keySet()) {
 										shape = dataShapes.get(name);
-										ss = AbstractDataset.squeezeShape(shape, false);
+										ss = ShapeUtils.squeezeShape(shape, false);
 										if (shape.length == 1 && shape[0] == size) {
 											dataNames.add(name);
 										}
