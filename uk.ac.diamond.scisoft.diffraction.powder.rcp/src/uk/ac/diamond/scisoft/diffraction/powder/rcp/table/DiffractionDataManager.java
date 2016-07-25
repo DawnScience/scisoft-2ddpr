@@ -19,25 +19,24 @@ import java.util.Map;
 import org.dawb.workbench.ui.Activator;
 import org.dawnsci.plotting.tools.diffraction.DiffractionDefaultMetadata;
 import org.dawnsci.plotting.tools.diffraction.DiffractionUtils;
-import org.dawnsci.plotting.tools.preference.diffraction.DiffractionRingsComposite;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.dawnsci.analysis.api.dataset.IDataset;
-import org.eclipse.dawnsci.analysis.api.dataset.ILazyDataset;
-import org.eclipse.dawnsci.analysis.api.dataset.SliceND;
 import org.eclipse.dawnsci.analysis.api.diffraction.DetectorProperties;
 import org.eclipse.dawnsci.analysis.api.diffraction.DiffractionCrystalEnvironment;
 import org.eclipse.dawnsci.analysis.api.diffraction.IDetectorPropertyListener;
 import org.eclipse.dawnsci.analysis.api.io.IDataHolder;
 import org.eclipse.dawnsci.analysis.api.io.ILoaderService;
 import org.eclipse.dawnsci.analysis.api.metadata.IDiffractionMetadata;
-import org.eclipse.dawnsci.analysis.api.metadata.IMetadata;
-import org.eclipse.dawnsci.analysis.dataset.impl.AbstractDataset;
-import org.eclipse.dawnsci.analysis.dataset.impl.Dataset;
-import org.eclipse.dawnsci.analysis.dataset.impl.DoubleDataset;
 import org.eclipse.dawnsci.analysis.dataset.slicer.SliceViewIterator;
+import org.eclipse.january.DatasetException;
+import org.eclipse.january.dataset.Dataset;
+import org.eclipse.january.dataset.DatasetFactory;
+import org.eclipse.january.dataset.IDataset;
+import org.eclipse.january.dataset.ILazyDataset;
+import org.eclipse.january.dataset.ShapeUtils;
+import org.eclipse.january.metadata.IMetadata;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.widgets.Display;
@@ -50,7 +49,6 @@ import org.osgi.service.event.EventHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.ac.diamond.scisoft.analysis.io.DiffractionMetadata;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.LocalServiceManager;
 
 public class DiffractionDataManager {
@@ -240,7 +238,7 @@ public class DiffractionDataManager {
 					final List<String> dataNames = new ArrayList<String>();
 					for (String name : dataShapes.keySet()) {
 						int[] shape = dataShapes.get(name);
-						int[] ss = AbstractDataset.squeezeShape(shape, false);
+						int[] ss = ShapeUtils.squeezeShape(shape, false);
 						if (ss.length >= 2) {
 							dataNames.add(name);
 						}
@@ -262,7 +260,7 @@ public class DiffractionDataManager {
 							
 							int[] shape = dataShapes.get(outName[0]);
 							
-							int[] ss = AbstractDataset.squeezeShape(shape,false);
+							int[] ss = ShapeUtils.squeezeShape(shape,false);
 							
 							if (ss.length != 2) {
 								if (ss.length == 3) {
@@ -270,7 +268,7 @@ public class DiffractionDataManager {
 									final List<String> dataNames = new ArrayList<String>();
 									for (String name : dataShapes.keySet()) {
 										shape = dataShapes.get(name);
-										ss = AbstractDataset.squeezeShape(shape, false);
+										ss = ShapeUtils.squeezeShape(shape, false);
 										if (shape.length == 1 && shape[0] == size) {
 											dataNames.add(name);
 										}
@@ -352,20 +350,28 @@ public class DiffractionDataManager {
 		
 		int j = path.lastIndexOf(File.separator);
 		String fileName = j > 0 ? path.substring(j + 1) : null;
-		it.hasNext();
-		IDataset next = it.next().getSlice().squeeze();
-		
 		int count = 0;
-		
-		next.setName(fileName + ":" + next.getName());
-		data.setImage(next);
-		data.setName(fileName + ": " + count);
-		data.setMetaData(DiffractionDefaultMetadata.getDiffractionMetadata(next.getShape()));
-		data.getImage().setMetadata(data.getMetaData());
-		data.setDistance(dist.getDouble(count++));
-		
+		if (it.hasNext()) {
+			try {
+				IDataset next = it.next().getSlice().squeeze();
+				next.setName(fileName + ":" + next.getName());
+				data.setImage(next);
+				data.setName(fileName + ": " + count);
+				data.setMetaData(DiffractionDefaultMetadata.getDiffractionMetadata(next.getShape()));
+				data.getImage().setMetadata(data.getMetaData());
+				data.setDistance(dist.getDouble(count++));
+			} catch (DatasetException e) {
+				logger.error("Could not get data from lazy dataset", e);
+			}
+		}	
 		while (it.hasNext()) {
-			IDataset n = it.next().getSlice().squeeze();
+			IDataset n;
+			try {
+				n = it.next().getSlice().squeeze();
+			} catch (DatasetException e) {
+				logger.error("Could not get data from lazy dataset", e);
+				continue;
+			}
 			IDiffractionMetadata md = DiffractionDefaultMetadata.getDiffractionMetadata(n.getShape());
 			n.setMetadata(md);
 			n.setName(fileName + ":" + n.getName() + count);
@@ -398,7 +404,13 @@ public class DiffractionDataManager {
 		
 		if (ld == null) return false;
 		
-		IDataset d = ld.getSlice().squeeze();
+		IDataset d;
+		try {
+			d = ld.getSlice().squeeze();
+		} catch (DatasetException e) {
+			logger.error("Could not get data from lazy dataset", e);
+			return false;
+		}
 		
 //		if (image == null){
 //			model.remove(data);
@@ -434,7 +446,7 @@ public class DiffractionDataManager {
 		
 		for (int i = 0; i < model.size(); i++) deltaDistance[i] = model.get(i).getDistance();
 		
-		return new DoubleDataset(deltaDistance, new int[]{deltaDistance.length});
+		return DatasetFactory.createFromObject(deltaDistance);
 	}
 	
 	public void clear(IDetectorPropertyListener listener) {

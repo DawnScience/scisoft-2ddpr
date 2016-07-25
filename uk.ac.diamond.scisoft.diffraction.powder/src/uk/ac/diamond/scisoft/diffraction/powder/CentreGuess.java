@@ -2,11 +2,11 @@ package uk.ac.diamond.scisoft.diffraction.powder;
 
 import org.eclipse.dawnsci.analysis.api.downsample.DownsampleMode;
 import org.eclipse.dawnsci.analysis.dataset.function.Downsample;
-import org.eclipse.dawnsci.analysis.dataset.impl.Dataset;
-import org.eclipse.dawnsci.analysis.dataset.impl.DatasetFactory;
-import org.eclipse.dawnsci.analysis.dataset.impl.DatasetUtils;
 import org.eclipse.dawnsci.analysis.dataset.impl.Image;
 import org.eclipse.dawnsci.analysis.dataset.impl.Signal;
+import org.eclipse.january.dataset.Dataset;
+import org.eclipse.january.dataset.DatasetFactory;
+import org.eclipse.january.dataset.DatasetUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

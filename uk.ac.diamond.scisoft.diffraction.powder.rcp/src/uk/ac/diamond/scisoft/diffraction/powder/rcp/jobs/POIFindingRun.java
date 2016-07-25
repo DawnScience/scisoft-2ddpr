@@ -4,23 +4,17 @@ import java.util.Collection;
 import java.util.List;
 
 import org.dawb.common.ui.monitor.ProgressMonitorWrapper;
-import org.dawnsci.plotting.tools.diffraction.DiffractionUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.dawnsci.analysis.api.dataset.IDataset;
-import org.eclipse.dawnsci.analysis.api.monitor.IMonitor;
 import org.eclipse.dawnsci.analysis.api.roi.IParametricROI;
 import org.eclipse.dawnsci.analysis.api.roi.IROI;
-import org.eclipse.dawnsci.analysis.dataset.impl.Dataset;
-import org.eclipse.dawnsci.analysis.dataset.impl.DatasetUtils;
 import org.eclipse.dawnsci.analysis.dataset.roi.EllipticalROI;
 import org.eclipse.dawnsci.analysis.dataset.roi.HyperbolicROI;
 import org.eclipse.dawnsci.plotting.api.IPlottingSystem;
 import org.eclipse.dawnsci.plotting.api.trace.IImageTrace;
 import org.eclipse.dawnsci.plotting.api.trace.ITrace;
+import org.eclipse.january.dataset.DatasetUtils;
+import org.eclipse.january.dataset.IDataset;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.swt.widgets.Display;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +25,6 @@ import uk.ac.diamond.scisoft.diffraction.powder.rcp.Activator;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.PowderCalibrationUtils;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.preferences.DiffractionCalibrationConstants;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionTableData;
-import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.RingSelectionGroup;
 
 public class POIFindingRun implements IRunnableWithProgress {
 

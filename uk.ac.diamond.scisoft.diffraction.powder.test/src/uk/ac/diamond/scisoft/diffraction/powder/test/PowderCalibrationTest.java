@@ -9,9 +9,9 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.dawnsci.analysis.dataset.impl.Dataset;
-import org.eclipse.dawnsci.analysis.dataset.impl.DoubleDataset;
 import org.eclipse.dawnsci.analysis.dataset.roi.EllipticalROI;
+import org.eclipse.january.dataset.Dataset;
+import org.eclipse.january.dataset.DatasetFactory;
 import org.junit.Test;
 
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrateEllipses;
@@ -46,8 +46,8 @@ public class PowderCalibrationTest {
 		
 		double[] expected = new double[]{1.304139779445208e+00,-3.538840672325122e+02};
 		
-		Dataset xd = new DoubleDataset(x1, new int[]{x1.length});
-		Dataset yd = new DoubleDataset(y1, new int[]{y1.length});
+		Dataset xd = DatasetFactory.createFromObject(x1);
+		Dataset yd = DatasetFactory.createFromObject(y1);
 		
 		double[] out = CentreFitter.fit(xd, yd);
 		
@@ -83,9 +83,9 @@ public class PowderCalibrationTest {
 		double[] expected = new double[]{5.625050069043890e+05,1.051567822834576e+03};
 		//min = 5.271676377107889e+03
 
-		Dataset majord = new DoubleDataset(major, new int[]{major.length});
-		Dataset xd = new DoubleDataset(x1, new int[]{x1.length});
-		Dataset yd = new DoubleDataset(y1, new int[]{y1.length});
+		Dataset majord = DatasetFactory.createFromObject(major);
+		Dataset xd = DatasetFactory.createFromObject(x1);
+		Dataset yd = DatasetFactory.createFromObject(y1);
 		
 		double[] out = ImageFitter.fit(majord, xd, yd, centre_line, pixel);
 		assertArrayEquals(expected, out, 0.1);
@@ -196,10 +196,10 @@ public class PowderCalibrationTest {
 	
 	double pixel = 0.2;
 	
-	Dataset majord = new DoubleDataset(major, new int[]{major.length});
-	Dataset distd = new DoubleDataset(dist, new int[]{dist.length});
-	Dataset dspaced = new DoubleDataset(dspace, new int[]{dspace.length});
-	Dataset sintd = new DoubleDataset(sint, new int[]{sint.length});
+	Dataset majord = DatasetFactory.createFromObject(major);
+	Dataset distd = DatasetFactory.createFromObject(dist);
+	Dataset dspaced = DatasetFactory.createFromObject(dspace);
+	Dataset sintd = DatasetFactory.createFromObject(sint);
 	
 	double[] expected = new double[]{6.890468342740828e+02, 4.250447566358648e-01};
 	
@@ -221,7 +221,7 @@ public class PowderCalibrationTest {
 				   559,
 				   659};
 		
-		Dataset deltad = new DoubleDataset(deltaDist, new int[]{deltaDist.length});
+		Dataset deltad = DatasetFactory.createFromObject(deltaDist);
 		
 		CalibrationOutput output = CalibrateEllipses.run(ellipses, allDSpacings,deltad,0.2);
 		
@@ -276,7 +276,7 @@ public class PowderCalibrationTest {
 		
 		double[] deltaDist = new double[]{580,780,980,1180,1380, 1580, 1780, 1980};
 		
-		Dataset deltad = new DoubleDataset(deltaDist, new int[]{deltaDist.length});
+		Dataset deltad = DatasetFactory.createFromObject(deltaDist);
 		
 		CalibrationOutput output = CalibrateEllipses.run(ellipses, allDSpacings,deltad,0.148);
 		

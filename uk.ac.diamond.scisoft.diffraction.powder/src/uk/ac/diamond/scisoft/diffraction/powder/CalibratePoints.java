@@ -3,13 +3,13 @@ package uk.ac.diamond.scisoft.diffraction.powder;
 import java.util.Arrays;
 import java.util.List;
 
-import org.eclipse.dawnsci.analysis.api.dataset.IDataset;
-import org.eclipse.dawnsci.analysis.api.metadata.IDiffractionMetadata;
 import org.eclipse.dawnsci.analysis.api.roi.IPolylineROI;
 import org.eclipse.dawnsci.analysis.api.roi.IROI;
-import org.eclipse.dawnsci.analysis.dataset.impl.Dataset;
-import org.eclipse.dawnsci.analysis.dataset.impl.DatasetFactory;
-import org.eclipse.dawnsci.analysis.dataset.impl.DoubleDataset;
+import org.eclipse.january.dataset.Dataset;
+import org.eclipse.january.dataset.DatasetFactory;
+import org.eclipse.january.dataset.DoubleDataset;
+import org.eclipse.january.dataset.IDataset;
+import org.eclipse.dawnsci.analysis.api.metadata.IDiffractionMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,9 +36,9 @@ public class CalibratePoints {
 			total += roi.getNumberOfPoints();
 		}
 		
-		final DoubleDataset qd = new DoubleDataset(new int[]{total});
-		final DoubleDataset xd = new DoubleDataset(new int[]{total});
-		final DoubleDataset yd = new DoubleDataset(new int[]{total});
+		final DoubleDataset qd = DatasetFactory.zeros(DoubleDataset.class, total);
+		final DoubleDataset xd = DatasetFactory.zeros(DoubleDataset.class, total);
+		final DoubleDataset yd = DatasetFactory.zeros(DoubleDataset.class, total);
 		int k = 0;
 		for (int i = 0; i < allEllipses.size(); i++) {
 			IPolylineROI roi = allEllipses.get(i);
@@ -117,7 +117,7 @@ public class CalibratePoints {
 			IDiffractionMetadata argMd = model.getMetadata(getParameterValues(), md);
 			QSpace q = new QSpace(argMd.getDetector2DProperties(), argMd.getDiffractionCrystalEnvironment());
 			
-			DoubleDataset qOut = new DoubleDataset(qd);
+			DoubleDataset qOut = qd.copy(DoubleDataset.class);
 			
 			for (int i = 0 ; i < qOut.getSize(); i++) {
 				data.set(q.qFromPixelPosition(xd.getDouble(i), yd.getDouble(i)).length(), i);

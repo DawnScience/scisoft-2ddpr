@@ -5,10 +5,10 @@ import static org.junit.Assert.assertEquals;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.dawnsci.analysis.dataset.impl.Dataset;
-import org.eclipse.dawnsci.analysis.dataset.impl.DatasetUtils;
-import org.eclipse.dawnsci.analysis.dataset.impl.DoubleDataset;
 import org.eclipse.dawnsci.analysis.dataset.roi.EllipticalROI;
+import org.eclipse.january.dataset.Dataset;
+import org.eclipse.january.dataset.DatasetFactory;
+import org.eclipse.january.dataset.DatasetUtils;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -48,7 +48,7 @@ public class MultiImageCalibrationRunTest {
 			List<ResolutionEllipseROI> forth = PowderCalibration.findMatchedEllipses(image, pixel, ceO2.getHKLs());
 			
 			double[] dDist = new double[]{300,400,600,700};
-			Dataset deltaDistance = new DoubleDataset(dDist, dDist.length);
+			Dataset deltaDistance = DatasetFactory.createFromObject(dDist);
 			
 			List<List<EllipticalROI>> allEllipses = new ArrayList<List<EllipticalROI>>();
 			allEllipses.add(new ArrayList<EllipticalROI>(first));
@@ -120,7 +120,7 @@ public class MultiImageCalibrationRunTest {
 			List<ResolutionEllipseROI> forth = PowderCalibration.findMatchedEllipses(image, pixel, ceO2.getHKLs());
 			
 			double[] dDist = new double[]{170,210,250,290};
-			Dataset deltaDistance = new DoubleDataset(dDist, dDist.length);
+			Dataset deltaDistance = DatasetFactory.createFromObject(dDist);
 			
 			List<List<EllipticalROI>> allEllipses = new ArrayList<List<EllipticalROI>>();
 			allEllipses.add(new ArrayList<EllipticalROI>(first));
@@ -192,7 +192,7 @@ public class MultiImageCalibrationRunTest {
 			List<ResolutionEllipseROI> forth = PowderCalibration.findMatchedEllipses(image, pixel, ceO2.getHKLs());
 			
 			double[] dDist = new double[]{250,350,450,550};
-			Dataset deltaDistance = new DoubleDataset(dDist, dDist.length);
+			Dataset deltaDistance = DatasetFactory.createFromObject(dDist);
 			
 			List<List<EllipticalROI>> allEllipses = new ArrayList<List<EllipticalROI>>();
 			allEllipses.add(new ArrayList<EllipticalROI>(first));
@@ -279,7 +279,7 @@ public class MultiImageCalibrationRunTest {
 		List<ResolutionEllipseROI> forth = PowderCalibration.findMatchedEllipses(image, pixel, ceO2.getHKLs());
 
 		double[] dDist = new double[]{350,450,550,650};
-		Dataset deltaDistance = new DoubleDataset(dDist, dDist.length);
+		Dataset deltaDistance = DatasetFactory.createFromObject(dDist);
 
 		List<List<EllipticalROI>> allEllipses = new ArrayList<List<EllipticalROI>>();
 		allEllipses.add(new ArrayList<EllipticalROI>(first));
