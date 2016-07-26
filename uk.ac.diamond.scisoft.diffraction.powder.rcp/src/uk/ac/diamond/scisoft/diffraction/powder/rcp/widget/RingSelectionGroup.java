@@ -31,6 +31,7 @@ public class RingSelectionGroup {
 		group.setLayout(new GridLayout(2, false));
 		group.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		group.setText("Select rings to use for calibration:");
+		group.setBackground(parent.getBackground());
 
 		spinnerRadio = new Button(group, SWT.RADIO);
 		spinnerRadio.setText("Rings to use (from inner):");

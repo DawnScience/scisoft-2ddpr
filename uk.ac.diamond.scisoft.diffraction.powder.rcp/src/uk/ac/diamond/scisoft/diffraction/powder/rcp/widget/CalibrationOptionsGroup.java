@@ -36,12 +36,14 @@ public class CalibrationOptionsGroup {
 		stackLayout = new StackLayout();
 		composite.setLayout(stackLayout);
 		composite.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, true, false));
+		
 
 		ellipseParamGroup = new Group(composite, SWT.FILL);
 		ellipseParamGroup.setText("Ellipse Calibration Options");
 		ellipseParamGroup.setToolTipText("Set the Ellipse Parameters");
 		ellipseParamGroup.setLayout(new GridLayout());
 		ellipseParamGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+		ellipseParamGroup.setBackground(content.getBackground());
 		
 		stackLayout.topControl = ellipseParamGroup;
 
@@ -53,6 +55,7 @@ public class CalibrationOptionsGroup {
 		pointCalibrateGroup.setToolTipText("Set the Point Parameters");
 		pointCalibrateGroup.setLayout(new GridLayout());
 		pointCalibrateGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+		pointCalibrateGroup.setBackground(content.getBackground());
 
 		Button fixEnergyButton = new Button(pointCalibrateGroup, SWT.CHECK);
 		fixEnergyButton.setText("Fix Energy");

@@ -78,7 +78,7 @@ public class CalibrationOutput {
 	}
 
 	public String getCalibrationOutputDescription() {
-		if (beamCentreX.getSize() > 1) return "Multi-Image Calibration,/nWavelength (Angstrom): " + wavelength + "/nResidual: " + residual;
+		if (beamCentreX.getSize() > 1) return "Multi-Image Calibration,\nWavelength (Angstrom): " + wavelength + "\nResidual: " + residual;
 		
 		CalibrationErrorOutput e = errors == null ? new CalibrationErrorOutput() : errors;
 		
@@ -87,27 +87,40 @@ public class CalibrationOutput {
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("Single Image Calibration:\n");
-		sb.append("Wavelength (Angstrom):\t" + df7.format(wavelength));
-		if (e.getWavelength() != null) sb.append(" (\u00B1" + df7.format(e.getWavelength()) + ")");
+		sb.append("Wavelength (Angstrom):\t" + toStringDoubleWithError(wavelength, e.getWavelength(),df7));
 		sb.append("\n");
-		sb.append("Distance (mm):\t\t" + df4.format(distance.getDouble(0)));
-		if (e.getDistance() != null) sb.append(" (\u00B1" + df4.format(e.getDistance().doubleValue()) + ")");
+		sb.append("Distance (mm):\t\t" + toStringDoubleWithError(distance.getDouble(0), e.getDistance(),df4));
 		sb.append("\n");
-		sb.append("Beam Centre X (pixel):\t" + df4.format(beamCentreX.getDouble(0)));
-		if (e.getBeamCentreX() != null) sb.append(" (\u00B1" + df4.format(e.getBeamCentreX().doubleValue()) + ")");
+		sb.append("Beam Centre X (pixel):\t" + toStringDoubleWithError(beamCentreX.getDouble(0), e.getBeamCentreX(),df4));
 		sb.append("\n");
-		sb.append("Beam Centre Y (pixel):\t" + df4.format(beamCentreY.getDouble(0)));
-		if (e.getBeamCentreY() != null) sb.append(" (\u00B1" + df4.format(e.getBeamCentreY().doubleValue()) + ")");
+		sb.append("Beam Centre Y (pixel):\t" + toStringDoubleWithError(beamCentreY.getDouble(0), e.getBeamCentreY(),df4));
 		sb.append("\n");
-		sb.append("Tilt (degrees):\t\t" + df4.format(tilt.getDouble(0)));
-		if (e.getTilt() != null) sb.append(" (\u00B1" + df4.format(e.getTilt().doubleValue()) + ")");
+		sb.append("Tilt (degrees):\t\t" + toStringDoubleWithError(tilt.getDouble(0), e.getTilt(),df4));
 		sb.append("\n");
-		sb.append("Tilt Angle (degrees):\t" + df4.format(tiltAngle.getDouble(0)));
-		if (e.getTiltAngle() != null) sb.append(" (\u00B1" + df4.format(e.getTiltAngle().doubleValue()) + ")");
+		sb.append("Tilt Angle (degrees):\t" + toStringDoubleWithError(tiltAngle.getDouble(0), e.getTiltAngle(),df4));
 		sb.append("\n");
 		sb.append("Residual:\t\t" + residual);
 		
 		return sb.toString();
+	}
+	
+	private String toStringDoubleWithError(double d, Double e, DecimalFormat df) {
+		
+		if (e == null) return df.format(d);
+		
+		int floor = (int)Math.floor(Math.log10(Math.abs(e)));
+		DecimalFormat decimal = new DecimalFormat();
+		decimal.setMaximumFractionDigits(1+(floor*-1));
+		decimal.setMinimumFractionDigits(1+(floor*-1));
+		String dString = decimal.format(d);
+		
+		double eDisplay = e*Math.pow(10, -1*floor+1);
+		DecimalFormat dError = new DecimalFormat();
+		dError.setMaximumFractionDigits(0);
+		String eString = dError.format(eDisplay);
+		
+		
+		return dString + "(" + eString + ")";
 	}
 
 }

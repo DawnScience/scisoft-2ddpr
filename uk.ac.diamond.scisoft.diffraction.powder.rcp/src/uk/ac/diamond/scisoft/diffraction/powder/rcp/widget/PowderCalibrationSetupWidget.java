@@ -89,9 +89,12 @@ public class PowderCalibrationSetupWidget {
 				CalibrationFactory.getCalibrationStandards().setSelectedCalibrant(calibrantName, true);
 				// set the maximum number of rings
 				int ringMaxNumber = CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs().size();
+				augmenter.setMaxCalibrantRings(ringMaxNumber);
 				ringSelection.setMaximumRingNumber(ringMaxNumber);
 				ringSelection.setRingSpinnerSelection(ringMaxNumber);
-				
+				if (group.getShowRings()){
+					augmenter.activate();
+				}
 			}
 		});
 		

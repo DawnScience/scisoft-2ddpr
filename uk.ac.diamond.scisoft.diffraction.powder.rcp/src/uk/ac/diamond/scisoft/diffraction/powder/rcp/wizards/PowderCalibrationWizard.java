@@ -12,6 +12,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.TraverseEvent;
 import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.calibration.DiffractionCalibrationUtils;
@@ -63,6 +64,7 @@ public class PowderCalibrationWizard extends Wizard {
 	
 	@Override
 	public void createPageControls(Composite pageContainer){
+		pageContainer.getShell().setBackgroundMode(SWT.INHERIT_FORCE);
 		super.createPageControls(pageContainer);
 		IWizardContainer wd = getContainer();
 		if (wd instanceof WizardDialog) {

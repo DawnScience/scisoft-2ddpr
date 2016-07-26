@@ -29,6 +29,7 @@ public class CalibrantSelectionGroup {
 		selectCalibComp.setText("Select calibrant:");
 		selectCalibComp.setLayout(new GridLayout(1, false));
 		selectCalibComp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		selectCalibComp.setBackground(composite.getBackground());
 
 		Composite comp = new Composite(selectCalibComp, SWT.NONE);
 		comp.setLayout(new GridLayout(2, true));
