@@ -10,6 +10,8 @@ import org.eclipse.dawnsci.plotting.api.PlottingFactory;
 import org.eclipse.dawnsci.plotting.api.tool.IToolPage;
 import org.eclipse.dawnsci.plotting.api.tool.IToolPageSystem;
 import org.eclipse.dawnsci.plotting.api.tool.ToolPageFactory;
+import org.eclipse.january.DatasetException;
+import org.eclipse.january.dataset.DatasetUtils;
 import org.eclipse.january.dataset.IDataset;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.WizardPage;
@@ -74,16 +76,7 @@ public class PowderSetupWizardPage extends WizardPage {
 		try {
 			system = PlottingFactory.createPlottingSystem();
 			system.createPlotPart(displayPlotComp, "PlotDataWizard", actionBarWrapper, PlotType.IMAGE, null);
-			IDataset ds = manager.getCurrentData().getImage();
-			ds.setMetadata(manager.getCurrentData().getMetaData());
-			system.createPlot2D(ds, null,null);
 			augmenter = new DiffractionImageAugmenter(system);
-			augmenter.setDiffractionMetadata(manager.getCurrentData().getMetaData());
-			augmenter.activate();
-			augmenter.drawBeamCentre(true);
-			CalibrationStandards standards = CalibrationFactory.getCalibrationStandards();
-			augmenter.drawCalibrantRings(true, standards.getCalibrant());
-			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -134,7 +127,7 @@ public class PowderSetupWizardPage extends WizardPage {
 			}
 		});
 
-		sashForm.setWeights(new int[]{20,40,40});
+		sashForm.setWeights(new int[]{30,35,35});
 	}
 	
 	private void threadSafeFlip(){
@@ -162,7 +155,10 @@ public class PowderSetupWizardPage extends WizardPage {
 
 	@Override
 	public void setVisible(boolean visible) {
-		if (visible) toolPage.activate();
+		if (visible) {
+			updatePlot();
+			toolPage.activate();
+		}
 		else toolPage.deactivate();
 		
 		super.setVisible(visible);
@@ -189,6 +185,22 @@ public class PowderSetupWizardPage extends WizardPage {
 	
 	public SimpleCalibrationParameterModel getModel(){
 		return model;
+	}
+	
+	private void updatePlot() {
+		try {
+			IDataset ds = manager.getCurrentData().getImage();
+			ds.setMetadata(manager.getCurrentData().getMetaData());
+			system.createPlot2D(ds, null,null);
+			augmenter.setDiffractionMetadata(manager.getCurrentData().getMetaData());
+			augmenter.activate();
+			augmenter.drawBeamCentre(true);
+			CalibrationStandards standards = CalibrationFactory.getCalibrationStandards();
+			augmenter.drawCalibrantRings(true, standards.getCalibrant());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 }

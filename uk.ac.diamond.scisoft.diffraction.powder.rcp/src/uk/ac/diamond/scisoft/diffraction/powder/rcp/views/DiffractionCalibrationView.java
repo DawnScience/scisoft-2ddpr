@@ -322,7 +322,7 @@ public class DiffractionCalibrationView extends ViewPart {
 					wiz.setNeedsProgressMonitor(true);
 					final WizardDialog wd = new WizardDialog(PlatformUI.getWorkbench().getDisplay().getActiveShell(),wiz);
 					
-					wd.setPageSize(new Point(900, 500));
+					wd.setPageSize(new Point(1200, 600));
 					wd.create();
 					wd.open();
 				} catch (Exception e) {

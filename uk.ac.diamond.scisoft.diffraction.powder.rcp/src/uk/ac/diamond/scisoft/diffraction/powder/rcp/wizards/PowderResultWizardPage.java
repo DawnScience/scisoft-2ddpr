@@ -12,10 +12,16 @@ import org.eclipse.dawnsci.plotting.api.PlottingFactory;
 import org.eclipse.dawnsci.plotting.api.tool.IToolPage;
 import org.eclipse.dawnsci.plotting.api.tool.IToolPageSystem;
 import org.eclipse.dawnsci.plotting.api.tool.ToolPageFactory;
+import org.eclipse.january.DatasetException;
 import org.eclipse.january.dataset.Dataset;
 import org.eclipse.january.dataset.DatasetUtils;
+import org.eclipse.january.dataset.IDataset;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
@@ -34,6 +40,7 @@ import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationStandards;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.calibration.DiffractionCalibrationUtils;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDelegate;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionTableData;
 
 public class PowderResultWizardPage extends WizardPage {
 
@@ -108,6 +115,19 @@ public class PowderResultWizardPage extends WizardPage {
 		if (manager.getSize() > 1){
 			DiffractionDelegate diffractionTableViewer = new DiffractionDelegate(left, manager);
 			diffractionTableViewer.updateTableColumnsAndLayout(0);
+			diffractionTableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+				@Override
+				public void selectionChanged(SelectionChangedEvent event) {
+					ISelection is = event.getSelection();
+					if (is instanceof StructuredSelection) {
+						StructuredSelection structSelection = (StructuredSelection) is;
+						DiffractionTableData selectedData = (DiffractionTableData) structSelection.getFirstElement();
+						manager.setCurrentData(selectedData);
+						updatePlot(manager.getCurrentData().getImage());
+						augmenter.setDiffractionMetadata(manager.getCurrentData().getMetaData());
+					}
+				}
+			});
 		}
 		
 		resultText = new StyledText(left, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.READ_ONLY |SWT.V_SCROLL);
@@ -159,11 +179,12 @@ public class PowderResultWizardPage extends WizardPage {
 	@Override
 	public void setVisible(boolean visible) {
 		if (visible) {
+			updatePlot(manager.getCurrentData().getImage());
 			setPageComplete(true);
 			toolPage.activate();
+			augmenter.setDiffractionMetadata(manager.getCurrentData().getMetaData());
 			augmenter.activate();
 			augmenter.drawBeamCentre(false);
-			
 		}
 		else {
 			toolPage.deactivate();
@@ -189,5 +210,14 @@ public class PowderResultWizardPage extends WizardPage {
 //		}
         super.setVisible(visible);
     }
+	
+	private void updatePlot(IDataset image) {
+		try {
+			system.createPlot2D(DatasetUtils.sliceAndConvertLazyDataset(image), null,null);
+		} catch (DatasetException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 
 }

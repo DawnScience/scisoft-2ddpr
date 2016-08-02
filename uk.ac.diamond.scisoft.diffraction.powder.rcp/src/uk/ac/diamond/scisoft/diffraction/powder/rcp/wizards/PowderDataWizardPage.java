@@ -6,8 +6,11 @@ import org.eclipse.dawnsci.plotting.api.PlotType;
 import org.eclipse.dawnsci.plotting.api.PlottingFactory;
 import org.eclipse.january.DatasetException;
 import org.eclipse.january.dataset.DatasetUtils;
+import org.eclipse.january.dataset.IDataset;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
@@ -18,6 +21,7 @@ import org.eclipse.swt.widgets.Composite;
 
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDelegate;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionTableData;
 
 public class PowderDataWizardPage extends WizardPage {
 
@@ -49,7 +53,13 @@ public class PowderDataWizardPage extends WizardPage {
 		diffractionTableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			@Override
 			public void selectionChanged(SelectionChangedEvent event) {
-				//TODO
+				ISelection is = event.getSelection();
+				if (is instanceof StructuredSelection) {
+					StructuredSelection structSelection = (StructuredSelection) is;
+					DiffractionTableData selectedData = (DiffractionTableData) structSelection.getFirstElement();
+					manager.setCurrentData(selectedData);
+					updatePlot(manager.getCurrentData().getImage());
+				}
 			}
 		});
 		
@@ -71,15 +81,19 @@ public class PowderDataWizardPage extends WizardPage {
 		
 	}
 	
+	private void updatePlot(IDataset image) {
+		try {
+			system.createPlot2D(DatasetUtils.sliceAndConvertLazyDataset(image), null,null);
+		} catch (DatasetException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	@Override
 	public void setVisible(boolean visible) {
 		if (visible) {
-			try {
-				system.createPlot2D(DatasetUtils.sliceAndConvertLazyDataset(manager.getCurrentData().getImage()), null,null);
-			} catch (DatasetException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			updatePlot(manager.getCurrentData().getImage());
 		} else {
 			system.clear();
 		}

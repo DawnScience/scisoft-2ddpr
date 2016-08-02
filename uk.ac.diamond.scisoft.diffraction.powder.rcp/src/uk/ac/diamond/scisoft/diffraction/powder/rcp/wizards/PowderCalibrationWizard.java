@@ -32,12 +32,13 @@ public class PowderCalibrationWizard extends Wizard {
 	private void setUpPages(){
 
 		final PowderSetupWizardPage page = new PowderSetupWizardPage(manager);
+		final PowderResultWizardPage result = new PowderResultWizardPage(manager);
 
 		listener = new IPageChangingListener() {
 
 			@Override
 			public void handlePageChanging(final PageChangingEvent event) {
-				if (event.getCurrentPage() == page && page.hasModelChanged()) {
+				if (event.getCurrentPage() == page && event.getTargetPage() == result  && page.hasModelChanged()) {
 
 					SimpleCalibrationParameterModel model = page.getModel();
 					
@@ -52,14 +53,10 @@ public class PowderCalibrationWizard extends Wizard {
 				}
 			}
 		};
-
-
-
-
-
+		
 		if (manager.getSize() > 1) addPage(new PowderDataWizardPage(manager));
 		addPage(page);
-		addPage(new PowderResultWizardPage(manager));
+		addPage(result);
 	}
 	
 	@Override
