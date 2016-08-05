@@ -74,7 +74,7 @@ public class GratingCalibrationDialog extends Dialog {
 		// Data table		
 		Composite dataColumn = new Composite(container, SWT.FILL | SWT.BORDER);
 		dataColumn.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		dataColumn.setLayout(new FillLayout());
+		dataColumn.setLayout(new GridLayout(1, true));
 
 		IToolPageSystem tps = (IToolPageSystem) plotSystem.getAdapter(IToolPageSystem.class);
 		try {
@@ -90,6 +90,9 @@ public class GratingCalibrationDialog extends Dialog {
 			e.printStackTrace();
 		}
 
+		// Add a composite to hold the grating information
+		Composite gratingCompo = new Composite(dataColumn, SWT.FILL | SWT.BORDER);
+		
 		return container;
 	}
 	
