@@ -337,7 +337,7 @@ public class DiffractionCalibrationView extends ViewPart {
 			@Override
 			public void run() {
 				try{
-					GratingCalibrationDialog grating = new GratingCalibrationDialog(Display.getCurrent().getActiveShell(), manager);
+					final GratingCalibrationDialog grating = new GratingCalibrationDialog(Display.getCurrent().getActiveShell(), manager);
 					
 					grating.open();
 				} catch (Exception e) {
