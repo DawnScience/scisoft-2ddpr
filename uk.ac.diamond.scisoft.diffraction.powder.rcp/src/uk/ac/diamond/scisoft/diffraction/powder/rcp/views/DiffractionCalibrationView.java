@@ -64,6 +64,7 @@ import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.ICalibrationStateList
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.IRunner;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.PowderCalibrationSetupWidget;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.StateChangedEvent;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.wizards.GratingCalibrationDialog;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.wizards.PowderCalibrationWizard;
 
 public class DiffractionCalibrationView extends ViewPart {
@@ -332,6 +333,20 @@ public class DiffractionCalibrationView extends ViewPart {
 		};
 		wizAction.setImageDescriptor(Activator.getImageDescriptor("icons/wand.png"));
 
+		IAction gratingAction = new Action("Grating calibration") {
+			@Override
+			public void run() {
+				try{
+					GratingCalibrationDialog grating = new GratingCalibrationDialog(Display.getCurrent().getActiveShell(), manager);
+					
+					grating.open();
+				} catch (Exception e) {
+					logger.error("Grating calibration: Something happened.", e);
+				}
+			}
+		};
+		gratingAction.setImageDescriptor(Activator.getImageDescriptor("icons/CalibrationView.png"));
+		
 		IAction importAction = new Action("Import metadata from file") {
 			@Override
 			public void run() {
@@ -421,6 +436,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		resetTableAction.setImageDescriptor(Activator.getImageDescriptor("icons/table_delete.png"));
 
 		toolBarMan.add(wizAction);
+		toolBarMan.add(gratingAction);
 		toolBarMan.add(importAction);
 		toolBarMan.add(exportAction);
 		toolBarMan.add(exportToXLSAction);
