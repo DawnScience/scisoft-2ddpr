@@ -40,6 +40,8 @@ public class PowderCalibrationSetupWidget {
 	private boolean showRings = true;
 
 	private CalibrantPositioningWidget cpw;
+	private CalibrationOptionsGroup options;
+	private Button usePoints;
 
 	public PowderCalibrationSetupWidget(DiffractionDataManager manager, 
 			SimpleCalibrationParameterModel model, DiffractionImageAugmenter augmenter,
@@ -147,11 +149,11 @@ public class PowderCalibrationSetupWidget {
 		
 		model.setAutomaticCalibration(true);
 		model.setIsPointCalibration(true);
-		final Button usePoints = new Button(left, SWT.CHECK);
+		usePoints = new Button(left, SWT.CHECK);
 		usePoints.setText("Point calibration");
 		usePoints.setSelection(true);
 		
-		final CalibrationOptionsGroup options = new CalibrationOptionsGroup(left, model, true,true);
+		options = new CalibrationOptionsGroup(left, model, true,true);
 		
 		usePoints.addSelectionListener(new SelectionAdapter() {
 			
@@ -174,7 +176,11 @@ public class PowderCalibrationSetupWidget {
 			public void widgetSelected(SelectionEvent e) {
 				boolean s = ((Button)e.getSource()).getSelection();
 				boolean showPoint = !s && model.isPointCalibration(); 
-				options.showOptions(!showPoint, showPoint);
+				if (manager.getSize() > 1){
+					options.enable(false);
+				} else {
+					options.showOptions(!showPoint, showPoint);
+				}
 				stackLayout.topControl = s ? auto : manualComposite;
 				autoManStack.layout();
 				model.setAutomaticCalibration(s);
@@ -235,6 +241,11 @@ public class PowderCalibrationSetupWidget {
 	
 	public boolean isAutomatic() {
 		return model.isAutomaticCalibration();
+	}
+	
+	public void enableOptions(boolean enable){
+		usePoints.setEnabled(enable);
+		options.enable(enable);
 	}
 
 }

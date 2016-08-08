@@ -128,7 +128,11 @@ public class DiffractionDataManager {
 	}
 	
 	public boolean remove(DiffractionTableData selectedData) {
-		return model.remove(selectedData);
+		boolean remove = model.remove(selectedData); 
+		
+		if (remove) fireDiffractionDataListeners(null);
+		
+		return remove;
 	}
 
 	public boolean isValidModel() {

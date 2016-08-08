@@ -126,6 +126,8 @@ public class PowderSetupWizardPage extends WizardPage {
 				
 			}
 		});
+		
+		widget.enableOptions(manager.getSize()<2);
 
 		sashForm.setWeights(new int[]{30,35,35});
 	}

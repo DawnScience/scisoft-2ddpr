@@ -149,6 +149,11 @@ public class DiffractionCalibrationView extends ViewPart {
 					public void run() {
 						diffractionTableViewer.refresh();
 						diffractionTableViewer.updateTableColumnsAndLayout(0);
+						if (manager.getSize() > 1) {
+							widget.enableOptions(false);
+						} else {
+							widget.enableOptions(true);
+						}
 						if (event == null) return;
 						diffractionTableViewer.setSelection(new StructuredSelection(event.getSource()),true);
 					}
@@ -206,10 +211,16 @@ public class DiffractionCalibrationView extends ViewPart {
 					PowderCalibrationUtils.clearFoundRings(plottingSystem);
 					enableActions(false);
 					goBabyGoButton.setEnabled(false);
+					
 				} else {
 					enableActions(true);
 					if (calibrationParameters.isAutomaticCalibration()) {
 						goBabyGoButton.setEnabled(true);
+					}
+					if (manager.getSize() > 1) {
+						widget.enableOptions(false);
+					} else {
+						widget.enableOptions(true);
 					}
 				}
 				widget.update();

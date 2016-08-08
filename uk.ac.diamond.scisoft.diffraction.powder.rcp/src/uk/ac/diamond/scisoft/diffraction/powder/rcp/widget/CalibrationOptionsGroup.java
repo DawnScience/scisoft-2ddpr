@@ -189,6 +189,11 @@ public class CalibrationOptionsGroup {
 
 		group.setEnabled(enabled);
 	}
+	
+	public void enable(boolean enable) {
+		enableControl(ellipseParamGroup, enable);
+		enableControl(ellipseParamGroup, enable);
+	}
 
 
 }
