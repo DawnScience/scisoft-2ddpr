@@ -18,18 +18,25 @@ import org.eclipse.dawnsci.plotting.api.tool.IToolPageSystem;
 import org.eclipse.dawnsci.plotting.api.tool.ToolPageFactory;
 import org.eclipse.january.dataset.Dataset;
 import org.eclipse.january.dataset.DatasetUtils;
+import org.eclipse.january.dataset.IDataset;
+import org.eclipse.january.metadata.MaskMetadata;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+import uk.ac.diamond.scisoft.diffraction.powder.GratingCalibration;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
 
 public class GratingCalibrationDialog extends Dialog {
@@ -37,10 +44,15 @@ public class GratingCalibrationDialog extends Dialog {
 	private DiffractionDataManager manager;
 	private IPlottingSystem<Composite> plotSystem;
 	private IToolPage toolPage;
+
 	private Text rulingText;
 	private Label spacingText;
 	private Label angleText;
+	private Button calibrateButton;
+	private Action calibrateAction;
 	
+	static final double hc = 1.2398419738620932; // keV nm 
+
 	public GratingCalibrationDialog(Shell shell, DiffractionDataManager manager) {
 		super(shell);
 		setShellStyle(getShellStyle() | SWT.RESIZE);
@@ -104,7 +116,7 @@ public class GratingCalibrationDialog extends Dialog {
 		rulingLabel.setText("Grating ruling spacing");
 		rulingText = new Text(gratingCompo, SWT.BORDER);
 		rulingText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-		rulingText.setText("blah");
+		rulingText.setText("100");
 		Label rulingUnitLabel = new Label(gratingCompo, SWT.BORDER);
 		rulingUnitLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		rulingUnitLabel.setText("nm");
@@ -113,7 +125,7 @@ public class GratingCalibrationDialog extends Dialog {
 		spacingLabel.setText("Fringe spacing");
 		spacingText = new Label(gratingCompo, SWT.BORDER);
 		spacingText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-		spacingText.setText("blah");
+		spacingText.setText("");
 		Label spacingUnitLabel = new Label(gratingCompo, SWT.BORDER);
 		spacingUnitLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		spacingUnitLabel.setText("px");
@@ -122,10 +134,12 @@ public class GratingCalibrationDialog extends Dialog {
 		angleLabel.setText("Grating angle");
 		angleText = new Label(gratingCompo, SWT.BORDER);
 		angleText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-		angleText.setText("blah");
+		angleText.setText("");
 		Label angleUnitLabel = new Label(gratingCompo, SWT.BORDER);
 		angleUnitLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		angleUnitLabel.setText("°");
+		
+		createActions();
 		
 		return container;
 	}
@@ -141,4 +155,48 @@ public class GratingCalibrationDialog extends Dialog {
 		return super.close();
 	}
 	
+	// TODO: fix the button spacing
+	@Override
+	protected void createButtonsForButtonBar(Composite parent) {
+		parent.setLayout(new GridLayout(3, true));
+		calibrateButton = new Button(parent, SWT.NONE);
+		calibrateButton.setText("Calibrate");
+		calibrateButton.setLayoutData(new GridData(SWT.FILL));
+		calibrateButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent event) {
+				calibrateAction.run();
+			}
+		});
+		
+		super.createButtonsForButtonBar(parent);
+	}
+
+	private void createActions() {
+		calibrateAction = new Action("Calibrate Grating") {
+			@Override
+			public void run() {
+				GratingCalibration gc = new GratingCalibration();
+				gc.setBeamCentre(manager.getCurrentData().getMetaData().getDetector2DProperties().getBeamCentreCoords());
+				gc.setEnergy(hc/manager.getCurrentData().getMetaData().getDiffractionCrystalEnvironment().getWavelength());
+				gc.setGratingspacing(Double.parseDouble(rulingText.getText()));
+				gc.setPixelPitch(manager.getCurrentData().getMetaData().getDetector2DProperties().getHPxSize()); // Assume square pixels for now
+				
+				Dataset data, mask;
+				data = DatasetUtils.convertToDataset(manager.getCurrentData().getImage());
+				MaskMetadata maskMD = data.getFirstMetadata(MaskMetadata.class);
+				mask = (maskMD != null) ? DatasetUtils.convertToDataset(maskMD.getMask()) : null;
+				double distance = gc.getDetectorDistance(data, mask);
+				
+				// Set the data that is stored in the diffraction metadata
+				manager.getCurrentData().setDistance(distance);
+				manager.getCurrentData().getMetaData().getDetector2DProperties().setBeamCentreCoords(gc.getBeamCentre());
+				
+				// Set the diagnostic data in the dialog
+				spacingText.setText(Double.toString(gc.getFringeSpacing()));
+				angleText.setText(Double.toString(gc.getPatternAngle()));
+				
+			}
+		};
+	}
 }
