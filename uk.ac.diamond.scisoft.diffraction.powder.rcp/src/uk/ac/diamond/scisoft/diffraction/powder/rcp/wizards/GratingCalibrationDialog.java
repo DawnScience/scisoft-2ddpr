@@ -81,7 +81,7 @@ public class GratingCalibrationDialog extends Dialog {
 			toolPage = ToolPageFactory.getToolPage("uk.ac.diamond.scisoft.diffraction.powder.rcp.powderDiffractionTool");
 			toolPage.setPlottingSystem(plotSystem);
 			toolPage.setToolSystem(tps);
-			toolPage.setTitle("Powder wizard tool");
+			toolPage.setTitle("Grating Calibration Dialog");
 			toolPage.setToolId(String.valueOf(toolPage.hashCode()));
 			toolPage.createControl(dataColumn);
 			toolPage.activate();
@@ -93,11 +93,19 @@ public class GratingCalibrationDialog extends Dialog {
 		// Add a composite to hold the grating information
 		Composite gratingCompo = new Composite(dataColumn, SWT.FILL | SWT.BORDER);
 		
+		
 		return container;
 	}
 	
 	@Override
 	protected Point getInitialSize() {
-		return new Point(800, 600);
+		return new Point(1000, 750);
 	}
+	
+	@Override
+	public boolean close() {
+		toolPage.deactivate();
+		return super.close();
+	}
+	
 }
