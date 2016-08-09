@@ -18,7 +18,6 @@ import org.eclipse.dawnsci.plotting.api.tool.IToolPageSystem;
 import org.eclipse.dawnsci.plotting.api.tool.ToolPageFactory;
 import org.eclipse.january.dataset.Dataset;
 import org.eclipse.january.dataset.DatasetUtils;
-import org.eclipse.january.dataset.IDataset;
 import org.eclipse.january.metadata.MaskMetadata;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.Dialog;
@@ -51,7 +50,7 @@ public class GratingCalibrationDialog extends Dialog {
 	private Button calibrateButton;
 	private Action calibrateAction;
 	
-	static final double hc = 1.2398419738620932; // keV nm 
+	static final double hc = 12.398419738620932; // keV Å 
 
 	public GratingCalibrationDialog(Shell shell, DiffractionDataManager manager) {
 		super(shell);
