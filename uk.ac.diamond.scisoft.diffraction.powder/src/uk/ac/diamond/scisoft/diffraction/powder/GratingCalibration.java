@@ -99,7 +99,13 @@ public class GratingCalibration {
 
 	public double getDetectorDistance(Dataset input, Dataset mask) {
 		
-		Map<FitKeys, Double> fitResults = fitGrating(input, mask, beamCentre);
+		Map<FitKeys, Double> fitResults;
+		try {
+			fitResults = fitGrating(input, mask, beamCentre);
+		} catch (Exception e) {
+			// try again without the beam centre
+			fitResults = fitGrating(input, mask, null);
+		}
 		fringeSpacing = fitResults.get(FitKeys.FRINGE_SPACING);
 		patternAngle = fitResults.get(FitKeys.PATTERN_ANGLE);
 		beamCentre = new double[] {fitResults.get(FitKeys.BEAM_CENTRE_X), fitResults.get(FitKeys.BEAM_CENTRE_Y)};
