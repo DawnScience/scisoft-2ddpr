@@ -492,7 +492,8 @@ public class GratingCalibration {
 			}
 		}
 		// Get the abscissae of the data, or build one
-		ILazyDataset[] abscissae = ((AxesMetadata) inputData.getFirstMetadata(AxesMetadata.class)).getAxis(0);
+		AxesMetadata aM = inputData.getFirstMetadata(AxesMetadata.class);
+		ILazyDataset[] abscissae = (aM != null) ? inputData.getFirstMetadata(AxesMetadata.class).getAxis(0) : null;
 		Dataset abscissa = null;
 		if (abscissae != null && abscissae[0] != null) {
 			try {
