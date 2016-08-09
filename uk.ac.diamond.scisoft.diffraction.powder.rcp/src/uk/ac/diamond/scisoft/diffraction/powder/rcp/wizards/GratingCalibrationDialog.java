@@ -188,7 +188,7 @@ public class GratingCalibrationDialog extends Dialog {
 				double distance = gc.getDetectorDistance(data, mask);
 				
 				// Set the data that is stored in the diffraction metadata
-				manager.getCurrentData().setDistance(distance);
+				manager.getCurrentData().getMetaData().getDetector2DProperties().setBeamCentreDistance(distance);
 				manager.getCurrentData().getMetaData().getDetector2DProperties().setBeamCentreCoords(gc.getBeamCentre());
 				
 				// Set the diagnostic data in the dialog
