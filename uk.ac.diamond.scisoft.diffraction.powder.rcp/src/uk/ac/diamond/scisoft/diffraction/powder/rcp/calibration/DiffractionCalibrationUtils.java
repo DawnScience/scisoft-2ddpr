@@ -569,6 +569,7 @@ public class DiffractionCalibrationUtils {
 	public static IRunnableWithProgress getCalibrationRunnable(SimpleCalibrationParameterModel model, DiffractionDataManager manager, IPlottingSystem<?> system){
 		
 		if (manager.getSize() > 1) {
+			if (model.isAutomaticCalibration())return new AutoCalibrationRun(Display.getDefault(), system ,manager , model);
 			return new FromRingsCalibrationRun(Display.getDefault(), system, manager, model);
 		}
 		

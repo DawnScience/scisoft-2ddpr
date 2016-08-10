@@ -447,12 +447,13 @@ public class DiffractionCalibrationView extends ViewPart {
 		resetTableAction.setImageDescriptor(Activator.getImageDescriptor("icons/table_delete.png"));
 
 		toolBarMan.add(wizAction);
-		toolBarMan.add(gratingAction);
 		toolBarMan.add(importAction);
 		toolBarMan.add(exportAction);
 		toolBarMan.add(exportToXLSAction);
 		toolBarMan.add(resetRingsAction);
 		toolBarMan.add(resetTableAction);
+		
+		this.getViewSite().getActionBars().getMenuManager().add(gratingAction);
 	}
 
 	private void updateAfterCalibration() {
