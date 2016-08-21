@@ -122,7 +122,7 @@ public class MultiplePeakFittingEllipseFinder {
 				widths.set(param[2], i++);
 			}
 			
-			double threshold = (double)Stats.median(widths) + widths.stdDeviation().doubleValue()*2;
+			double threshold = (double)Stats.median(widths) + widths.stdDeviation()*2;
 			
 			iter = peaks.iterator();
 			
