@@ -172,23 +172,6 @@
       </initializer>
    </extension>
    <extension
-         point="org.dawnsci.introRegister">
-      <introPageRegister
-            class="uk.ac.diamond.scisoft.diffraction.powder.rcp.DiffractionCalibrationPerspectiveLaunch"
-            description="For calibrating 2D powder diffraction images"
-            icon="intro/graphics/PowderCalibrationWelcome48.png"
-            id="uk.ac.diamond.scisoft.diffraction.powder.rcp.calibrationPerspectiveIntro"
-            name="Powder Diffraction Calibration">
-      </introPageRegister>
-   </extension>
-   <extension
-         point="org.eclipse.ui.intro.configExtension">
-      <configExtension
-            configId="org.dawnsci.intro.universalConfig"
-            content="intro/introContribution.xml">
-      </configExtension>
-   </extension>
-   <extension
          point="org.eclipse.ui.menus">
       <menuContribution
             allPopups="false"
