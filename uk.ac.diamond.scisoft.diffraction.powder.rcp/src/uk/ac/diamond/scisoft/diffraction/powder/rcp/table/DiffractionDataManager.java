@@ -242,6 +242,7 @@ public class DiffractionDataManager {
 					final List<String> dataNames = new ArrayList<String>();
 					for (String name : dataShapes.keySet()) {
 						int[] shape = dataShapes.get(name);
+						if (shape == null) continue;
 						int[] ss = ShapeUtils.squeezeShape(shape, false);
 						if (ss.length >= 2) {
 							dataNames.add(name);
@@ -272,6 +273,7 @@ public class DiffractionDataManager {
 									final List<String> dataNames = new ArrayList<String>();
 									for (String name : dataShapes.keySet()) {
 										shape = dataShapes.get(name);
+										if (shape == null) continue;
 										ss = ShapeUtils.squeezeShape(shape, false);
 										if (shape.length == 1 && shape[0] == size) {
 											dataNames.add(name);
@@ -298,7 +300,7 @@ public class DiffractionDataManager {
 					});
 					
 				} catch (Exception e) {
-					logger.error(e.getMessage());
+					logger.error("Error loading data",e);
 				}
 			}
 			
