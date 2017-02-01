@@ -545,7 +545,7 @@ public class SimpleCalibrationParameterModel {
 			
 			DetectorProperties d = new DetectorProperties(distance,
 					beamCentre[0]*pixelHeightInMM, beamCentre[1]*pixelWidthInMM, heightInPixels, widthInPixels, pixelHeightInMM, pixelWidthInMM);
-			d.setNormalAnglesInDegrees(normAngle[0], 0, normAngle[1]);
+			d.setNormalAnglesInDegrees(normAngle[0], 0, normAngle[2]);
 			
 			return new DiffractionMetadata(null, d, ndce);
 		}
