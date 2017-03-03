@@ -42,6 +42,11 @@
             id="uk.ac.diamond.scisoft.diffraction.powder.rcp.diffractiontoolautocal"
             name="Auto-Calibrate">
       </command>
+      <command
+            defaultHandler="uk.ac.diamond.scisoft.diffraction.powder.rcp.handlers.CalibrationWizardDataVisHandler"
+            id="org.dawnsci.datavis.calibration.powder"
+            name="2D Powder Calibrate">
+      </command>
    </extension>
    <extension
          point="org.eclipse.dawnsci.plotting.api.toolPageAction">
@@ -229,6 +234,24 @@
                style="push"
                tooltip="Refresh file tree">
          </command>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:org.eclipse.ui.main.menu">
+         <menu
+               id="org.dawnsc.menu.main.tools"
+               label="Tools"
+               mnemonic="T">
+            <menu
+                  id="org.dawnsci.menu.calibrate"
+                  label="Calibrate">
+               <command
+                     commandId="org.dawnsci.datavis.calibration.powder"
+                     label="2D Powder"
+                     style="push">
+               </command>
+            </menu>
+         </menu>
       </menuContribution>
    </extension>
    <extension

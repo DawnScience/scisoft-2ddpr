@@ -157,6 +157,10 @@ public class DiffractionDataManager {
 	}
 
 	public void loadData(String filePath, String dataFullName) {
+		loadData(filePath, dataFullName, true);
+	}
+	
+	public void loadData(String filePath, String dataFullName, boolean async) {
 		if (filePath == null) return;
 
 		for (DiffractionTableData d : model) {
@@ -172,7 +176,11 @@ public class DiffractionDataManager {
 		data.setName(fileName);
 		model.add(data);
 		PowderFileLoaderJob job = new PowderFileLoaderJob(filePath, dataFullName, data);
-		job.schedule();
+		if (async) {
+			job.schedule();
+		} else {
+			job.run(null);
+		}
 
 	}
 	
