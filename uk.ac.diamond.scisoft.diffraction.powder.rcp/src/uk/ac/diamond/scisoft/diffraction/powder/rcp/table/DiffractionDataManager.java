@@ -471,5 +471,11 @@ public class DiffractionDataManager {
 		model.clear();
 	}
 
+	public void setDiffractionMetadataForAll(IDiffractionMetadata metadata) {
+		for (DiffractionTableData data : model) {
+			data.setMetaData(metadata.clone());
+		}
+		fireDiffractionDataListeners(new DiffractionDataChanged(currentData));
+	}
 
 }

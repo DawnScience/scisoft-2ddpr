@@ -8,6 +8,7 @@ import org.dawb.common.ui.wizard.persistence.PersistenceImportWizard;
 import org.dawnsci.common.widgets.dialog.FileSelectionDialog;
 import org.dawnsci.plotting.tools.diffraction.DiffractionImageAugmenter;
 import org.eclipse.dawnsci.analysis.api.diffraction.IPowderCalibrationInfo;
+import org.eclipse.dawnsci.analysis.api.metadata.IDiffractionMetadata;
 import org.eclipse.dawnsci.plotting.api.IPlottingSystem;
 import org.eclipse.dawnsci.plotting.api.PlottingFactory;
 import org.eclipse.jface.action.Action;
@@ -51,6 +52,7 @@ import org.slf4j.LoggerFactory;
 
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationStandards;
+import uk.ac.diamond.scisoft.analysis.io.NexusDiffractionCalibrationReader;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.Activator;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.PowderCalibrationUtils;
@@ -361,14 +363,20 @@ public class DiffractionCalibrationView extends ViewPart {
 		IAction importAction = new Action("Import metadata from file") {
 			@Override
 			public void run() {
+
+				FileDialog dialog = new FileDialog(Display.getDefault().getActiveShell(), SWT.OPEN);
+				dialog.setFilterPath(lastPath);
+				dialog.open();
+				String fn = dialog.getFileName();
+				lastPath= dialog.getFilterPath();
+				fn = lastPath + File.separator + fn;
 				try {
-					IWizard wiz = EclipseUtils.openWizard(PersistenceImportWizard.ID, false);
-					WizardDialog wd = new  WizardDialog(Display.getCurrent().getActiveShell(), wiz);
-					wd.setTitle(wiz.getWindowTitle());
-					wd.open();
+					IDiffractionMetadata meta = NexusDiffractionCalibrationReader.getDiffractionMetadataFromNexus(fn, null);
+					manager.setDiffractionMetadataForAll(meta);
 				} catch (Exception e) {
 					logger.error("Problem opening import!", e);
 				}
+				updateAfterCalibration();
 			}
 		};
 		importAction.setImageDescriptor(Activator.getImageDescriptor("icons/mask-import-wiz.png"));
@@ -377,25 +385,13 @@ public class DiffractionCalibrationView extends ViewPart {
 			@Override
 			public void run() {
 				try {
-					FileSelectionDialog dialog = new FileSelectionDialog(Display.getDefault().getActiveShell());
-//					FileDialog dialog = new FileDialog(Display.getDefault().getActiveShell(), SWT.SAVE);
-					dialog.setNewFile(true);
-					dialog.setFolderSelector(false);
-					if (lastPath != null) {
-						File f = new File(lastPath);
-						if (!f.isDirectory()) {
-							lastPath = f.getParent();
-						}
-						dialog.setPath(lastPath + File.separator + "calibration_output.nxs");
-					} else {
-						dialog.setPath(System.getProperty("user.home")+ File.separator + "calibration_output.nxs");
-					}
-					
-					dialog.create();
-					if (dialog.open() == Dialog.OK) {
-						lastPath = dialog.getPath();
-						DiffractionCalibrationUtils.saveToNexusFile(manager, lastPath);
-					}
+					FileDialog dialog = new FileDialog(Display.getDefault().getActiveShell(), SWT.SAVE);
+
+					dialog.setFilterPath(lastPath);
+					dialog.open();
+					lastPath = dialog.getFilterPath();
+					String fn = lastPath + File.separator + dialog.getFileName();
+					DiffractionCalibrationUtils.saveToNexusFile(manager, fn);
 
 				} catch (Exception e) {
 					MessageDialog.openError(Display.getDefault().getActiveShell(), "File save error!", "Could not save calibration file! (Do you have write access to this folder?)");

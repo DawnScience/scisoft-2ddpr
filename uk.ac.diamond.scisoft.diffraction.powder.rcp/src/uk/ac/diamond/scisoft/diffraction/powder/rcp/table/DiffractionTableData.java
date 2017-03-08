@@ -58,6 +58,7 @@ public class DiffractionTableData {
 	
 	public void setMetaData(IDiffractionMetadata md) {
 		this.metaData = md;
+		image.setMetadata(md);
 	}
 	
 	public IDataset getImage() {
