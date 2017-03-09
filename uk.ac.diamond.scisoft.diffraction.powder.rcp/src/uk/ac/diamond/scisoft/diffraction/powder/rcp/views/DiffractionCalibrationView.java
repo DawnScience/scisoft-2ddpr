@@ -379,7 +379,7 @@ public class DiffractionCalibrationView extends ViewPart {
 				updateAfterCalibration();
 			}
 		};
-		importAction.setImageDescriptor(Activator.getImageDescriptor("icons/mask-import-wiz.png"));
+		importAction.setImageDescriptor(Activator.getImageDescriptor("icons/import_wiz.png"));
 
 		IAction exportAction = new Action("Export metadata to file") {
 			@Override
@@ -399,7 +399,7 @@ public class DiffractionCalibrationView extends ViewPart {
 				}
 			}
 		};
-		exportAction.setImageDescriptor(Activator.getImageDescriptor("icons/mask-export-wiz.png"));
+		exportAction.setImageDescriptor(Activator.getImageDescriptor("icons/save_edit.png"));
 
 		IAction exportToXLSAction = new Action("Export metadata to XLS") {
 			@Override
