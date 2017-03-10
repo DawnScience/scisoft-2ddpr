@@ -66,8 +66,6 @@ public class PowderCalibrationSetupWidget {
 			}
 		});
 		
-		left.addDisposeListener(group.getDisposeListener());
-		
 		final RingSelectionGroup ringSelection = new RingSelectionGroup(left, CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs().size(), model);
 		ringSelection.addRingNumberSpinnerListener(new SelectionAdapter() {
 			@Override

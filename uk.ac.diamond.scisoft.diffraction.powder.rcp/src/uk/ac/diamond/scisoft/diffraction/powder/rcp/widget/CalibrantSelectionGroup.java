@@ -3,6 +3,7 @@ package uk.ac.diamond.scisoft.diffraction.powder.rcp.widget;
 import java.util.Arrays;
 
 import org.dawnsci.plotting.tools.preference.diffraction.DiffractionPreferencePage;
+import org.eclipse.core.commands.ParameterTypeEvent;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
@@ -81,22 +82,29 @@ public class CalibrantSelectionGroup {
 			@Override
 			public void calibrantSelectionChanged(CalibrantSelectionEvent evt) {
 				// Keep the old selection
-				String oldSelection = calibrantCombo.getItems()[calibrantCombo.getSelectionIndex()];
+				int gamlaSelectionIndex = calibrantCombo.getSelectionIndex();
+				// But make sure it is valid
+				if (gamlaSelectionIndex == -1) gamlaSelectionIndex++;
+				String oldSelection = calibrantCombo.getItems()[gamlaSelectionIndex];
+				int oldSize = calibrantCombo.getItemCount();
 				// refresh the list 
 				calibrantCombo.setItems(new String[]{});
 				for (String c : CalibrationFactory.getCalibrationStandards().getCalibrantList()) {
 					calibrantCombo.add(c);
 				}
-				// reselect the old selection, or default to the first item, if it has been removed
-				int oldSelectionNewIndex = calibrantCombo.indexOf(oldSelection);
-				// Change -1 to zero, any other value is left unchanged
-				oldSelectionNewIndex += (oldSelectionNewIndex == -1) ? 1 : 0;
-				calibrantCombo.select(oldSelectionNewIndex);
-				calibrantCombo.setText(calibrantCombo.getItem(oldSelectionNewIndex));
-				
+				int nyIndex = (calibrantCombo.getItemCount() > oldSize) ?
+					Arrays.asList(calibrantCombo.getItems()).indexOf(evt.getCalibrant()) :
+					// reselect the old selection
+					calibrantCombo.indexOf(oldSelection);
+
+				// Check if the selection has disappeared; change -1 to zero, any other value is left unchanged
+				if (nyIndex < -1) nyIndex++;
+				calibrantCombo.select(nyIndex);
 			}
 		};
 		CalibrationFactory.addCalibrantSelectionListener(calSelListener);
+		// Make sure the Listeners are disposed at the correct time.
+		composite.addDisposeListener(getDisposeListener());
 
 		Button configCalibrantButton = new Button(comp, SWT.NONE);
 		configCalibrantButton.setText("Configure...");
@@ -150,12 +158,16 @@ public class CalibrantSelectionGroup {
 	public boolean getShowRings(){
 		return showCalibAndBeamCtrCheckBox.getSelection();
 	}
-	
+
+	/**
+	 * Dispose of all associated Listeners.
+	 */
 	public void dispose() {
 		CalibrationFactory.removeCalibrantSelectionListener(calSelListener);
 	}
 	
-	public DisposeListener getDisposeListener() {
+	// Get a dispose listener to make sure this group is disposed of when the parent Composite is
+	private DisposeListener getDisposeListener() {
 		return new DisposeListener() {
 			
 			@Override
