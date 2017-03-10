@@ -1,8 +1,12 @@
 package uk.ac.diamond.scisoft.diffraction.powder.rcp.widget;
 
+import java.util.Arrays;
+
 import org.dawnsci.plotting.tools.preference.diffraction.DiffractionPreferencePage;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -16,12 +20,15 @@ import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 
+import uk.ac.diamond.scisoft.analysis.crystallography.CalibrantSelectedListener;
+import uk.ac.diamond.scisoft.analysis.crystallography.CalibrantSelectionEvent;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 
 public class CalibrantSelectionGroup {
 
 	private Combo calibrantCombo;
 	private Button showCalibAndBeamCtrCheckBox;
+	private CalibrantSelectedListener calSelListener;
 	
 	public CalibrantSelectionGroup(Composite composite) {
 		
@@ -67,6 +74,29 @@ public class CalibrantSelectionGroup {
 		if (s != null) {
 			calibrantCombo.setText(s);
 		}
+		
+		// CalibrantFactory listener
+		calSelListener = new CalibrantSelectedListener() {
+			
+			@Override
+			public void calibrantSelectionChanged(CalibrantSelectionEvent evt) {
+				// Keep the old selection
+				String oldSelection = calibrantCombo.getItems()[calibrantCombo.getSelectionIndex()];
+				// refresh the list 
+				calibrantCombo.setItems(new String[]{});
+				for (String c : CalibrationFactory.getCalibrationStandards().getCalibrantList()) {
+					calibrantCombo.add(c);
+				}
+				// reselect the old selection, or default to the first item, if it has been removed
+				int oldSelectionNewIndex = calibrantCombo.indexOf(oldSelection);
+				// Change -1 to zero, any other value is left unchanged
+				oldSelectionNewIndex += (oldSelectionNewIndex == -1) ? 1 : 0;
+				calibrantCombo.select(oldSelectionNewIndex);
+				calibrantCombo.setText(calibrantCombo.getItem(oldSelectionNewIndex));
+				
+			}
+		};
+		CalibrationFactory.addCalibrantSelectionListener(calSelListener);
 
 		Button configCalibrantButton = new Button(comp, SWT.NONE);
 		configCalibrantButton.setText("Configure...");
@@ -121,5 +151,17 @@ public class CalibrantSelectionGroup {
 		return showCalibAndBeamCtrCheckBox.getSelection();
 	}
 	
+	public void dispose() {
+		CalibrationFactory.removeCalibrantSelectionListener(calSelListener);
+	}
 	
+	public DisposeListener getDisposeListener() {
+		return new DisposeListener() {
+			
+			@Override
+			public void widgetDisposed(DisposeEvent e) {
+				dispose();				
+			}
+		};
+	}
 }
