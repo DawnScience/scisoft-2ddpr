@@ -156,7 +156,7 @@ public class GratingCalibration {
 			// box profiles taken across the short edge, running along the long edge
 			List<Dataset> longIntegrals = new ArrayList<Dataset>();
 
-			int idTheta = 10;
+			int idTheta =20;
 			for (int iTheta = 0; iTheta < 180; iTheta += idTheta)
 				longIntegrals.add(boxIntegrationAtDegreeAngle(input, mask, iTheta, boxShape, boxCentre, bounds));
 
@@ -207,7 +207,8 @@ public class GratingCalibration {
 				double span = ((double) peakLocationData.max() - (double) peakLocationData.min());
 				double fourierDerivedMultiple = span/fringeSpacing;
 				double roundedMultiple = Math.floor(fourierDerivedMultiple+0.5);
-				fringeSpacing = span/roundedMultiple;
+				double numberOfIdentifiedPeaks = peakLocations.length;
+				fringeSpacing = span/numberOfIdentifiedPeaks;
 			}
 			
 			if (calculateBeamCentre)
