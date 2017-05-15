@@ -17,6 +17,7 @@ import org.eclipse.dawnsci.plotting.api.tool.IToolPage;
 import org.eclipse.dawnsci.plotting.api.tool.IToolPageSystem;
 import org.eclipse.dawnsci.plotting.api.tool.ToolPageFactory;
 import org.eclipse.january.dataset.Dataset;
+import org.eclipse.january.dataset.DatasetFactory;
 import org.eclipse.january.dataset.DatasetUtils;
 import org.eclipse.january.metadata.MaskMetadata;
 import org.eclipse.jface.action.Action;
@@ -183,8 +184,26 @@ public class GratingCalibrationDialog extends Dialog {
 				
 				Dataset data, mask;
 				data = DatasetUtils.convertToDataset(manager.getCurrentData().getImage());
-				MaskMetadata maskMD = data.getFirstMetadata(MaskMetadata.class);
-				mask = (maskMD != null) ? DatasetUtils.convertToDataset(maskMD.getMask()) : null;
+				// As this is a calibration its unlikely that a mask will already exist
+				// MaskMetadata maskMD = data.getFirstMetadata(MaskMetadata.class);
+				// mask = (maskMD != null) ? DatasetUtils.convertToDataset(maskMD.getMask()) : null;
+				
+				// So we shall create our own
+				mask = DatasetFactory.zeros(data, Dataset.INT8);
+				
+				// On the basis that if not even one photon of radiation doesn't hit the detector we should ignore that pixel 
+				for (int loopIterX = 0; loopIterX < data.getShape()[0]; loopIterX ++) {
+					for (int loopIterY = 0; loopIterY < data.getShape()[1]; loopIterY ++) {
+						if (data.getDouble(loopIterX, loopIterY) < 1) {
+							mask.set(0, loopIterX, loopIterY);
+						}
+						else {
+							mask.set(1, loopIterX, loopIterY);
+						}
+					}
+				}
+
+				// Now get the detector distance using this mask
 				double distance = gc.getDetectorDistance(data, mask);
 				
 				// Set the data that is stored in the diffraction metadata
