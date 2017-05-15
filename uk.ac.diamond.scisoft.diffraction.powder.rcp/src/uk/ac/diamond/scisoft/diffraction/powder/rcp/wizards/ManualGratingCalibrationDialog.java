@@ -11,9 +11,6 @@ package uk.ac.diamond.scisoft.diffraction.powder.rcp.wizards;
 
 import org.dawb.common.ui.widgets.ActionBarWrapper;
 import org.eclipse.dawnsci.analysis.api.roi.IROI;
-import org.eclipse.dawnsci.analysis.api.roi.IRectangularROI;
-import org.eclipse.dawnsci.analysis.dataset.roi.LinearROI;
-import org.eclipse.dawnsci.analysis.dataset.roi.RectangularROI;
 import org.eclipse.dawnsci.analysis.dataset.roi.SectorROI;
 import org.eclipse.dawnsci.plotting.api.IPlottingSystem;
 import org.eclipse.dawnsci.plotting.api.PlotType;
@@ -229,7 +226,6 @@ public class ManualGratingCalibrationDialog extends Dialog {
 	}
 	
 	
-	// TODO: fix the button spacing
 	@Override
 	protected void createButtonsForButtonBar(Composite parent) {
 		parent.setLayout(new GridLayout(5, false));
