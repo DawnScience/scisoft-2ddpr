@@ -540,7 +540,7 @@ public class SimpleCalibrationParameterModel {
 			
 			if (floatTilt) {
 				normAngle[0] = params[count++];
-				normAngle[1] = params[count++];
+				normAngle[2] = params[count++];
 			}
 			
 			DetectorProperties d = new DetectorProperties(distance,
