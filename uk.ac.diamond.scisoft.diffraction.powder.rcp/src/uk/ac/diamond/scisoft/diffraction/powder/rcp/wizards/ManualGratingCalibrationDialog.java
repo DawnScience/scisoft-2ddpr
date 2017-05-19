@@ -161,7 +161,7 @@ public class ManualGratingCalibrationDialog extends Dialog {
 			toolPage = ToolPageFactory.getToolPage("uk.ac.diamond.scisoft.diffraction.powder.rcp.powderDiffractionTool");
 			toolPage.setPlottingSystem(imagePlotSystem);
 			toolPage.setToolSystem(tps);
-			toolPage.setTitle("Manual Grating Calibration Dialog");
+			toolPage.setTitle("Manual Collagen/Grating Calibration Dialog");
 			toolPage.setToolId(String.valueOf(toolPage.hashCode()));
 			toolPage.createControl(dataSash);
 			toolPage.activate();

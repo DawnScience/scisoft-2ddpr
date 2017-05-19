@@ -361,7 +361,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		};
 		gratingAction.setImageDescriptor(Activator.getImageDescriptor("icons/CalibrationView.png"));
 
-		IAction manualGratingAction = new Action("Manual grating calibration") {
+		IAction manualGratingAction = new Action("Manual collagen/grating calibration") {
 			@Override
 			public void run() {
 				try{
@@ -369,7 +369,7 @@ public class DiffractionCalibrationView extends ViewPart {
 					
 					manualGrating.open();
 				} catch (Exception e) {
-					logger.error("Manual grating calibration: Something happened.", e);
+					logger.error("Manual collagen/grating calibration: Something happened.", e);
 				}
 			}
 		};
