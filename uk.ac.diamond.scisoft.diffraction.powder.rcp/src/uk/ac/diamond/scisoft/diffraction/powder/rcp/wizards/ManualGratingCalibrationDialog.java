@@ -142,6 +142,8 @@ public class ManualGratingCalibrationDialog extends Dialog {
 					// Then plot the data for the user to see
 					MetadataPlotUtils.plotDataWithMetadata(plottableRegion, graphPlotSystem);
 					graphPlotSystem.setTitle("Lineplot from selected sector");
+					
+					manager.getCurrentData().getMetaData().getDetector2DProperties().setBeamCentreCoords(sectorROI.getPoint());
 				}
 			});
 			

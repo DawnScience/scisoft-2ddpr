@@ -295,7 +295,7 @@ public class ManualGratingCalibration {
 		xBoxLog = interpolateMissingData(xBoxLog, null);
 		// Do a peak fit on this dataset
 		List<IPeak> yPeaks = Generic1DFitter.fitPeaks(DatasetFactory.createRange(yBoxLog.getSize()), yBoxLog, PseudoVoigt.class, 1);
-		List<IPeak> xPeaks = Generic1DFitter.fitPeaks(DatasetFactory.createRange(yBoxLog.getSize()), xBoxLog, PseudoVoigt.class, 1);
+		List<IPeak> xPeaks = Generic1DFitter.fitPeaks(DatasetFactory.createRange(xBoxLog.getSize()), xBoxLog, PseudoVoigt.class, 1);
 		// And find out where the maxima is
 		double yPeakShift = yPeaks.get(0).getPosition() - pixelShift;
 		double xPeakShift = xPeaks.get(0).getPosition() - pixelShift;
