@@ -403,11 +403,12 @@ public class DiffractionCalibrationView extends ViewPart {
 					FileDialog dialog = new FileDialog(Display.getDefault().getActiveShell(), SWT.SAVE);
 
 					dialog.setFilterPath(lastPath);
-					dialog.open();
-					lastPath = dialog.getFilterPath();
-					String fn = lastPath + File.separator + dialog.getFileName();
-					DiffractionCalibrationUtils.saveToNexusFile(manager, fn);
-
+					String selectFile = dialog.open(); // use the return value as a check for whether the dialog was cancelled
+					if (selectFile != null) {
+						lastPath = dialog.getFilterPath();
+						String fn = lastPath + File.separator + dialog.getFileName();
+						DiffractionCalibrationUtils.saveToNexusFile(manager, fn);
+					}
 				} catch (Exception e) {
 					MessageDialog.openError(Display.getDefault().getActiveShell(), "File save error!", "Could not save calibration file! (Do you have write access to this folder?)");
 					logger.error("Problem opening export!", e);
