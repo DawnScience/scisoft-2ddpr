@@ -3,7 +3,7 @@ package uk.ac.diamond.scisoft.diffraction.powder.rcp;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.measure.unit.NonSI;
+import si.uom.NonSI;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.dawnsci.analysis.api.diffraction.DetectorProperties;
