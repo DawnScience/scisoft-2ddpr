@@ -106,7 +106,7 @@ public class PowderCalibrationUtils {
 			DetectorProperties detprop = metadata.getDetector2DProperties();
 			DiffractionCrystalEnvironment diffenv = metadata.getDiffractionCrystalEnvironment();
 			try {
-				IROI roi = DSpacing.conicFromDSpacing(detprop, diffenv, Double.valueOf(hkl.getD().doubleValue(NonSI.ANGSTROM)));
+				IROI roi = DSpacing.conicFromDSpacing(detprop, diffenv, Double.valueOf(hkl.getD().to(NonSI.ANGSTROM).getValue().doubleValue()));
 				rois.add(roi);
 			} catch ( Exception e) {
 				rois.add(null);
