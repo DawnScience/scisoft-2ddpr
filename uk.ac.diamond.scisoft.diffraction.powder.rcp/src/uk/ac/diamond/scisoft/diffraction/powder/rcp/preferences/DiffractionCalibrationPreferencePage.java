@@ -23,6 +23,7 @@ public class DiffractionCalibrationPreferencePage extends PreferencePage
 	private Spinner radius;
 	private Spinner spacing;
 	private Spinner nPoints;
+	private Spinner maxSize;
 	
 	public static final String ID = "uk.ac.diamond.scisoft.diffraction.powder.rcp.calibrationPreferencePage";
 
@@ -89,6 +90,21 @@ public class DiffractionCalibrationPreferencePage extends PreferencePage
 			}			
 		});
 		
+		Label searchLab = new Label(group, SWT.NONE);
+		searchLab.setText("Max search distance (point finding)");
+		searchLab.setToolTipText("Smaller search distance means less likely to accidentally find neighbouring ring");
+
+		maxSize = new Spinner(group, SWT.BORDER);
+		maxSize.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, true, false));
+		maxSize.setDigits(0);
+		maxSize.setMinimum(2);
+		maxSize.setMaximum(5000);
+		maxSize.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				storePreferences();
+			}			
+		});
+		
 		initializePage();
 		
 		return comp;
@@ -104,18 +120,21 @@ public class DiffractionCalibrationPreferencePage extends PreferencePage
 		radius.setSelection(getDefaultRadius());
 		spacing.setSelection(getDefaultSpacing());
 		nPoints.setSelection(getDefaultNumberOfPoints());
+		maxSize.setSelection(getDefaultMaxSize());
 	}
 	
 	private void initializePage() {
 		radius.setSelection(getRadius());
 		spacing.setSelection(getSpacing());
 		nPoints.setSelection(getNumberOfPoints());
+		maxSize.setSelection(getMaxSize());
 	}
 
 	private boolean storePreferences() {
 		setRadius(radius.getSelection());
 		setSpacing(spacing.getSelection());
 		setNumberOfPoints(nPoints.getSelection());
+		setMaxSize(maxSize.getSelection());
 		return true;
 	}
 	
@@ -130,6 +149,11 @@ public class DiffractionCalibrationPreferencePage extends PreferencePage
 	public void setNumberOfPoints(int nPoints) {
 		getPreferenceStore().setValue(DiffractionCalibrationConstants.NUMBER_OF_POINTS, nPoints);
 	}
+	
+	public void setMaxSize(int maxSize) {
+		getPreferenceStore().setValue(DiffractionCalibrationConstants.MAX_SEARCH_SIZE, maxSize);
+	}
+	
 	
 	public int getRadius() {
 		return getPreferenceStore().getInt(DiffractionCalibrationConstants.CENTRE_MASK_RADIUS);
@@ -154,5 +178,14 @@ public class DiffractionCalibrationPreferencePage extends PreferencePage
 	public int getDefaultNumberOfPoints() {
 		return getPreferenceStore().getDefaultInt(DiffractionCalibrationConstants.NUMBER_OF_POINTS);
 	}
+	
+	public int getDefaultMaxSize() {
+		return getPreferenceStore().getDefaultInt(DiffractionCalibrationConstants.MAX_SEARCH_SIZE);
+	}
+	
+	public int getMaxSize() {
+		return getPreferenceStore().getInt(DiffractionCalibrationConstants.MAX_SEARCH_SIZE);
+	}
+	
 
 }

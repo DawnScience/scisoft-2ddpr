@@ -14,6 +14,7 @@ public class SimpleCalibrationParameterModel {
 	public static final int CENTRE_MASK_RADIUS = 50;
 	public static final int MINIMUM_SPACING =  10;
 	public static final int NUMBER_OF_POINTS =  256;
+	public static final int MAX_SIZE = 50;
 	
 	private EllipseOptions ellipseOptions = new EllipseOptions();
 	private PointOptions pointOptions = new PointOptions();
@@ -24,6 +25,7 @@ public class SimpleCalibrationParameterModel {
 	private int nPointsPerRing = NUMBER_OF_POINTS;
 	private int minimumSpacing = MINIMUM_SPACING;
 	private int nIgnoreCentre = CENTRE_MASK_RADIUS;
+	private int maxSearchSize = MAX_SIZE;
 	
 	private int nRings;
 	private Set<Integer> ringSet;
@@ -175,6 +177,15 @@ public class SimpleCalibrationParameterModel {
 		this.nIgnoreCentre = nIgnoreCentre;
 	}
 	
+	public int getMaxSearchSize() {
+		return maxSearchSize;
+	}
+
+	public void setMaxSearchSize(int maxSearchSize) {
+		this.maxSearchSize = maxSearchSize;
+	}
+	
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -182,6 +193,7 @@ public class SimpleCalibrationParameterModel {
 		result = prime * result + ((ellipseOptions == null) ? 0 : ellipseOptions.hashCode());
 		result = prime * result + (isAutomaticCalibration ? 1231 : 1237);
 		result = prime * result + (isPointCalibration ? 1231 : 1237);
+		result = prime * result + maxSearchSize;
 		result = prime * result + minimumSpacing;
 		result = prime * result + nIgnoreCentre;
 		result = prime * result + nPointsPerRing;
@@ -209,6 +221,8 @@ public class SimpleCalibrationParameterModel {
 			return false;
 		if (isPointCalibration != other.isPointCalibration)
 			return false;
+		if (maxSearchSize != other.maxSearchSize)
+			return false;
 		if (minimumSpacing != other.minimumSpacing)
 			return false;
 		if (nIgnoreCentre != other.nIgnoreCentre)
@@ -229,7 +243,8 @@ public class SimpleCalibrationParameterModel {
 			return false;
 		return true;
 	}
-	
+
+
 	private class EllipseOptions {
 
 		@Override

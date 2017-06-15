@@ -20,9 +20,11 @@ import org.eclipse.swt.widgets.Label;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationStandards;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.Activator;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.calibration.CalibrantPositioningWidget;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.CalibrationUIProgressUpdateImpl;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.POIFindingRun;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.preferences.DiffractionCalibrationConstants;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
 
 public class PowderCalibrationSetupWidget {
@@ -142,6 +144,8 @@ public class PowderCalibrationSetupWidget {
 			
 			@Override
 			public void widgetSelected(SelectionEvent e) {
+				model.setMaxSearchSize(Activator.getDefault().getPreferenceStore().getInt(DiffractionCalibrationConstants.MAX_SEARCH_SIZE));
+				
 				poiFindingRun.updateData(manager.getCurrentData());
 					runner.run(poiFindingRun);
 			}

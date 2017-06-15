@@ -33,7 +33,7 @@ public class POIFindingRun implements IRunnableWithProgress {
 	SimpleCalibrationParameterModel model;
 	ICalibrationUIProgressUpdate uiUpdater;
 	
-	private static final int MAX_SIZE = 50;
+	private int maxSize = 20;
 	
 	private static Logger logger = LoggerFactory.getLogger(POIFindingRun.class);
 	
@@ -49,6 +49,8 @@ public class POIFindingRun implements IRunnableWithProgress {
 	
 	@Override
 	public void run(IProgressMonitor monitor) {
+		
+		maxSize = model.getMaxSearchSize();
 		
 		monitor.beginTask("Finding Points of Interest...", IProgressMonitor.UNKNOWN);
 		
@@ -149,7 +151,7 @@ public class POIFindingRun implements IRunnableWithProgress {
 				if (resROIs.get(i-1) instanceof HyperbolicROI) {
 					HyperbolicROI inner =  (HyperbolicROI)resROIs.get(i-1);
 					double sd = (slr-inner.getSemilatusRectum())/4;
-					sd = sd > MAX_SIZE ? MAX_SIZE : sd;
+					sd = sd > maxSize ? maxSize : sd;
 					double semi = slr - sd;
 					double px = h.getPointX() - (h.getPointX() - inner.getPointX())/4;
 					double py = h.getPointY() - (h.getPointY() - inner.getPointY())/4;
@@ -161,7 +163,7 @@ public class POIFindingRun implements IRunnableWithProgress {
 				if (resROIs.get(i+1) instanceof HyperbolicROI) {
 					HyperbolicROI outer =  (HyperbolicROI)resROIs.get(i+1);
 					double sd = (outer.getSemilatusRectum()-slr)/4;
-					sd = sd > MAX_SIZE ? MAX_SIZE : sd;
+					sd = sd > maxSize ? maxSize : sd;
 					double pxd = (outer.getPointX() - h.getPointX())/4;
 					double pyd = (outer.getPointY() - h.getPointY())/4;
 					inOut[1] = new HyperbolicROI(h.getSemilatusRectum()+sd,
@@ -180,21 +182,21 @@ public class POIFindingRun implements IRunnableWithProgress {
 			EllipticalROI e = (EllipticalROI) r;
 			double major = e.getSemiAxis(0);
 			
-			double deltalow = major > MAX_SIZE ? MAX_SIZE : major;
-			double deltahigh = MAX_SIZE;
+			double deltalow = major > maxSize ? maxSize : major;
+			double deltahigh = maxSize;
 			
 			if (i != 0) {
 				
 				if (resROIs.get(i-1) instanceof EllipticalROI) {
 					deltalow = 0.5*(major - ((EllipticalROI)resROIs.get(i-1)).getSemiAxis(0));
-					deltalow = deltalow > MAX_SIZE ? MAX_SIZE : deltalow;
+					deltalow = deltalow > maxSize ? maxSize : deltalow;
 				}
 			}
 			
 			if (i < resROIs.size()-1) {
 				if (resROIs.get(i+1) instanceof EllipticalROI) {
 				deltahigh = 0.5*(((EllipticalROI)resROIs.get(i+1)).getSemiAxis(0) - major);
-				deltahigh = deltahigh > MAX_SIZE ? MAX_SIZE : deltahigh;
+				deltahigh = deltahigh > maxSize ? maxSize : deltahigh;
 				}
 			}
 			
