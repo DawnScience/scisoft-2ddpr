@@ -18,13 +18,12 @@ import org.eclipse.swt.widgets.Display;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.HKL;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibratePoints;
-import uk.ac.diamond.scisoft.diffraction.powder.CalibrationErrorOutput;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
+import uk.ac.diamond.scisoft.diffraction.powder.PowderCalibration;
 import uk.ac.diamond.scisoft.diffraction.powder.PowderCalibrationInfoImpl;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.PowderCalibrationUtils;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
-import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionTableData;
 
 public class FromPointsCalibrationRun extends AbstractCalibrationRun {
 
@@ -101,6 +100,8 @@ public class FromPointsCalibrationRun extends AbstractCalibrationRun {
 //				
 				DetectorProperties dp = currentData.getMetaData().getDetector2DProperties();
 				
+				double roll = dp.getNormalAnglesInDegrees()[2];
+				
 				currentData.getMetaData().getDiffractionCrystalEnvironment().setWavelength(output.getWavelength());
 				
 				dp.setBeamCentreDistance(output.getDistance().getDouble(0));
@@ -108,6 +109,10 @@ public class FromPointsCalibrationRun extends AbstractCalibrationRun {
 				dp.setBeamCentreCoords(bc);
 				
 				dp.setNormalAnglesInDegrees(output.getTilt().getDouble(0)*-1, 0, output.getTiltAngle().getDouble(0)*-1);
+				
+				if (params.isFixDetectorRoll()) {
+					PowderCalibration.setDetectorFastAxisAngle(dp, roll);
+				}
 				
 				currentData.setCalibrationInfo(output.getCalibrationInfo()[0]);
 

@@ -16,6 +16,7 @@ public class DiffractionCalibrationPreferenceInitializer extends
 		store.setDefault(DiffractionCalibrationConstants.MINIMUM_SPACING, SimpleCalibrationParameterModel.MINIMUM_SPACING);
 		store.setDefault(DiffractionCalibrationConstants.NUMBER_OF_POINTS, SimpleCalibrationParameterModel.NUMBER_OF_POINTS);
 		store.setDefault(DiffractionCalibrationConstants.MAX_SEARCH_SIZE, SimpleCalibrationParameterModel.MAX_SIZE);
+		store.setDefault(DiffractionCalibrationConstants.FIX_DETECTOR_ROLL, SimpleCalibrationParameterModel.FIX_DETECTOR_ROLL);
 	}
 
 }

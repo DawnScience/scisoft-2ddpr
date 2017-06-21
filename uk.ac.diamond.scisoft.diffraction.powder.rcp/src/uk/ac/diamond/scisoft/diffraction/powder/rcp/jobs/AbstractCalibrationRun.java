@@ -1,8 +1,7 @@
 package uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs;
 
-import org.eclipse.dawnsci.plotting.api.IPlottingSystem;
-import org.eclipse.dawnsci.plotting.api.region.IRegion;
 import org.eclipse.dawnsci.analysis.api.metadata.IDiffractionMetadata;
+import org.eclipse.dawnsci.plotting.api.IPlottingSystem;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Display;
 
@@ -52,9 +51,6 @@ public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 			"%D 2013"+
 			"%I International Union of Crystallography";
 	
-	
-	private static String REGION_PREFIX = "Pixel peaks";
-	
 	public AbstractCalibrationRun(Display display,
 			IPlottingSystem<?> plottingSystem,
 			DiffractionDataManager manager,
@@ -96,7 +92,12 @@ public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 				}
 			});
 		} else {
-			PowderCalibration.updateMetadataFromOutput(md, output, i);
+			Double roll = null;
+			if (params.isFixDetectorRoll()) {
+				roll = md.getDetector2DProperties().getNormalAnglesInDegrees()[2];
+			}
+			
+			PowderCalibration.updateMetadataFromOutput(md, output, i, roll);
 		}
 		
 	}

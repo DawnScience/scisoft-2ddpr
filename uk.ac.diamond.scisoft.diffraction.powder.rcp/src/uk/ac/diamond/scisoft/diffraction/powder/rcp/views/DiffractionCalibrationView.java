@@ -3,9 +3,6 @@ package uk.ac.diamond.scisoft.diffraction.powder.rcp.views;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 
-import org.dawb.common.ui.util.EclipseUtils;
-import org.dawb.common.ui.wizard.persistence.PersistenceImportWizard;
-import org.dawnsci.common.widgets.dialog.FileSelectionDialog;
 import org.dawnsci.plotting.tools.diffraction.DiffractionImageAugmenter;
 import org.eclipse.dawnsci.analysis.api.diffraction.IPowderCalibrationInfo;
 import org.eclipse.dawnsci.analysis.api.metadata.IDiffractionMetadata;
@@ -16,7 +13,6 @@ import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IToolBarManager;
-import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -24,7 +20,6 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
@@ -57,6 +52,7 @@ import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.Activator;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.PowderCalibrationUtils;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.calibration.DiffractionCalibrationUtils;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.preferences.DiffractionCalibrationConstants;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataChanged;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDelegate;
@@ -80,7 +76,7 @@ public class DiffractionCalibrationView extends ViewPart {
 	private DiffractionImageAugmenter augmenter;
 	private PowderCalibrationSetupWidget widget;
 	private StyledText resultText;
-	private IPlottingSystem<Composite> plottingSystem;
+	private IPlottingSystem<?> plottingSystem;
 	private IPartListener2 partListener;
 
 	private DiffractionDataManager manager;
@@ -95,7 +91,7 @@ public class DiffractionCalibrationView extends ViewPart {
 
 //		final ScrolledComposite scrollComposite = new ScrolledComposite(parent, SWT.H_SCROLL | SWT.V_SCROLL);
 		IViewPart plotView = getView(DiffractionPlotView.ID);
-		plottingSystem = (IPlottingSystem<Composite>)plotView.getAdapter(IPlottingSystem.class);
+		plottingSystem = plotView.getAdapter(IPlottingSystem.class);
 		if (plottingSystem != null && plottingSystem.isDisposed()) { // if we close the perspective then reopen it
 			plottingSystem = PlottingFactory.getPlottingSystem(DiffractionPlotView.DIFFRACTION_PLOT_TITLE);
 		}
@@ -183,6 +179,8 @@ public class DiffractionCalibrationView extends ViewPart {
 				ProgressMonitorDialog dia = new ProgressMonitorDialog(Display.getCurrent().getActiveShell());
 				
 				IRunnableWithProgress job = DiffractionCalibrationUtils.getCalibrationRunnable(calibrationParameters, manager, plottingSystem);
+				
+				calibrationParameters.setFixDetectorRoll(Activator.getDefault().getPreferenceStore().getBoolean(DiffractionCalibrationConstants.FIX_DETECTOR_ROLL));
 				
 				try {
 					dia.run(true, true, job);

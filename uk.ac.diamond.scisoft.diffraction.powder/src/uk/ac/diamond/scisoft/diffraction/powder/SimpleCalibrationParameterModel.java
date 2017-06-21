@@ -15,6 +15,7 @@ public class SimpleCalibrationParameterModel {
 	public static final int MINIMUM_SPACING =  10;
 	public static final int NUMBER_OF_POINTS =  256;
 	public static final int MAX_SIZE = 50;
+	public static final boolean FIX_DETECTOR_ROLL = false;
 	
 	private EllipseOptions ellipseOptions = new EllipseOptions();
 	private PointOptions pointOptions = new PointOptions();
@@ -26,6 +27,7 @@ public class SimpleCalibrationParameterModel {
 	private int minimumSpacing = MINIMUM_SPACING;
 	private int nIgnoreCentre = CENTRE_MASK_RADIUS;
 	private int maxSearchSize = MAX_SIZE;
+	private boolean fixDetectorRoll = FIX_DETECTOR_ROLL;
 	
 	private int nRings;
 	private Set<Integer> ringSet;
@@ -185,6 +187,13 @@ public class SimpleCalibrationParameterModel {
 		this.maxSearchSize = maxSearchSize;
 	}
 	
+	public boolean isFixDetectorRoll() {
+		return fixDetectorRoll;
+	}
+
+	public void setFixDetectorRoll(boolean fixDetectorRoll) {
+		this.fixDetectorRoll = fixDetectorRoll;
+	}
 	
 	@Override
 	public int hashCode() {
@@ -569,6 +578,5 @@ public class SimpleCalibrationParameterModel {
 			return SimpleCalibrationParameterModel.this;
 		}
 	}
-
 }
 

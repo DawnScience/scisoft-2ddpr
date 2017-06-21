@@ -8,6 +8,7 @@ import java.util.TreeSet;
 
 import org.eclipse.dawnsci.analysis.api.diffraction.DetectorProperties;
 import org.eclipse.dawnsci.analysis.api.diffraction.DiffractionCrystalEnvironment;
+import org.eclipse.dawnsci.analysis.api.metadata.IDiffractionMetadata;
 import org.eclipse.dawnsci.analysis.api.roi.IPolylineROI;
 import org.eclipse.dawnsci.analysis.api.roi.IROI;
 import org.eclipse.dawnsci.analysis.dataset.roi.EllipticalFitROI;
@@ -19,11 +20,12 @@ import org.eclipse.january.dataset.BooleanDataset;
 import org.eclipse.january.dataset.Dataset;
 import org.eclipse.january.dataset.DatasetFactory;
 import org.eclipse.january.dataset.DatasetUtils;
+import org.eclipse.january.dataset.DoubleDataset;
 import org.eclipse.january.dataset.IDataset;
 import org.eclipse.january.dataset.IndexIterator;
+import org.eclipse.january.dataset.IntegerDataset;
 import org.eclipse.january.dataset.Maths;
 import org.eclipse.january.dataset.Stats;
-import org.eclipse.dawnsci.analysis.api.metadata.IDiffractionMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +64,7 @@ public class PowderCalibration {
 		params.setFloatEnergy(false);
 		params.setIsPointCalibration(true);
 		
-		return calibrateMultipleImages(new IDataset[] {image}, DatasetFactory.zeros(new int[]{1}, Dataset.FLOAT64), pixel,
+		return calibrateMultipleImages(new IDataset[] {image}, DatasetFactory.zeros(DoubleDataset.class, new int[]{1}), pixel,
 				spacings,  wavelength, options, params, null, null, info == null ? null : new PowderCalibrationInfoImpl[]{info});
 	}
 	
@@ -78,7 +80,7 @@ public class PowderCalibration {
 		params.setNumberOfRings(nRings);
 		params.setIsPointCalibration(true);
 		
-		return calibrateMultipleImages(new IDataset[] {image}, DatasetFactory.zeros(new int[]{1}, Dataset.FLOAT64), pixel,
+		return calibrateMultipleImages(new IDataset[] {image}, DatasetFactory.zeros(DoubleDataset.class, new int[]{1}), pixel,
 				spacings,  0, options, params, null, null, info == null ? null : new PowderCalibrationInfoImpl[]{info});
 	}
 	
@@ -213,7 +215,7 @@ public class PowderCalibration {
 			y.set(0, i);
 		}
 
-		final Dataset x = DatasetFactory.createRange(y.getSize(), Dataset.INT32);
+		final Dataset x = DatasetFactory.createRange(IntegerDataset.class,y.getSize());
 
 		int max = spacings.size() > MAX_RINGS ? MAX_RINGS : spacings.size();
 
@@ -495,8 +497,9 @@ public class PowderCalibration {
 		return new DiffractionMetadata("FromCalibration", dp, de);
 	}
 	
-	public static void updateMetadataFromOutput(final IDiffractionMetadata md , final CalibrationOutput output, final int i) {
+	public static void updateMetadataFromOutput(final IDiffractionMetadata md , final CalibrationOutput output, final int i, Double roll) {
 
+		//TODO clone dp and copy over (use setGeometry on dp).
 		DetectorProperties dp = md.getDetector2DProperties();
 
 		dp.setBeamCentreDistance(output.getDistance().getDouble(i));
@@ -505,7 +508,7 @@ public class PowderCalibration {
 
 		dp.setNormalAnglesInDegrees(output.getTilt().getDouble(i)*-1, 0, output.getTiltAngle().getDouble(i)*-1);
 		md.getDiffractionCrystalEnvironment().setWavelength(output.getWavelength());
-		
+		if (roll != null) setDetectorFastAxisAngle(md.getDetector2DProperties(),roll);
 		
 //		Specifying fast axis orientation
 //		double fastAngleDegrees = 30;
@@ -523,6 +526,29 @@ public class PowderCalibration {
 //		dp.setBeamCentreCoords(bc);
 //		dp.setBeamCentreDistance(output.getDistance().getDouble(i));
 //		
+//		md.getDiffractionCrystalEnvironment().setWavelength(output.getWavelength());
+	}
+	
+	public static void setDetectorFastAxisAngle(DetectorProperties dp, double fastAngleDegrees){
+//		Specifying fast axis orientation
+//		double fastAngleDegrees = 30;
+		
+		double[] beamCentre = dp.getBeamCentreCoords();
+		double[] normalAngles = dp.getNormalAnglesInDegrees();
+		double beamCentreDistance = dp.getBeamCentreDistance();
+		
+		dp.setNormalAnglesInDegrees(0,0,0);
+		dp.setDetectorDistance(100);
+		dp.setBeamCentreCoords(new double[]{0,0});
+
+		double[] bc = new double[] {beamCentre[0], beamCentre[1]};
+		dp.setOrientationEulerZYZ(Math.toRadians(-fastAngleDegrees), Math.toRadians(normalAngles[0]),Math.toRadians(normalAngles[2]));
+		dp.setBeamCentreCoords(bc);
+		double offset = fastAngleDegrees - dp.getNormalAnglesInDegrees()[2];
+		dp.setOrientationEulerZYZ(Math.toRadians(-fastAngleDegrees - offset), Math.toRadians(normalAngles[0]),Math.toRadians(normalAngles[2]));
+		dp.setBeamCentreCoords(bc);
+		dp.setBeamCentreDistance(beamCentreDistance);
+		
 //		md.getDiffractionCrystalEnvironment().setWavelength(output.getWavelength());
 	}
 	

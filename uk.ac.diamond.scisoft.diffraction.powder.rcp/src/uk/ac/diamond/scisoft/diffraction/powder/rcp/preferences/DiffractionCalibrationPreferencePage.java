@@ -7,6 +7,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
@@ -24,6 +25,8 @@ public class DiffractionCalibrationPreferencePage extends PreferencePage
 	private Spinner spacing;
 	private Spinner nPoints;
 	private Spinner maxSize;
+	
+	private Button fixRoll;
 	
 	public static final String ID = "uk.ac.diamond.scisoft.diffraction.powder.rcp.calibrationPreferencePage";
 
@@ -54,6 +57,7 @@ public class DiffractionCalibrationPreferencePage extends PreferencePage
 		radius.setMinimum(0);
 		radius.setMaximum(10000);
 		radius.addSelectionListener(new SelectionAdapter() {
+			@Override
 			public void widgetSelected(SelectionEvent e) {
 				storePreferences();
 			}			
@@ -70,6 +74,7 @@ public class DiffractionCalibrationPreferencePage extends PreferencePage
 		spacing.setMinimum(0);
 		spacing.setMaximum(10000);
 		spacing.addSelectionListener(new SelectionAdapter() {
+			@Override
 			public void widgetSelected(SelectionEvent e) {
 				storePreferences();
 			}			
@@ -85,6 +90,7 @@ public class DiffractionCalibrationPreferencePage extends PreferencePage
 		nPoints.setMinimum(10);
 		nPoints.setMaximum(5000);
 		nPoints.addSelectionListener(new SelectionAdapter() {
+			@Override
 			public void widgetSelected(SelectionEvent e) {
 				storePreferences();
 			}			
@@ -100,6 +106,20 @@ public class DiffractionCalibrationPreferencePage extends PreferencePage
 		maxSize.setMinimum(2);
 		maxSize.setMaximum(5000);
 		maxSize.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				storePreferences();
+			}			
+		});
+		
+		Label fr = new Label(group, SWT.NONE);
+		fr.setText("Fix the Detector Roll");
+		fr.setToolTipText("Perform the calibration but change Yaw and Pitch instead of Yaw and Roll");
+
+		fixRoll = new Button(group, SWT.CHECK);
+		fixRoll.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, true, false));
+		fixRoll.addSelectionListener(new SelectionAdapter() {
+			@Override
 			public void widgetSelected(SelectionEvent e) {
 				storePreferences();
 			}			
@@ -121,6 +141,7 @@ public class DiffractionCalibrationPreferencePage extends PreferencePage
 		spacing.setSelection(getDefaultSpacing());
 		nPoints.setSelection(getDefaultNumberOfPoints());
 		maxSize.setSelection(getDefaultMaxSize());
+		fixRoll.setSelection(getDefaultFixRoll());
 	}
 	
 	private void initializePage() {
@@ -128,6 +149,7 @@ public class DiffractionCalibrationPreferencePage extends PreferencePage
 		spacing.setSelection(getSpacing());
 		nPoints.setSelection(getNumberOfPoints());
 		maxSize.setSelection(getMaxSize());
+		fixRoll.setSelection(getFixRoll());
 	}
 
 	private boolean storePreferences() {
@@ -135,6 +157,7 @@ public class DiffractionCalibrationPreferencePage extends PreferencePage
 		setSpacing(spacing.getSelection());
 		setNumberOfPoints(nPoints.getSelection());
 		setMaxSize(maxSize.getSelection());
+		setFixRoll(fixRoll.getSelection());
 		return true;
 	}
 	
@@ -152,6 +175,10 @@ public class DiffractionCalibrationPreferencePage extends PreferencePage
 	
 	public void setMaxSize(int maxSize) {
 		getPreferenceStore().setValue(DiffractionCalibrationConstants.MAX_SEARCH_SIZE, maxSize);
+	}
+	
+	public void setFixRoll(boolean fixRoll) {
+		getPreferenceStore().setValue(DiffractionCalibrationConstants.FIX_DETECTOR_ROLL, fixRoll);
 	}
 	
 	
@@ -187,5 +214,12 @@ public class DiffractionCalibrationPreferencePage extends PreferencePage
 		return getPreferenceStore().getInt(DiffractionCalibrationConstants.MAX_SEARCH_SIZE);
 	}
 	
+	public boolean getDefaultFixRoll() {
+		return getPreferenceStore().getDefaultBoolean(DiffractionCalibrationConstants.FIX_DETECTOR_ROLL);
+	}
+	
+	public boolean getFixRoll() {
+		return getPreferenceStore().getBoolean(DiffractionCalibrationConstants.FIX_DETECTOR_ROLL);
+	}
 
 }
