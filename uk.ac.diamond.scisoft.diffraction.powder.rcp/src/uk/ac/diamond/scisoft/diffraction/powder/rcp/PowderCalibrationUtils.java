@@ -3,8 +3,6 @@ package uk.ac.diamond.scisoft.diffraction.powder.rcp;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.measure.unit.NonSI;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.dawnsci.analysis.api.diffraction.DetectorProperties;
 import org.eclipse.dawnsci.analysis.api.diffraction.DiffractionCrystalEnvironment;
@@ -106,7 +104,7 @@ public class PowderCalibrationUtils {
 			DetectorProperties detprop = metadata.getDetector2DProperties();
 			DiffractionCrystalEnvironment diffenv = metadata.getDiffractionCrystalEnvironment();
 			try {
-				IROI roi = DSpacing.conicFromDSpacing(detprop, diffenv, Double.valueOf(hkl.getD().doubleValue(NonSI.ANGSTROM)));
+				IROI roi = DSpacing.conicFromDSpacing(detprop, diffenv, Double.valueOf(hkl.getD().getValue().doubleValue()));
 				rois.add(roi);
 			} catch ( Exception e) {
 				rois.add(null);
