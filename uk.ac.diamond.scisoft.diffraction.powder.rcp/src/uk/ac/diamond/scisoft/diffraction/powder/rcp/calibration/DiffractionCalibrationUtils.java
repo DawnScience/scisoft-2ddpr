@@ -481,6 +481,10 @@ public class DiffractionCalibrationUtils {
 	
 	public static void saveToNexusFile(DiffractionDataManager manager, String filepath) throws Exception {
 		
+		if (!hasExtension(filepath)) {
+			filepath += ".nxs";
+		}
+		
 		DiffractionTableData cd = manager.getCurrentData();
 		NexusFile nexusFile = NexusFileHDF5.createNexusFile(filepath, false);
 		IPersistenceService service = (IPersistenceService)LocalServiceManager.getPersistenceService();
@@ -496,6 +500,11 @@ public class DiffractionCalibrationUtils {
 //			file.close();
 			nexusFile.close();
 		}
+	}
+	
+	private static boolean hasExtension(String filePath) {
+		int lastIndexOf = filePath.lastIndexOf('.');
+		return lastIndexOf >= 0;
 	}
 	
 
