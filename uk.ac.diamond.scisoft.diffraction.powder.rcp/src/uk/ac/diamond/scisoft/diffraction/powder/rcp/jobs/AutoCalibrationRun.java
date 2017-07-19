@@ -14,6 +14,7 @@ import org.eclipse.swt.widgets.Display;
 
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.HKL;
+import uk.ac.diamond.scisoft.analysis.crystallography.IHKL;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
 import uk.ac.diamond.scisoft.diffraction.powder.ICalibrationUIProgressUpdate;
 import uk.ac.diamond.scisoft.diffraction.powder.PowderCalibration;
@@ -78,7 +79,7 @@ public class AutoCalibrationRun extends AbstractCalibrationRun {
 		int minSpacing = Activator.getDefault().getPreferenceStore().getInt(DiffractionCalibrationConstants.MINIMUM_SPACING);
 		int nPoints = Activator.getDefault().getPreferenceStore().getInt(DiffractionCalibrationConstants.NUMBER_OF_POINTS);
 		final ProgressMonitorWrapper mon = new ProgressMonitorWrapper(monitor);
-		List<HKL> spacings = CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs();
+		List<IHKL> spacings = CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs();
 		if (manager.isEmpty()) return;
 		
 		Dataset ddist = manager.getDistances();

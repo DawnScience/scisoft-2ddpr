@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Display;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrantSpacing;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.HKL;
+import uk.ac.diamond.scisoft.analysis.crystallography.IHKL;
 import uk.ac.diamond.scisoft.analysis.diffraction.DSpacing;
 
 public class PowderCalibrationUtils {
@@ -102,11 +103,11 @@ public class PowderCalibrationUtils {
 		
 		List<IROI> rois = new ArrayList<IROI>(cs.getHKLs().size());
 		
-		for (HKL hkl : cs.getHKLs()) {
+		for (IHKL hkl : cs.getHKLs()) {
 			DetectorProperties detprop = metadata.getDetector2DProperties();
 			DiffractionCrystalEnvironment diffenv = metadata.getDiffractionCrystalEnvironment();
 			try {
-				IROI roi = DSpacing.conicFromDSpacing(detprop, diffenv, Double.valueOf(hkl.getD().to(NonSI.ANGSTROM).getValue().doubleValue()));
+				IROI roi = DSpacing.conicFromDSpacing(detprop, diffenv, Double.valueOf(((HKL)hkl).getD().to(NonSI.ANGSTROM).getValue().doubleValue()));
 				rois.add(roi);
 			} catch ( Exception e) {
 				rois.add(null);

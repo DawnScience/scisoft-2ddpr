@@ -27,7 +27,7 @@ import org.eclipse.dawnsci.analysis.api.metadata.IDiffractionMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.ac.diamond.scisoft.analysis.crystallography.HKL;
+import uk.ac.diamond.scisoft.analysis.crystallography.IHKL;
 import uk.ac.diamond.scisoft.analysis.diffraction.PeakFittingEllipseFinder;
 import uk.ac.diamond.scisoft.analysis.diffraction.PowderRingsUtils;
 import uk.ac.diamond.scisoft.analysis.diffraction.ResolutionEllipseROI;
@@ -49,12 +49,12 @@ public class PowderCalibration {
 	
 	private final static Logger logger = LoggerFactory.getLogger(PowderCalibration.class);
 	
-	public static CalibrationOutput calibrateKnownWavelength(Dataset image, double wavelength, double pixel, List<HKL> spacings, int nRings) {
+	public static CalibrationOutput calibrateKnownWavelength(Dataset image, double wavelength, double pixel, List<IHKL> spacings, int nRings) {
 		
 		return calibrateKnownWavelength(image, wavelength, pixel, spacings, nRings, null);
 	}
 	
-	public static CalibrationOutput calibrateKnownWavelength(Dataset image, double wavelength, double pixel, List<HKL> spacings, int nRings,  PowderCalibrationInfoImpl info) {
+	public static CalibrationOutput calibrateKnownWavelength(Dataset image, double wavelength, double pixel, List<IHKL> spacings, int nRings,  PowderCalibrationInfoImpl info) {
 
 		int[] options = new int[]{CENTRE_MASK_RADIUS, MINIMUM_SPACING, NUMBER_OF_POINTS};
 		SimpleCalibrationParameterModel params = new SimpleCalibrationParameterModel();
@@ -66,12 +66,12 @@ public class PowderCalibration {
 				spacings,  wavelength, options, params, null, null, info == null ? null : new PowderCalibrationInfoImpl[]{info});
 	}
 	
-	public static CalibrationOutput calibrateSingleImage(Dataset image, double pixel, List<HKL> spacings, int nRings) {
+	public static CalibrationOutput calibrateSingleImage(Dataset image, double pixel, List<IHKL> spacings, int nRings) {
 		
 		return  calibrateSingleImage(image,pixel,spacings,nRings,null);
 	}
 	
-	public static CalibrationOutput calibrateSingleImage(Dataset image, double pixel, List<HKL> spacings, int nRings, PowderCalibrationInfoImpl info) {
+	public static CalibrationOutput calibrateSingleImage(Dataset image, double pixel, List<IHKL> spacings, int nRings, PowderCalibrationInfoImpl info) {
 		
 		int[] options = new int[]{CENTRE_MASK_RADIUS, MINIMUM_SPACING, NUMBER_OF_POINTS};
 		SimpleCalibrationParameterModel params = new SimpleCalibrationParameterModel();
@@ -83,13 +83,13 @@ public class PowderCalibration {
 	}
 	
 	public static CalibrationOutput calibrateMultipleImages(IDataset[] images, Dataset deltaDistance, double pxSize,
-			List<HKL> spacings, double fixed, int[] options, SimpleCalibrationParameterModel params, IMonitor mon, ICalibrationUIProgressUpdate uiUpdate) {
+			List<IHKL> spacings, double fixed, int[] options, SimpleCalibrationParameterModel params, IMonitor mon, ICalibrationUIProgressUpdate uiUpdate) {
 		
 		return calibrateMultipleImages(images, deltaDistance, pxSize, spacings, fixed, options, params, mon, uiUpdate, null);
 	}
 	
 	public static CalibrationOutput calibrateMultipleImages(IDataset[] images, Dataset deltaDistance, double pxSize,
-			List<HKL> spacings, double fixed, int[] options, SimpleCalibrationParameterModel params, IMonitor mon, ICalibrationUIProgressUpdate uiUpdate, PowderCalibrationInfoImpl[] info) {
+			List<IHKL> spacings, double fixed, int[] options, SimpleCalibrationParameterModel params, IMonitor mon, ICalibrationUIProgressUpdate uiUpdate, PowderCalibrationInfoImpl[] info) {
 
 		if (info == null) {
 			
@@ -191,7 +191,7 @@ public class PowderCalibration {
 		return output;
 	}
 	
-	public static List<ResolutionEllipseROI> findMatchedEllipses(Dataset image, double pixel, List<HKL> spacings) {
+	public static List<ResolutionEllipseROI> findMatchedEllipses(Dataset image, double pixel, List<IHKL> spacings) {
 
 		double[] approxCentre = CentreGuess.guessCentre(image);
 
@@ -328,7 +328,7 @@ public class PowderCalibration {
 	}
 	
 	protected static EllipseFindingStructure getResolutionEllipses(Dataset image,
-			List<HKL> spacings, double pxSize, SimpleCalibrationParameterModel params, int centreMaskRadius, IMonitor monitor) {
+			List<IHKL> spacings, double pxSize, SimpleCalibrationParameterModel params, int centreMaskRadius, IMonitor monitor) {
 		int[] shape = image.getShape();
 		if (monitor != null) monitor.subTask("Finding approximate centre...");
 		double[] approxCentre = CentreGuess.guessCentre(image);

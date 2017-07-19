@@ -14,7 +14,7 @@ import org.eclipse.january.dataset.Maths;
 import org.eclipse.swt.widgets.Display;
 
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
-import uk.ac.diamond.scisoft.analysis.crystallography.HKL;
+import uk.ac.diamond.scisoft.analysis.crystallography.IHKL;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrateEllipses;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
 import uk.ac.diamond.scisoft.diffraction.powder.PowderCalibrationInfoImpl;
@@ -35,7 +35,7 @@ public class FromRingsCalibrationRun extends AbstractCalibrationRun {
 	public void run(IProgressMonitor monitor) {
 		//final ProgressMonitorWrapper mon = new ProgressMonitorWrapper(monitor);
 		monitor.beginTask("Calibrate detector", IProgressMonitor.UNKNOWN);
-		List<HKL> spacings = CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs();
+		List<IHKL> spacings = CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs();
 
 		List<List<EllipticalROI>> allEllipses = new ArrayList<List<EllipticalROI>>();
 		List<double[]> allDSpacings = new ArrayList<double[]>();

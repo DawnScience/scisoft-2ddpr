@@ -16,15 +16,13 @@ import org.eclipse.january.dataset.Maths;
 import org.eclipse.swt.widgets.Display;
 
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
-import uk.ac.diamond.scisoft.analysis.crystallography.HKL;
+import uk.ac.diamond.scisoft.analysis.crystallography.IHKL;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibratePoints;
-import uk.ac.diamond.scisoft.diffraction.powder.CalibrationErrorOutput;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
 import uk.ac.diamond.scisoft.diffraction.powder.PowderCalibrationInfoImpl;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.PowderCalibrationUtils;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
-import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionTableData;
 
 public class FromPointsCalibrationRun extends AbstractCalibrationRun {
 
@@ -40,7 +38,7 @@ public class FromPointsCalibrationRun extends AbstractCalibrationRun {
 	public void run(IProgressMonitor monitor) {
 		//final ProgressMonitorWrapper mon = new ProgressMonitorWrapper(monitor);
 		monitor.beginTask("Calibrate detector", IProgressMonitor.UNKNOWN);
-		List<HKL> spacings = CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs();
+		List<IHKL> spacings = CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs();
 		
 		int n = currentData.getROISize();
 		if (n != spacings.size()) { // always allow a choice to be made
