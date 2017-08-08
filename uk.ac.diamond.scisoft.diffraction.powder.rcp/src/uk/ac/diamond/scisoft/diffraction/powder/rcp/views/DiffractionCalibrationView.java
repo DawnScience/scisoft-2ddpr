@@ -476,13 +476,6 @@ public class DiffractionCalibrationView extends ViewPart {
 			resultText.setText(resultDescription);
 		}
 	}
-
-//	private void enableControl(Group group, boolean enabled) {
-//		for (Control child : group.getChildren())
-//			  child.setEnabled(enabled);
-//		
-//		group.setEnabled(enabled);
-//	}
  	
 
 	private void drawSelectedData(DiffractionTableData data) {
@@ -498,17 +491,11 @@ public class DiffractionCalibrationView extends ViewPart {
 		plottingSystem.setTitle(data.getName() == null ? "Data" : data.getName());
 		plottingSystem.getAxes().get(0).setTitle("");
 		plottingSystem.getAxes().get(1).setTitle("");
-		plottingSystem.setKeepAspect(true);
-		//plottingSystem.setShowIntensity(false);
 
 		updateCurrentData(data);
 
-//		calibrantPositioning.setDiffractionData(manager.getCurrentData());
-//		calibrantPositioning.setRingFinder(ringFindJob);
 		if (data.getMetaData() != null) {
 		augmenter.setDiffractionMetadata(manager.getCurrentData().getMetaData());
-		
-//		if (!augmenter.isActive() && checked) augmenter.activate();
 		
 		diffractionTableViewer.addDetectorPropertyListener(data);
 		}
