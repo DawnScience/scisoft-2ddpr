@@ -280,8 +280,12 @@ public class ManualGratingCalibration {
 		// Define a region of interest, integrate its box
 		double angleOffset = angle - (Math.PI / 2);
 		double pixelShift = 10.0;
-		RectangularROI yIntegralBox = new RectangularROI(beamCentre[0] - pixelShift, beamCentre[1] - pixelShift, input.getShape()[1], pixelShift * 2, angleOffset);
-		RectangularROI xIntegralBox = new RectangularROI(beamCentre[0] - pixelShift, beamCentre[1] - pixelShift, pixelShift * 2, input.getShape()[0], angleOffset);
+		
+		double yBoxX = beamCentre[0] - (Math.sin(angleOffset) * pixelShift), yBoxY = beamCentre[1] - (Math.cos(angleOffset) * pixelShift);
+		double xBoxX = beamCentre[0] - (Math.cos(angleOffset) * pixelShift), xBoxY = beamCentre[1] + (Math.sin(angleOffset) * pixelShift);
+		
+		RectangularROI yIntegralBox = new RectangularROI(yBoxX, yBoxY, input.getShape()[1], pixelShift * 2, angleOffset);
+		RectangularROI xIntegralBox = new RectangularROI(xBoxX, xBoxY, pixelShift * 2, input.getShape()[0], angleOffset);
 //		new RectangularROI(ptx, pty, width, height, angle, clip)
 		Dataset[] yIntegralBoxes = ROIProfile.box(input, mask, yIntegralBox);
 		Dataset[] xIntegralBoxes = ROIProfile.box(input, mask, xIntegralBox);
@@ -297,8 +301,11 @@ public class ManualGratingCalibration {
 		List<IPeak> yPeaks = Generic1DFitter.fitPeaks(DatasetFactory.createRange(yBoxLog.getSize()), yBoxLog, PseudoVoigt.class, 1);
 		List<IPeak> xPeaks = Generic1DFitter.fitPeaks(DatasetFactory.createRange(xBoxLog.getSize()), xBoxLog, PseudoVoigt.class, 1);
 		// And find out where the maxima is
-		double yPeakShift = yPeaks.get(0).getPosition() - pixelShift;
-		double xPeakShift = xPeaks.get(0).getPosition() - pixelShift;
+//		double yPeakShift = (beamCentre[1] - yPeaks.get(0).getPosition()) / Math.cos(angleOffset);
+//		double xPeakShift = (beamCentre[0] - xPeaks.get(0).getPosition()) / Math.cos(angleOffset);
+
+		double yPeakShift = (yPeaks.get(0).getPosition() / Math.cos(angleOffset)) - pixelShift;
+		double xPeakShift = (xPeaks.get(0).getPosition() / Math.cos(angleOffset)) - pixelShift;
 		
 		double xPosition = beamCentre[0] + xPeakShift;
 		double yPosition = beamCentre[1] + yPeakShift;
