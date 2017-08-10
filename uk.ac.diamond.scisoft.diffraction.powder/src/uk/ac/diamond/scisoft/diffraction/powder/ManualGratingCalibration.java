@@ -279,10 +279,10 @@ public class ManualGratingCalibration {
 	private static double[] refineBeamCentre(Dataset input, Dataset mask, double[] beamCentre, double angle) {
 		// Define a region of interest, integrate its box
 		double angleOffset = angle - (Math.PI / 2);
-		double pixelShift = 10.0;
+		double pixelShift = 15.0;
 		
-		double yBoxX = beamCentre[0] - (Math.sin(angleOffset) * pixelShift), yBoxY = beamCentre[1] - (Math.cos(angleOffset) * pixelShift);
-		double xBoxX = beamCentre[0] - (Math.cos(angleOffset) * pixelShift), xBoxY = beamCentre[1] + (Math.sin(angleOffset) * pixelShift);
+		double yBoxX = (beamCentre[0] - (Math.sin(angleOffset) * pixelShift)) + pixelShift, yBoxY = beamCentre[1] - (Math.cos(angleOffset) * pixelShift);
+		double xBoxX = beamCentre[0] - (Math.cos(angleOffset) * pixelShift), xBoxY = (beamCentre[1] + (Math.sin(angleOffset) * pixelShift)) + pixelShift;
 		
 		RectangularROI yIntegralBox = new RectangularROI(yBoxX, yBoxY, input.getShape()[1], pixelShift * 2, angleOffset);
 		RectangularROI xIntegralBox = new RectangularROI(xBoxX, xBoxY, pixelShift * 2, input.getShape()[0], angleOffset);
