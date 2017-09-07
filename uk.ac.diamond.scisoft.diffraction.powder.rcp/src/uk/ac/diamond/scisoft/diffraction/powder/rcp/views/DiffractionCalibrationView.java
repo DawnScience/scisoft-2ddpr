@@ -88,7 +88,7 @@ public class DiffractionCalibrationView extends ViewPart {
 
 	@Override
 	public void createPartControl(final Composite parent) {
-
+		logger.info("Perspective Created: Powder Calibration");
 //		final ScrolledComposite scrollComposite = new ScrolledComposite(parent, SWT.H_SCROLL | SWT.V_SCROLL);
 		IViewPart plotView = getView(DiffractionPlotView.ID);
 		plottingSystem = plotView.getAdapter(IPlottingSystem.class);
