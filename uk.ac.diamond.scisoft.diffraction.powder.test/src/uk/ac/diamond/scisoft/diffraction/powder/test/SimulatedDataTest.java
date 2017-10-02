@@ -78,6 +78,34 @@ public class SimulatedDataTest {
 	}
 	
 	@Test
+	public void fixedWavelengthCheckWavelength(){
+
+		IDiffractionMetadata meta = getPerkinElmerDiffractionMetadata();
+		DetectorProperties dp = meta.getDetector2DProperties();
+		DiffractionCrystalEnvironment ce = meta.getDiffractionCrystalEnvironment();
+		
+		Dataset[] s1d = getSimulated1D();
+		int[] shape = new int[]{dp.getPy(),dp.getPx()};
+		
+		Dataset q2D = PixelIntegrationUtils.generateQArray(shape, meta); 
+		Dataset image = PixelIntegrationUtils.generate2Dfrom1D(s1d, q2D);
+		
+		ce.setWavelength(1.012345);
+		
+		CalibrationStandards standards = CalibrationFactory.getCalibrationStandards();
+		CalibrantSpacing ceO2 = standards.getCalibrationPeakMap("CeO2");
+		double w = ce.getWavelength();
+		CalibrationOutput result = PowderCalibration.calibrateKnownWavelength(image, ce.getWavelength(),
+				dp.getHPxSize(), ceO2.getHKLs(),10);
+		
+		
+		Assert.assertEquals(bx, result.getBeamCentreX().getDouble(0), 0.1);
+		Assert.assertEquals(by, result.getBeamCentreY().getDouble(0), 0.1);
+		Assert.assertEquals(1.012345, result.getWavelength(), 0.000001);
+		
+	}
+	
+	@Test
 	public void floatAll(){
 
 		IDiffractionMetadata meta = getPerkinElmerDiffractionMetadata();

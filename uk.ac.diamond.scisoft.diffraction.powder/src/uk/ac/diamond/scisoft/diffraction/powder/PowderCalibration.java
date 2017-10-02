@@ -63,6 +63,7 @@ public class PowderCalibration {
 		params.setNumberOfRings(nRings);
 		params.setFloatEnergy(false);
 		params.setIsPointCalibration(true);
+		params.setAutomaticCalibration(true);
 		
 		return calibrateMultipleImages(new IDataset[] {image}, DatasetFactory.zeros(DoubleDataset.class, new int[]{1}), pixel,
 				spacings,  wavelength, options, params, null, null, info == null ? null : new PowderCalibrationInfoImpl[]{info});
