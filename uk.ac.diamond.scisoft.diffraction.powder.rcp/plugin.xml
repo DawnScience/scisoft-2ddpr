@@ -255,7 +255,7 @@
       </menuContribution>
    </extension>
    <extension
-         point="uk.ac.diamond.sda.navigator.openFile">
+         point="org.dawnsci.fileviewer.openFile">
       <fileOpen
             class="uk.ac.diamond.scisoft.diffraction.powder.rcp.views.PowderFileOpen"
             id="uk.ac.diamond.scisoft.diffraction.powder.rcp.views.powderFileOpen"
