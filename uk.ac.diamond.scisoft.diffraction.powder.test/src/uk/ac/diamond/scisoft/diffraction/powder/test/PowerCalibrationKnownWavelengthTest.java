@@ -17,7 +17,7 @@ import uk.ac.diamond.scisoft.diffraction.powder.PowderCalibration;
 
 public class PowerCalibrationKnownWavelengthTest {
 	
-//	@Ignore("Hard coded paths, currently for TDD, will be a valid test when we have a location for the files.")
+	@Ignore("Hard coded paths, currently for TDD, will be a valid test when we have a location for the files.")
 	@Test
 	public void CeO212kevPilatus170(){
 		
