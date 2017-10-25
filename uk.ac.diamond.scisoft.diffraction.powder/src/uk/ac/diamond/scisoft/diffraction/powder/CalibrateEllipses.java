@@ -194,8 +194,8 @@ public class CalibrateEllipses {
 			calculatedMajors.imultiply(1/pixel);
 		}
 		
-		double ssTot = (double)Maths.power(Maths.subtract(allMajorD, allMajorD.mean()),2).sum();
-		double ssRes = (double)Maths.power(Maths.subtract(allMajorD, calculatedMajors),2).sum();
+		double ssTot = ((Number) Maths.power(Maths.subtract(allMajorD, allMajorD.mean()),2).sum()).doubleValue();
+		double ssRes = ((Number) Maths.power(Maths.subtract(allMajorD, calculatedMajors),2).sum()).doubleValue();
 		double rCoeff = 1 - ssRes/ssTot;
 		
 		logger.debug("R2 value: " + rCoeff);

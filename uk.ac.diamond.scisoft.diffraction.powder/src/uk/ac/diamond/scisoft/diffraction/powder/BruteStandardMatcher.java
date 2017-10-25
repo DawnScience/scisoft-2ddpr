@@ -62,7 +62,7 @@ public class BruteStandardMatcher {
  				
 				Dataset filter = getFilterDataset(radius,radii);
 				Dataset out = Maths.multiply(filter, clean);
-				double ssq = (double)out.sum();
+				double ssq = ((Number) out.sum()).doubleValue();
 				
 				if (ssq > bestssq) {
 					bestssq = ssq;
