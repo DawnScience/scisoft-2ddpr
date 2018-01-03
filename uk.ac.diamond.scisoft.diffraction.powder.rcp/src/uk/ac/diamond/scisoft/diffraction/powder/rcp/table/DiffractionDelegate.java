@@ -43,6 +43,8 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.part.ResourceTransfer;
 
+import uk.ac.diamond.scisoft.diffraction.powder.DiffractionTableData;
+
 /**
  * 
  * @author wqk87977

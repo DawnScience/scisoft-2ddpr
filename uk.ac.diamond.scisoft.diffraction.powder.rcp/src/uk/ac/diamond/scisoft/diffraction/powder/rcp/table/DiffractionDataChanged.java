@@ -10,6 +10,8 @@ package uk.ac.diamond.scisoft.diffraction.powder.rcp.table;
 
 import java.util.EventObject;
 
+import uk.ac.diamond.scisoft.diffraction.powder.DiffractionTableData;
+
 public class DiffractionDataChanged extends EventObject{
 
 	/**

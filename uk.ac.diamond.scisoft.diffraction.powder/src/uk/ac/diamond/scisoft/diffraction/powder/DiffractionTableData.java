@@ -7,7 +7,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  */
 
-package uk.ac.diamond.scisoft.diffraction.powder.rcp.table;
+package uk.ac.diamond.scisoft.diffraction.powder;
 
 import java.util.ArrayList;
 import java.util.List;

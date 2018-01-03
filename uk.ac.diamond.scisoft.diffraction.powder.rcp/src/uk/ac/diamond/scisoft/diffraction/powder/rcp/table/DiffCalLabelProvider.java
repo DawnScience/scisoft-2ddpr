@@ -12,6 +12,8 @@ import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.swt.graphics.Image;
 
+import uk.ac.diamond.scisoft.diffraction.powder.DiffractionTableData;
+
 public class DiffCalLabelProvider implements ITableLabelProvider {
 
 	@Override

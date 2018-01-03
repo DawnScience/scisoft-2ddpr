@@ -48,6 +48,7 @@ import org.slf4j.LoggerFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationStandards;
 import uk.ac.diamond.scisoft.analysis.io.NexusDiffractionCalibrationReader;
+import uk.ac.diamond.scisoft.diffraction.powder.DiffractionTableData;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.Activator;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.PowderCalibrationUtils;
@@ -56,7 +57,6 @@ import uk.ac.diamond.scisoft.diffraction.powder.rcp.preferences.DiffractionCalib
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataChanged;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDelegate;
-import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionTableData;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.IDiffractionDataListener;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.ICalibrationStateListener;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.IRunner;
