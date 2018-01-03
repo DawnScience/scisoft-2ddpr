@@ -124,6 +124,10 @@ public class DiffractionDataManager {
 		return model;
 	}
 	
+	public List<DiffractionImageData> getDataList(){
+		return new ArrayList<>(model);
+	}
+	
 	public int getSize() {
 		return model.size();
 	}

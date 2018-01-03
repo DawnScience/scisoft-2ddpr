@@ -8,19 +8,18 @@ import org.eclipse.swt.widgets.Display;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
 import uk.ac.diamond.scisoft.diffraction.powder.DiffractionImageData;
+import uk.ac.diamond.scisoft.diffraction.powder.ICalibrationUIProgressUpdate;
 import uk.ac.diamond.scisoft.diffraction.powder.PowderCalibration;
 import uk.ac.diamond.scisoft.diffraction.powder.PowderCalibrationInfoImpl;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
-import uk.ac.diamond.scisoft.diffraction.powder.rcp.PowderCalibrationUtils;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
 
 public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 
-	Display display;
-	IPlottingSystem<?> plottingSystem;
 	DiffractionDataManager manager;
 	DiffractionImageData currentData;
 	SimpleCalibrationParameterModel params;
+	ICalibrationUIProgressUpdate uiUpdater;
 	
 	private static final String descEllipse = "Reference for ellipse parameter calibration routine";
 	
@@ -51,55 +50,39 @@ public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 			"%D 2013"+
 			"%I International Union of Crystallography";
 	
-	public AbstractCalibrationRun(Display display,
-			IPlottingSystem<?> plottingSystem,
-			DiffractionDataManager manager,
-			SimpleCalibrationParameterModel params) {
+	public AbstractCalibrationRun(DiffractionDataManager manager,
+			SimpleCalibrationParameterModel params,
+			ICalibrationUIProgressUpdate uiUpdater) {
 		
-		this.display = display;
-		this.plottingSystem = plottingSystem;
+
 		this.manager = manager;
 		this.params = params;
 		this.currentData = manager.getCurrentData();
+		this.uiUpdater = uiUpdater;
 	}
 	
 	protected void updateOnFinish(final CalibrationOutput output) {
-		display.syncExec(new Runnable() {
-			@Override
-			public void run() {
-				if (output == null) return;
-				int i = 0;
-				for (DiffractionImageData data : manager.iterable()) {
-					updateMetaData(data.getMetaData(), output, i);
-					data.setCalibrationInfo(output.getCalibrationInfo()[i]);
-					i++;
-				}
 
-				PowderCalibrationUtils.clearFoundRings(plottingSystem);
-			}
-		});
-	}
-	
-	protected void updateMetaData(final IDiffractionMetadata md , final CalibrationOutput output, final int i) {
-		
-		if (display.getThread()!=Thread.currentThread()) {
-			display.syncExec(new Runnable() {
-
-				@Override
-				public void run() {
-					updateMetaData(md, output, i);
-
-				}
-			});
-		} else {
-			Double roll = null;
-			if (params.isFixDetectorRoll()) {
-				roll = md.getDetector2DProperties().getNormalAnglesInDegrees()[2];
-			}
-			
-			PowderCalibration.updateMetadataFromOutput(md, output, i, roll);
+		if (output == null) return;
+		int i = 0;
+		for (DiffractionImageData data : manager.iterable()) {
+			updateMetaData(data.getMetaData(), output, i);
+			data.setCalibrationInfo(output.getCalibrationInfo()[i]);
+			i++;
 		}
-		
+
+		uiUpdater.removeRings();
+	}
+
+	protected void updateMetaData(final IDiffractionMetadata md , final CalibrationOutput output, final int i) {
+
+		Double roll = null;
+		if (params.isFixDetectorRoll()) {
+			roll = md.getDetector2DProperties().getNormalAnglesInDegrees()[2];
+		}
+
+		PowderCalibration.updateMetadataFromOutput(md, output, i, roll);
+
 	}
 	
 	protected PowderCalibrationInfoImpl createPowderCalibrationInfo(DiffractionImageData data, boolean ellipse) {

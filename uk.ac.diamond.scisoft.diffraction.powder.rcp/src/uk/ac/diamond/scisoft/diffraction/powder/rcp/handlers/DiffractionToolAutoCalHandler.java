@@ -10,6 +10,7 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.dawnsci.analysis.api.metadata.IDiffractionMetadata;
+import org.eclipse.dawnsci.analysis.api.roi.IROI;
 import org.eclipse.dawnsci.plotting.api.IPlottingSystem;
 import org.eclipse.dawnsci.plotting.api.trace.IImageTrace;
 import org.eclipse.dawnsci.plotting.api.trace.ITrace;
@@ -18,7 +19,10 @@ import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.swt.widgets.Display;
 
 import uk.ac.diamond.scisoft.diffraction.powder.DiffractionImageData;
+import uk.ac.diamond.scisoft.diffraction.powder.ICalibrationUIProgressUpdate;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.PowderCalibrationUtils;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.calibration.DiffractionCalibrationUtils;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.AutoCalibrationRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
 
@@ -60,7 +64,37 @@ public class DiffractionToolAutoCalHandler extends AbstractHandler {
 		SimpleCalibrationParameterModel params = new SimpleCalibrationParameterModel();
 		params.setNumberOfRings(10);
 		
-		AutoCalibrationRun job = new AutoCalibrationRun(Display.getDefault(), system, new DiffractionDataManager(model), dtd, params);
+		
+		ICalibrationUIProgressUpdate uiUpdate = new ICalibrationUIProgressUpdate() {
+			
+			@Override
+			public void updatePlotData(IDataset data) {
+				system.updatePlot2D(data, null, null);
+				
+			}
+			
+			@Override
+			public void removeRings() {
+				Display.getDefault().syncExec(new Runnable() {
+					@Override
+					public void run() {
+						PowderCalibrationUtils.clearFoundRings(system);
+					}
+				});
+				
+			}
+			
+			@Override
+			public void drawFoundRing(IROI roi) {
+				DiffractionCalibrationUtils.drawFoundRing(null, Display.getDefault(), system, roi, false);
+			}
+			
+			@Override
+			public void completed() {
+			}
+		};
+		
+		AutoCalibrationRun job = new AutoCalibrationRun(Display.getDefault(), system, new DiffractionDataManager(model), dtd, params,uiUpdate);
 		
 		ProgressMonitorDialog dia = new ProgressMonitorDialog(Display.getCurrent().getActiveShell());
 		try {

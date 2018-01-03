@@ -39,9 +39,11 @@ import org.eclipse.dawnsci.plotting.api.region.RegionUtils;
 import org.eclipse.dawnsci.plotting.api.trace.IImageTrace;
 import org.eclipse.dawnsci.plotting.api.trace.ITrace;
 import org.eclipse.draw2d.ColorConstants;
+import org.eclipse.january.IMonitor;
 import org.eclipse.january.dataset.Dataset;
 import org.eclipse.january.dataset.DatasetFactory;
 import org.eclipse.january.dataset.DatasetUtils;
+import org.eclipse.january.dataset.IDataset;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -51,8 +53,10 @@ import org.slf4j.LoggerFactory;
 import uk.ac.diamond.scisoft.analysis.fitting.Fitter;
 import uk.ac.diamond.scisoft.analysis.fitting.functions.Polynomial;
 import uk.ac.diamond.scisoft.diffraction.powder.DiffractionImageData;
+import uk.ac.diamond.scisoft.diffraction.powder.ICalibrationUIProgressUpdate;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.LocalServiceManager;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.PowderCalibrationUtils;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.AutoCalibrationRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.FromPointsCalibrationRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.FromRingsCalibrationRun;
@@ -577,21 +581,52 @@ public class DiffractionCalibrationUtils {
 	
 	public static IRunnableWithProgress getCalibrationRunnable(SimpleCalibrationParameterModel model, DiffractionDataManager manager, IPlottingSystem<?> system){
 		
+		final Display display = Display.getDefault();
+		
+		ICalibrationUIProgressUpdate uiUpdate = new ICalibrationUIProgressUpdate() {
+			
+			@Override
+			public void updatePlotData(IDataset data) {
+				system.updatePlot2D(data, null, null);
+				
+			}
+			
+			@Override
+			public void removeRings() {
+				display.syncExec(new Runnable() {
+					@Override
+					public void run() {
+						PowderCalibrationUtils.clearFoundRings(system);
+					}
+				});
+				
+			}
+			
+			@Override
+			public void drawFoundRing(IROI roi) {
+				DiffractionCalibrationUtils.drawFoundRing(null, display, system, roi, false);
+			}
+			
+			@Override
+			public void completed() {
+			}
+		};
+		
 		if (manager.getSize() > 1) {
-			if (model.isAutomaticCalibration())return new AutoCalibrationRun(Display.getDefault(), system ,manager , model);
-			return new FromRingsCalibrationRun(Display.getDefault(), system, manager, model);
+			if (model.isAutomaticCalibration())return new AutoCalibrationRun(Display.getDefault(), system ,manager , model,uiUpdate);
+			return new FromRingsCalibrationRun(Display.getDefault(), system, manager, model,uiUpdate);
 		}
 		
 		if (!model.isAutomaticCalibration()) {
 			
 			if (model.isPointCalibration()) {
-				return new FromPointsCalibrationRun(Display.getDefault(), system, manager,model);
+				return new FromPointsCalibrationRun(Display.getDefault(), system, manager,model,uiUpdate);
 			} else {
-				return new FromRingsCalibrationRun(Display.getDefault(), system, manager, model);
+				return new FromRingsCalibrationRun(Display.getDefault(), system, manager, model,uiUpdate);
 			}
 		} 
 		
-		return new AutoCalibrationRun(Display.getDefault(), system ,manager , model);
+		return new AutoCalibrationRun(Display.getDefault(), system ,manager , model,uiUpdate);
 	}
 
 	/**
