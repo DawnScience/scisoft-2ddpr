@@ -553,5 +553,16 @@ public class PowderCalibration {
 //		md.getDiffractionCrystalEnvironment().setWavelength(output.getWavelength());
 	}
 	
-
+	
+	public static CalibrationOutput manualCalibrateKnownWavelength(Dataset image, double wavelength, double pixel, List<HKL> spacings, int nRings,  PowderCalibrationInfoImpl info) {
+		
+		int[] options = new int[]{CENTRE_MASK_RADIUS, MINIMUM_SPACING, NUMBER_OF_POINTS};
+		SimpleCalibrationParameterModel params = new SimpleCalibrationParameterModel();
+		params.setNumberOfRings(nRings);
+		params.setFloatEnergy(false);
+		params.setIsPointCalibration(true);
+		params.setAutomaticCalibration(true);
+		
+		return null;
+	}
 }

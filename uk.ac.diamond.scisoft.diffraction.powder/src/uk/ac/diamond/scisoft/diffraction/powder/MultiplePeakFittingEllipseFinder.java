@@ -318,50 +318,6 @@ public class MultiplePeakFittingEllipseFinder {
 		return polyline;
 	}
 	
-	public static IROI runConicPeakFit(final IMonitor monitor, Dataset image, IParametricROI roi, IParametricROI[] innerOuter, int nPoints) {
-		
-		if (roi == null)
-			return null;
-
-		monitor.subTask("Find POIs near initial ellipse");
-		PolylineROI points;
-		monitor.subTask("Fit POIs");
-		
-		points = PeakFittingEllipseFinder.findPointsOnConic(image, null,roi, innerOuter,nPoints, monitor);
-		
-		if (monitor.isCancelled())
-			return null;
-		
-		if (points == null) return null;
-		
-		if (roi instanceof EllipticalROI) {
-			if (points.getNumberOfPoints() < 3) {
-				throw new IllegalArgumentException("Could not find enough points to trim");
-			}
-
-			monitor.subTask("Trim POIs");
-			EllipticalFitROI efroi = PowderRingsUtils.fitAndTrimOutliers(monitor, points, 5, false);
-			logger.debug("Found {}...", efroi);
-			monitor.subTask("");
-			
-			EllipticalFitROI cfroi = PowderRingsUtils.fitAndTrimOutliers(null, points, 2, true);
-			
-			
-			double dma = efroi.getSemiAxis(0)-cfroi.getSemiAxis(0);
-			double dmi = efroi.getSemiAxis(1)-cfroi.getSemiAxis(0);
-			
-			double crms = Math.sqrt((dma*dma + dmi*dmi)/2);
-			double rms = efroi.getRMS();
-			
-			if (crms < rms) {
-				efroi = cfroi;
-				logger.warn("SWITCHING TO CIRCLE - RMS SEMIAX-RADIUS {} < FIT RMS {}",crms,rms);
-			}
-			
-			return efroi;
-		}
-		
-		return points;
-	}
+	
 
 }
