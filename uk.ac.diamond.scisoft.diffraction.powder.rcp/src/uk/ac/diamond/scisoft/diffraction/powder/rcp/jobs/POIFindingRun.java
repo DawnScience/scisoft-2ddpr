@@ -48,7 +48,7 @@ public class POIFindingRun implements IRunnableWithProgress {
 		int minSpacing = Activator.getDefault().getPreferenceStore().getInt(DiffractionCalibrationConstants.MINIMUM_SPACING);
 		int nPoints = Activator.getDefault().getPreferenceStore().getInt(DiffractionCalibrationConstants.NUMBER_OF_POINTS);
 		
-		PowderCalibration.findPointsOfInterest(currentData, model, uiUpdater, cs, new ProgressMonitorWrapper(monitor), minSpacing, nPoints);
+		PowderCalibration.findPointsOfInterest(currentData, model, uiUpdater, cs.getHKLs(), new ProgressMonitorWrapper(monitor), minSpacing, nPoints);
 				
 		return;
 	}

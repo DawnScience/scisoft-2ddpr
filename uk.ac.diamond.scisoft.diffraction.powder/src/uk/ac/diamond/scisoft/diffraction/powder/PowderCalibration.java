@@ -609,10 +609,10 @@ public class PowderCalibration {
 		return null;
 	}
 	
-	public static void findPointsOfInterest(DiffractionImageData currentData, SimpleCalibrationParameterModel model, ICalibrationUIProgressUpdate uiUpdater, CalibrantSpacing cs, IMonitor monitor, int minSpacing, int nPoints) {
+	public static void findPointsOfInterest(DiffractionImageData currentData, SimpleCalibrationParameterModel model, ICalibrationUIProgressUpdate uiUpdater, List<HKL> hkls, IMonitor monitor, int minSpacing, int nPoints) {
 		int maxSize = model.getMaxSearchSize();
 		
-		final List<IROI> resROIs = DSpacing.getResolutionRings(currentData.getMetaData(),cs);
+		final List<IROI> resROIs = DSpacing.getResolutionRings(currentData.getMetaData(),hkls);
 		
 		currentData.clearROIs();
 		currentData.setUse(false);
@@ -634,7 +634,7 @@ public class PowderCalibration {
 			IROI roi = null;
 			try {
 				if (i >= numberToFit) continue;
-				if (monitor.isCancelled()) continue;
+				if (monitor != null && monitor.isCancelled()) continue;
 				
 				
 				if (model.isUseRingSet() && !model.getRingSet().contains(i+1)) continue;
@@ -827,7 +827,24 @@ public class PowderCalibration {
 		return output;
 	}
 	
-	protected static PowderCalibrationInfoImpl createPowderCalibrationInfo(DiffractionImageData data, boolean ellipse) {
+	public static CalibrationOutput calibrateSingleImageManualPoint(Dataset image, double pixel, List<HKL> spacings, int nRings,IDiffractionMetadata metadata, PowderCalibrationInfoImpl info) {
+		
+		int[] options = new int[]{CENTRE_MASK_RADIUS, MINIMUM_SPACING, NUMBER_OF_POINTS};
+		SimpleCalibrationParameterModel params = new SimpleCalibrationParameterModel();
+		params.setNumberOfRings(nRings);
+		params.setIsPointCalibration(true);
+		
+		DiffractionImageData imdata = new DiffractionImageData();
+		imdata.setImage(image);
+		imdata.setMetaData(metadata);
+		
+		
+		findPointsOfInterest(imdata, params, null, spacings, null, MINIMUM_SPACING, NUMBER_OF_POINTS);
+		
+		return manualCalibrateMultipleImagesPoints(imdata, pixel, spacings, params, (IMonitor)null, (ICalibrationUIProgressUpdate)null);
+	}
+	
+	private static PowderCalibrationInfoImpl createPowderCalibrationInfo(DiffractionImageData data, boolean ellipse) {
 		PowderCalibrationInfoImpl info = new PowderCalibrationInfoImpl(CalibrationFactory.getCalibrationStandards().getSelectedCalibrant(),
 				data.getPath() + data.getName(), "detector");
 		

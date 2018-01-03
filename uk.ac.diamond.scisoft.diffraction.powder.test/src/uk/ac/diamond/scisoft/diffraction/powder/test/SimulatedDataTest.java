@@ -130,6 +130,36 @@ public class SimulatedDataTest {
 		
 	}
 	
+	@Test
+	public void floatAllManualPoint(){
+
+		IDiffractionMetadata meta = getPerkinElmerDiffractionMetadata();
+		DetectorProperties dp = meta.getDetector2DProperties();
+		
+		Dataset[] s1d = getSimulated1D();
+		int[] shape = new int[]{dp.getPy(),dp.getPx()};
+		
+		Dataset q2D = PixelIntegrationUtils.generateQArray(shape, meta); 
+		Dataset image = PixelIntegrationUtils.generate2Dfrom1D(s1d, q2D);
+		
+		CalibrationStandards standards = CalibrationFactory.getCalibrationStandards();
+		CalibrantSpacing ceO2 = standards.getCalibrationPeakMap("CeO2");
+		
+		IDiffractionMetadata m = meta.clone();
+		
+		m.getDetector2DProperties().setBeamCentreDistance(m.getDetector2DProperties().getBeamCentreDistance()*1.005);
+		
+		
+		CalibrationOutput result = PowderCalibration.calibrateSingleImageManualPoint(image,
+				dp.getHPxSize(), ceO2.getHKLs(),10,meta,null);
+		
+		Assert.assertEquals(distance, result.getDistance().getDouble(0), 0.1);
+		Assert.assertEquals(bx, result.getBeamCentreX().getDouble(0), 0.1);
+		Assert.assertEquals(by, result.getBeamCentreY().getDouble(0), 0.1);
+		Assert.assertEquals(wavelength, result.getWavelength(), 0.0001);
+		
+	}
+	
 	private IDiffractionMetadata getPerkinElmerDiffractionMetadata() {
 		
 		DetectorProperties dp = new DetectorProperties(100, 0, 0, 2048, 2048, 0.2, 0.2);
