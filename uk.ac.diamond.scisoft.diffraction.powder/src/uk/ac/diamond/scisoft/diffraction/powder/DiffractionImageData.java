@@ -20,7 +20,7 @@ import org.eclipse.january.dataset.IDataset;
 /**
  * Data item used in the table viewer of the Diffraction calibration views
  */
-public class DiffractionTableData {
+public class DiffractionImageData {
 	
 	private String path;
 	private String name;
@@ -32,7 +32,7 @@ public class DiffractionTableData {
 	private List<IROI> rois; 
 	private int nrois = -1;
 	
-	public DiffractionTableData() {
+	public DiffractionImageData() {
 		rois = new ArrayList<>();
 	}
 

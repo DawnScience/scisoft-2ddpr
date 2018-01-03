@@ -15,7 +15,7 @@ import org.eclipse.swt.widgets.Display;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.HKL;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
-import uk.ac.diamond.scisoft.diffraction.powder.DiffractionTableData;
+import uk.ac.diamond.scisoft.diffraction.powder.DiffractionImageData;
 import uk.ac.diamond.scisoft.diffraction.powder.ICalibrationUIProgressUpdate;
 import uk.ac.diamond.scisoft.diffraction.powder.PowderCalibration;
 import uk.ac.diamond.scisoft.diffraction.powder.PowderCalibrationInfoImpl;
@@ -35,7 +35,7 @@ public class AutoCalibrationRun extends AbstractCalibrationRun {
 	}
 	
 	public AutoCalibrationRun(Display display, IPlottingSystem<?> plottingSystem,
-			DiffractionDataManager manager, DiffractionTableData currentData, SimpleCalibrationParameterModel param) {
+			DiffractionDataManager manager, DiffractionImageData currentData, SimpleCalibrationParameterModel param) {
 		super(display, plottingSystem, manager, param);
 		this.currentData = currentData;
 	}
@@ -97,7 +97,7 @@ public class AutoCalibrationRun extends AbstractCalibrationRun {
 		PowderCalibrationInfoImpl[] info = new PowderCalibrationInfoImpl[manager.getSize()];
 		
 		int count = 0;
-		for (DiffractionTableData data : manager.iterable()) {
+		for (DiffractionImageData data : manager.iterable()) {
 			try {
 				images[count] = DatasetUtils.sliceAndConvertLazyDataset(data.getImage());
 			} catch (DatasetException e) {

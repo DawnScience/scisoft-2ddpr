@@ -48,7 +48,7 @@ import org.slf4j.LoggerFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationStandards;
 import uk.ac.diamond.scisoft.analysis.io.NexusDiffractionCalibrationReader;
-import uk.ac.diamond.scisoft.diffraction.powder.DiffractionTableData;
+import uk.ac.diamond.scisoft.diffraction.powder.DiffractionImageData;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.Activator;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.PowderCalibrationUtils;
@@ -309,7 +309,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		ISelection is = diffractionTableViewer.getSelection();
 		if (is instanceof StructuredSelection) {
 			StructuredSelection structSelection = (StructuredSelection) is;
-			DiffractionTableData selectedData = (DiffractionTableData) structSelection.getFirstElement();
+			DiffractionImageData selectedData = (DiffractionImageData) structSelection.getFirstElement();
 			
 			if (augmenter != null) {
 				if (structSelection.isEmpty()) 
@@ -437,8 +437,8 @@ public class DiffractionCalibrationView extends ViewPart {
 			@Override
 			public void run() {
 				PowderCalibrationUtils.clearFoundRings(plottingSystem);
-				Iterable<DiffractionTableData> iterable = manager.iterable();
-				for (DiffractionTableData d : iterable) d.clearROIs();
+				Iterable<DiffractionImageData> iterable = manager.iterable();
+				for (DiffractionImageData d : iterable) d.clearROIs();
 			}
 		};
 		resetRingsAction.setImageDescriptor(Activator.getImageDescriptor("icons/reset_rings.png"));
@@ -478,7 +478,7 @@ public class DiffractionCalibrationView extends ViewPart {
 	}
  	
 
-	private void drawSelectedData(DiffractionTableData data) {
+	private void drawSelectedData(DiffractionImageData data) {
 
 		if (data.getImage() == null)
 			return;
@@ -504,7 +504,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		
 	}
 	
-	private void updateCurrentData(DiffractionTableData data) {
+	private void updateCurrentData(DiffractionImageData data) {
 		manager.setCurrentData(data);
 		widget.update();
 		

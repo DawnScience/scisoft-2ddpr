@@ -15,7 +15,7 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 
-import uk.ac.diamond.scisoft.diffraction.powder.DiffractionTableData;
+import uk.ac.diamond.scisoft.diffraction.powder.DiffractionImageData;
 
 public class DiffCalEditingSupport extends EditingSupport {
 		private TableViewer tv;
@@ -49,7 +49,7 @@ public class DiffCalEditingSupport extends EditingSupport {
 
 		@Override
 		protected Object getValue(Object element) {
-			DiffractionTableData data = (DiffractionTableData) element;
+			DiffractionImageData data = (DiffractionImageData) element;
 			if (column == 2) {
 				return data.getDistance();
 			}
@@ -58,7 +58,7 @@ public class DiffCalEditingSupport extends EditingSupport {
 
 		@Override
 		protected void setValue(Object element, Object value) {
-			DiffractionTableData data = (DiffractionTableData) element;
+			DiffractionImageData data = (DiffractionImageData) element;
 
 			if (column == 2) {
 				data.setDistance((Double) value);

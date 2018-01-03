@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrantSpacing;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.diffraction.DSpacing;
-import uk.ac.diamond.scisoft.diffraction.powder.DiffractionTableData;
+import uk.ac.diamond.scisoft.diffraction.powder.DiffractionImageData;
 import uk.ac.diamond.scisoft.diffraction.powder.ICalibrationUIProgressUpdate;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.Activator;
@@ -21,7 +21,7 @@ import uk.ac.diamond.scisoft.diffraction.powder.rcp.preferences.DiffractionCalib
 
 public class POIFindingRun implements IRunnableWithProgress {
 
-	DiffractionTableData currentData;
+	DiffractionImageData currentData;
 	SimpleCalibrationParameterModel model;
 	ICalibrationUIProgressUpdate uiUpdater;
 	
@@ -32,7 +32,7 @@ public class POIFindingRun implements IRunnableWithProgress {
 	static String REGION_PREFIX = "Pixel peaks";
 	
 	public POIFindingRun(ICalibrationUIProgressUpdate uiUpdater,
-			final DiffractionTableData currentData,
+			final DiffractionImageData currentData,
 			final SimpleCalibrationParameterModel model) {
 		this.uiUpdater =  uiUpdater;
 		this.currentData = currentData;
@@ -113,7 +113,7 @@ public class POIFindingRun implements IRunnableWithProgress {
 	}
 	
 	
-	public void updateData(DiffractionTableData data) {
+	public void updateData(DiffractionImageData data) {
 		this.currentData = data;
 	}
 }

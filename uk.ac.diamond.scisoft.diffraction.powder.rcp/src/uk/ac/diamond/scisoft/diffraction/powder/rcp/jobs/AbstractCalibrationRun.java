@@ -7,7 +7,7 @@ import org.eclipse.swt.widgets.Display;
 
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
-import uk.ac.diamond.scisoft.diffraction.powder.DiffractionTableData;
+import uk.ac.diamond.scisoft.diffraction.powder.DiffractionImageData;
 import uk.ac.diamond.scisoft.diffraction.powder.PowderCalibration;
 import uk.ac.diamond.scisoft.diffraction.powder.PowderCalibrationInfoImpl;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
@@ -19,7 +19,7 @@ public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 	Display display;
 	IPlottingSystem<?> plottingSystem;
 	DiffractionDataManager manager;
-	DiffractionTableData currentData;
+	DiffractionImageData currentData;
 	SimpleCalibrationParameterModel params;
 	
 	private static final String descEllipse = "Reference for ellipse parameter calibration routine";
@@ -69,7 +69,7 @@ public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 			public void run() {
 				if (output == null) return;
 				int i = 0;
-				for (DiffractionTableData data : manager.iterable()) {
+				for (DiffractionImageData data : manager.iterable()) {
 					updateMetaData(data.getMetaData(), output, i);
 					data.setCalibrationInfo(output.getCalibrationInfo()[i]);
 					i++;
@@ -102,7 +102,7 @@ public abstract class AbstractCalibrationRun implements IRunnableWithProgress {
 		
 	}
 	
-	protected PowderCalibrationInfoImpl createPowderCalibrationInfo(DiffractionTableData data, boolean ellipse) {
+	protected PowderCalibrationInfoImpl createPowderCalibrationInfo(DiffractionImageData data, boolean ellipse) {
 		PowderCalibrationInfoImpl info = new PowderCalibrationInfoImpl(CalibrationFactory.getCalibrationStandards().getSelectedCalibrant(),
 				data.getPath() + data.getName(), "detector");
 		

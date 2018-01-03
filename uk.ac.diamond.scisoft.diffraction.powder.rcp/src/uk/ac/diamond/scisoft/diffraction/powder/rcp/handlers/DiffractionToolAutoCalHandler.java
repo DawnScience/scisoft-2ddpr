@@ -17,7 +17,7 @@ import org.eclipse.january.dataset.IDataset;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.swt.widgets.Display;
 
-import uk.ac.diamond.scisoft.diffraction.powder.DiffractionTableData;
+import uk.ac.diamond.scisoft.diffraction.powder.DiffractionImageData;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.AutoCalibrationRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
@@ -31,7 +31,7 @@ public class DiffractionToolAutoCalHandler extends AbstractHandler {
 		
 		DiffractionTool dtool = (DiffractionTool)event.getApplicationContext();
 		
-		DiffractionTableData dtd = new DiffractionTableData();
+		DiffractionImageData dtd = new DiffractionImageData();
 		
 		IPlottingSystem<?> system = dtool.getPlottingSystem();
 		
@@ -54,7 +54,7 @@ public class DiffractionToolAutoCalHandler extends AbstractHandler {
 		dtd.setImage(ds);
 		dtd.setMetaData(dm);
 		
-		List<DiffractionTableData> model = new ArrayList<DiffractionTableData>();
+		List<DiffractionImageData> model = new ArrayList<DiffractionImageData>();
 		model.add(dtd);
 		
 		SimpleCalibrationParameterModel params = new SimpleCalibrationParameterModel();

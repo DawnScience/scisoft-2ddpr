@@ -49,13 +49,13 @@ import org.osgi.service.event.EventHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.ac.diamond.scisoft.diffraction.powder.DiffractionTableData;
+import uk.ac.diamond.scisoft.diffraction.powder.DiffractionImageData;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.LocalServiceManager;
 
 public class DiffractionDataManager {
 	
-	private List<DiffractionTableData> model;
-	private DiffractionTableData currentData;
+	private List<DiffractionImageData> model;
+	private DiffractionImageData currentData;
 	private ILoaderService service;
 	
 	// Logger
@@ -64,9 +64,9 @@ public class DiffractionDataManager {
 	private HashSet<IDiffractionDataListener> listeners;
 	
 	public DiffractionDataManager() {
-		this(new ArrayList<DiffractionTableData>(7));
+		this(new ArrayList<DiffractionImageData>(7));
 	}
-	public DiffractionDataManager(List<DiffractionTableData> model) {
+	public DiffractionDataManager(List<DiffractionImageData> model) {
 		this.model = model;
 		service    = Activator.getService(ILoaderService.class);
 		listeners  = new HashSet<IDiffractionDataListener>();
@@ -90,7 +90,7 @@ public class DiffractionDataManager {
 		ctx.registerService(EventHandler.class, fileLoadedHandler, props);
 	}
 	
-	public void setModel(List<DiffractionTableData> model) {
+	public void setModel(List<DiffractionImageData> model) {
 		this.model = model;
 	}
 	
@@ -102,25 +102,25 @@ public class DiffractionDataManager {
 		return model.isEmpty();
 	}
 	
-	public void setCurrentData(DiffractionTableData data) {
+	public void setCurrentData(DiffractionImageData data) {
 		this.currentData = data;
 	}
 	
-	public DiffractionTableData getCurrentData() {
+	public DiffractionImageData getCurrentData() {
 		return currentData;
 	}
 	
 	public void setWavelength(double wavelength) {
-		for (DiffractionTableData data : model) {
+		for (DiffractionImageData data : model) {
 			data.getMetaData().getDiffractionCrystalEnvironment().setWavelength(wavelength);
 		}
 	}
 	
-	public DiffractionTableData[] toArray() {
-		return model.toArray(new DiffractionTableData[model.size()]);
+	public DiffractionImageData[] toArray() {
+		return model.toArray(new DiffractionImageData[model.size()]);
 	}
 
-	public Iterable<DiffractionTableData> iterable() {
+	public Iterable<DiffractionImageData> iterable() {
 		return model;
 	}
 	
@@ -128,7 +128,7 @@ public class DiffractionDataManager {
 		return model.size();
 	}
 	
-	public boolean remove(DiffractionTableData selectedData) {
+	public boolean remove(DiffractionImageData selectedData) {
 		boolean remove = model.remove(selectedData); 
 		
 		if (remove) fireDiffractionDataListeners(null);
@@ -140,7 +140,7 @@ public class DiffractionDataManager {
 		return model!=null && getSize()>0;
 	}
 	
-	public DiffractionTableData getLast() {
+	public DiffractionImageData getLast() {
 		return isValidModel() ? model.get(model.size()-1) : null;
 	}
     
@@ -148,7 +148,7 @@ public class DiffractionDataManager {
 	 * Resets the meta data
 	 */
 	public void reset() {
-		for (DiffractionTableData model : iterable()) {
+		for (DiffractionImageData model : iterable()) {
 			// Restore original metadata
 			DetectorProperties originalProps = model.getMetaData().getOriginalDetector2DProperties();
 			DiffractionCrystalEnvironment originalEnvironment =model.getMetaData().getOriginalDiffractionCrystalEnvironment();
@@ -164,13 +164,13 @@ public class DiffractionDataManager {
 	public void loadData(String filePath, String dataFullName, boolean async) {
 		if (filePath == null) return;
 
-		for (DiffractionTableData d : model) {
+		for (DiffractionImageData d : model) {
 			if (filePath.equals(d.getPath())) {
 				return;
 			}
 		}
 		
-		DiffractionTableData data = new DiffractionTableData();
+		DiffractionImageData data = new DiffractionImageData();
 		data.setPath(filePath);
 		int j = filePath.lastIndexOf(File.separator);
 		String fileName = j > 0 ? filePath.substring(j + 1) : "file";
@@ -201,9 +201,9 @@ public class DiffractionDataManager {
 
 		private final String path;
 		private final String fullName;
-		private final DiffractionTableData data;
+		private final DiffractionImageData data;
 		
-		public PowderFileLoaderJob(String filePath, String dataFullName, DiffractionTableData data) {
+		public PowderFileLoaderJob(String filePath, String dataFullName, DiffractionImageData data) {
 			super("Load powder file");
 			this.path = filePath;
 			this.fullName = dataFullName;
@@ -339,7 +339,7 @@ public class DiffractionDataManager {
 	}
 	}
 	
-	private boolean setUpImage(String path, String[] datasetNames, DiffractionTableData data){
+	private boolean setUpImage(String path, String[] datasetNames, DiffractionImageData data){
 		if (datasetNames == null) return false;
 		
 		if (datasetNames[1] == null) {
@@ -390,7 +390,7 @@ public class DiffractionDataManager {
 			IDiffractionMetadata md = DiffractionDefaultMetadata.getDiffractionMetadata(n.getShape());
 			n.setMetadata(md);
 			n.setName(fileName + ":" + n.getName() + count);
-			DiffractionTableData d = new DiffractionTableData();
+			DiffractionImageData d = new DiffractionImageData();
 			d.setImage(n);
 			d.setName(fileName + ": " + count);
 			d.setMetaData(md);
@@ -403,7 +403,7 @@ public class DiffractionDataManager {
 		return true;
 	}
 
-	private boolean setUpImage(String path, String datasetName, DiffractionTableData data){
+	private boolean setUpImage(String path, String datasetName, DiffractionImageData data){
 			
 		ILazyDataset ld = null;
 		try {
@@ -466,14 +466,14 @@ public class DiffractionDataManager {
 	
 	public void clear(IDetectorPropertyListener listener) {
 		if (!isValidModel()) return;
-		if (listener!=null) for (DiffractionTableData d : iterable()) {
+		if (listener!=null) for (DiffractionImageData d : iterable()) {
 			d.getMetaData().getDetector2DProperties().removeDetectorPropertyListener(listener);
 		}
 		model.clear();
 	}
 
 	public void setDiffractionMetadataForAll(IDiffractionMetadata metadata) {
-		for (DiffractionTableData data : model) {
+		for (DiffractionImageData data : model) {
 			data.setMetaData(metadata.clone());
 		}
 		fireDiffractionDataListeners(new DiffractionDataChanged(currentData));

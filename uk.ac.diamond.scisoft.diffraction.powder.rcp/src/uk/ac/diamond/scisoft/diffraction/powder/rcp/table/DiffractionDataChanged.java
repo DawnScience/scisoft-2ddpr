@@ -10,7 +10,7 @@ package uk.ac.diamond.scisoft.diffraction.powder.rcp.table;
 
 import java.util.EventObject;
 
-import uk.ac.diamond.scisoft.diffraction.powder.DiffractionTableData;
+import uk.ac.diamond.scisoft.diffraction.powder.DiffractionImageData;
 
 public class DiffractionDataChanged extends EventObject{
 
@@ -19,7 +19,7 @@ public class DiffractionDataChanged extends EventObject{
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public DiffractionDataChanged(DiffractionTableData source) {
+	public DiffractionDataChanged(DiffractionImageData source) {
 		super(source);
 	}
 

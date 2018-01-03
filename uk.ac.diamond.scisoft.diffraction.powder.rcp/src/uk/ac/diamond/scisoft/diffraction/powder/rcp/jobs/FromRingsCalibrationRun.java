@@ -17,7 +17,7 @@ import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.HKL;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrateEllipses;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
-import uk.ac.diamond.scisoft.diffraction.powder.DiffractionTableData;
+import uk.ac.diamond.scisoft.diffraction.powder.DiffractionImageData;
 import uk.ac.diamond.scisoft.diffraction.powder.PowderCalibrationInfoImpl;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
@@ -40,7 +40,7 @@ public class FromRingsCalibrationRun extends AbstractCalibrationRun {
 		List<List<EllipticalROI>> allEllipses = new ArrayList<List<EllipticalROI>>();
 		List<double[]> allDSpacings = new ArrayList<double[]>();
 
-		for (DiffractionTableData data : manager.iterable()) {
+		for (DiffractionImageData data : manager.iterable()) {
 			
 			int n = data.getROISize();
 			if (n != spacings.size()) { // always allow a choice to be made
@@ -98,7 +98,7 @@ public class FromRingsCalibrationRun extends AbstractCalibrationRun {
 		PowderCalibrationInfoImpl[] info = new PowderCalibrationInfoImpl[manager.getSize()];
 		
 		int count = 0;
-		for (DiffractionTableData data : manager.iterable()) {
+		for (DiffractionImageData data : manager.iterable()) {
 
 			info[count++] = createPowderCalibrationInfo(data,true);
 		}
