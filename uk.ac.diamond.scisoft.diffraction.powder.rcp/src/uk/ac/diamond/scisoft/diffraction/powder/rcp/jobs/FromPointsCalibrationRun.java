@@ -29,9 +29,7 @@ public class FromPointsCalibrationRun extends AbstractCalibrationRun {
 		monitor.beginTask("Calibrate detector", IProgressMonitor.UNKNOWN);
 		List<HKL> spacings = CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs();
 		
-		double pixelSize = currentData.getMetaData().getDetector2DProperties().getHPxSize();
-		
-		CalibrationOutput output = PowderCalibration.manualCalibrateMultipleImagesPoints(currentData, pixelSize, spacings, params, new ProgressMonitorWrapper(monitor), uiUpdater);
+		CalibrationOutput output = PowderCalibration.manualCalibrateMultipleImagesPoints(currentData, spacings, params, new ProgressMonitorWrapper(monitor), uiUpdater);
 
 		currentData.setCalibrationInfo(output.getCalibrationInfo()[0]);
 

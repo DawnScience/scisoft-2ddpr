@@ -121,7 +121,7 @@ public class FromRingsCalibrationRun extends AbstractCalibrationRun {
 		
 		PowderCalibrationInfoImpl[] info = new PowderCalibrationInfoImpl[manager.getSize()];
 		
-		CalibrationOutput output = PowderCalibration.manualCalibrateMultipleImagesEllipse(manager.getDataList(), ddist, pixelSize, spacings, params, new ProgressMonitorWrapper(monitor), uiUpdater, info);
+		CalibrationOutput output = PowderCalibration.manualCalibrateMultipleImagesEllipse(manager.getDataList(), ddist, pixelSize, spacings, params);
 		
 		updateOnFinish(output);
 		
