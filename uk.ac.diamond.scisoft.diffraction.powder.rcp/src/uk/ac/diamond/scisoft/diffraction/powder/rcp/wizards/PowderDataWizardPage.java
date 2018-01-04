@@ -19,9 +19,9 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 
+import uk.ac.diamond.scisoft.diffraction.powder.DiffractionImageData;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDelegate;
-import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionTableData;
 
 public class PowderDataWizardPage extends WizardPage {
 
@@ -56,7 +56,7 @@ public class PowderDataWizardPage extends WizardPage {
 				ISelection is = event.getSelection();
 				if (is instanceof StructuredSelection) {
 					StructuredSelection structSelection = (StructuredSelection) is;
-					DiffractionTableData selectedData = (DiffractionTableData) structSelection.getFirstElement();
+					DiffractionImageData selectedData = (DiffractionImageData) structSelection.getFirstElement();
 					manager.setCurrentData(selectedData);
 					updatePlot(manager.getCurrentData().getImage());
 				}

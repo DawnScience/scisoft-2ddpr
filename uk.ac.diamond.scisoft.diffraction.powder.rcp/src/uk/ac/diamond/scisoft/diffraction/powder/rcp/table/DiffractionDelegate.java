@@ -43,6 +43,8 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.part.ResourceTransfer;
 
+import uk.ac.diamond.scisoft.diffraction.powder.DiffractionImageData;
+
 /**
  * 
  * @author wqk87977
@@ -103,7 +105,7 @@ public class DiffractionDelegate {
 				if (selected.length > 0) {
 					if (selected.length == 1) {
 						deleteAction.setText("Delete "
-								+ ((DiffractionTableData) selection
+								+ ((DiffractionImageData) selection
 										.getFirstElement()).getName());
 						mgr.add(deleteAction);
 					} else {
@@ -160,7 +162,7 @@ public class DiffractionDelegate {
 				StructuredSelection selection = (StructuredSelection) viewer.getSelection();
 				Object[] selected = selection.toArray();
 				for (int i = 0; i < selected.length; i++) {
-					DiffractionTableData selectedData = (DiffractionTableData) selected[i];
+					DiffractionImageData selectedData = (DiffractionImageData) selected[i];
 					if (manager.getSize() > 0) {
 						if (manager.remove(selectedData)) {
 							if (selectedData.getMetaData() != null)
@@ -169,7 +171,7 @@ public class DiffractionDelegate {
 					}
 				}
 				if (manager.getSize() > 0) {
-					viewer.setSelection(new StructuredSelection((DiffractionTableData) viewer.getElementAt(0)));
+					viewer.setSelection(new StructuredSelection((DiffractionImageData) viewer.getElementAt(0)));
 				} else {
 					viewer.setSelection(new StructuredSelection());
 				}
@@ -206,7 +208,7 @@ public class DiffractionDelegate {
 	 * Add DetectorPropertyListener for the given DiffractionTableData
 	 * @param data
 	 */
-	public void addDetectorPropertyListener(DiffractionTableData data) {
+	public void addDetectorPropertyListener(DiffractionImageData data) {
 		data.getMetaData().getDetector2DProperties().addDetectorPropertyListener(detectorPropertyListener);
 	}
 

@@ -13,10 +13,10 @@ import org.eclipse.swt.events.TraverseEvent;
 import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.widgets.Composite;
 
+import uk.ac.diamond.scisoft.diffraction.powder.DiffractionImageData;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.calibration.DiffractionCalibrationUtils;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
-import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionTableData;
 
 public class PowderCalibrationWizard extends Wizard {
 
@@ -32,7 +32,7 @@ public class PowderCalibrationWizard extends Wizard {
 		super();
 		this.manager = new DiffractionDataManager();
 		manager.loadData(filePath, datasetName,true);
-		DiffractionTableData last = manager.getLast();
+		DiffractionImageData last = manager.getLast();
 		manager.setCurrentData(last);
 		setUpPages();
 	}
@@ -88,9 +88,9 @@ public class PowderCalibrationWizard extends Wizard {
 	@Override
 	public boolean performFinish() {
 		
-		Iterable<DiffractionTableData> iterable = manager.iterable();
+		Iterable<DiffractionImageData> iterable = manager.iterable();
 		
-		for (DiffractionTableData data : iterable) data.clearROIs();
+		for (DiffractionImageData data : iterable) data.clearROIs();
 		
 		return true;
 	}

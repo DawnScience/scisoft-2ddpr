@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.dawb.common.ui.monitor.ProgressMonitorWrapper;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.dawnsci.analysis.api.roi.IROI;
 import org.eclipse.dawnsci.plotting.api.IPlottingSystem;
 import org.eclipse.january.DatasetException;
 import org.eclipse.january.dataset.Dataset;
@@ -15,63 +14,31 @@ import org.eclipse.swt.widgets.Display;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.HKL;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
+import uk.ac.diamond.scisoft.diffraction.powder.DiffractionImageData;
 import uk.ac.diamond.scisoft.diffraction.powder.ICalibrationUIProgressUpdate;
 import uk.ac.diamond.scisoft.diffraction.powder.PowderCalibration;
 import uk.ac.diamond.scisoft.diffraction.powder.PowderCalibrationInfoImpl;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.Activator;
-import uk.ac.diamond.scisoft.diffraction.powder.rcp.PowderCalibrationUtils;
-import uk.ac.diamond.scisoft.diffraction.powder.rcp.calibration.DiffractionCalibrationUtils;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.preferences.DiffractionCalibrationConstants;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
-import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionTableData;
 
 public class AutoCalibrationRun extends AbstractCalibrationRun {
 
 
 	public AutoCalibrationRun(Display display, IPlottingSystem<?> plottingSystem,
-			DiffractionDataManager manager, SimpleCalibrationParameterModel param) {
-		super(display, plottingSystem, manager, param);
+			DiffractionDataManager manager, SimpleCalibrationParameterModel param, ICalibrationUIProgressUpdate uiUpdater) {
+		super( manager, param, uiUpdater);
 	}
 	
 	public AutoCalibrationRun(Display display, IPlottingSystem<?> plottingSystem,
-			DiffractionDataManager manager, DiffractionTableData currentData, SimpleCalibrationParameterModel param) {
-		super(display, plottingSystem, manager, param);
+			DiffractionDataManager manager, DiffractionImageData currentData, SimpleCalibrationParameterModel param, ICalibrationUIProgressUpdate uiUpdater) {
+		super( manager, param, uiUpdater);
 		this.currentData = currentData;
 	}
 
 	@Override
 	public void run(final IProgressMonitor monitor) {
-		
-		//Unpack all ui stuff to go into maths level since the automatic routine should be scriptable
-		ICalibrationUIProgressUpdate uiUpdate = new ICalibrationUIProgressUpdate() {
-			
-			@Override
-			public void updatePlotData(IDataset data) {
-				plottingSystem.updatePlot2D(data, null, monitor);
-				
-			}
-			
-			@Override
-			public void removeRings() {
-				display.syncExec(new Runnable() {
-					@Override
-					public void run() {
-						PowderCalibrationUtils.clearFoundRings(plottingSystem);
-					}
-				});
-				
-			}
-			
-			@Override
-			public void drawFoundRing(IROI roi) {
-				DiffractionCalibrationUtils.drawFoundRing(monitor, display, plottingSystem, roi, false);
-			}
-			
-			@Override
-			public void completed() {
-			}
-		};
 		
 		monitor.beginTask("Calibrating...", IProgressMonitor.UNKNOWN);
 		int centreMaskRadius = Activator.getDefault().getPreferenceStore().getInt(DiffractionCalibrationConstants.CENTRE_MASK_RADIUS);
@@ -97,7 +64,7 @@ public class AutoCalibrationRun extends AbstractCalibrationRun {
 		PowderCalibrationInfoImpl[] info = new PowderCalibrationInfoImpl[manager.getSize()];
 		
 		int count = 0;
-		for (DiffractionTableData data : manager.iterable()) {
+		for (DiffractionImageData data : manager.iterable()) {
 			try {
 				images[count] = DatasetUtils.sliceAndConvertLazyDataset(data.getImage());
 			} catch (DatasetException e) {
@@ -107,7 +74,7 @@ public class AutoCalibrationRun extends AbstractCalibrationRun {
 			info[count++] = createPowderCalibrationInfo(data, true);
 		}
 		
-		CalibrationOutput output = PowderCalibration.calibrateMultipleImages(images, ddist, pxSize, spacings, fixed, new int[]{centreMaskRadius,minSpacing,nPoints}, params, mon, uiUpdate, info);
+		CalibrationOutput output = PowderCalibration.calibrateMultipleImages(images, ddist, pxSize, spacings, fixed, new int[]{centreMaskRadius,minSpacing,nPoints}, params, mon, uiUpdater, info);
 		
 		updateOnFinish(output);
 

@@ -39,9 +39,11 @@ import org.eclipse.dawnsci.plotting.api.region.RegionUtils;
 import org.eclipse.dawnsci.plotting.api.trace.IImageTrace;
 import org.eclipse.dawnsci.plotting.api.trace.ITrace;
 import org.eclipse.draw2d.ColorConstants;
+import org.eclipse.january.IMonitor;
 import org.eclipse.january.dataset.Dataset;
 import org.eclipse.january.dataset.DatasetFactory;
 import org.eclipse.january.dataset.DatasetUtils;
+import org.eclipse.january.dataset.IDataset;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -50,13 +52,15 @@ import org.slf4j.LoggerFactory;
 
 import uk.ac.diamond.scisoft.analysis.fitting.Fitter;
 import uk.ac.diamond.scisoft.analysis.fitting.functions.Polynomial;
+import uk.ac.diamond.scisoft.diffraction.powder.DiffractionImageData;
+import uk.ac.diamond.scisoft.diffraction.powder.ICalibrationUIProgressUpdate;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.LocalServiceManager;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.PowderCalibrationUtils;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.AutoCalibrationRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.FromPointsCalibrationRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.FromRingsCalibrationRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
-import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionTableData;
 
 /**
  * Class containing static methods used in Diffraction calibration views
@@ -316,7 +320,7 @@ public class DiffractionCalibrationUtils {
 	 * @param model
 	 * @param currentData
 	 */
-	public static void calibrateWavelength(final Display display, final List<DiffractionTableData> model, final DiffractionTableData currentData) {
+	public static void calibrateWavelength(final Display display, final List<DiffractionImageData> model, final DiffractionImageData currentData) {
 		Job job = new Job("Calibrate wavelength") {
 			@Override
 			protected IStatus run(final IProgressMonitor monitor) {
@@ -324,7 +328,7 @@ public class DiffractionCalibrationUtils {
 				monitor.beginTask("Calibrate wavelength", IProgressMonitor.UNKNOWN);
 				List<Double> odist = new ArrayList<Double>();
 				List<Double> ndist = new ArrayList<Double>();
-				for (DiffractionTableData data : model) {
+				for (DiffractionImageData data : model) {
 					if (!data.isUse() || data.getNrois() <= 0 || data.getMetaData() == null) {
 						continue;
 					}
@@ -352,7 +356,7 @@ public class DiffractionCalibrationUtils {
 				display.asyncExec(new Runnable() {
 					@Override
 					public void run() {
-						for (final DiffractionTableData data : model) {
+						for (final DiffractionImageData data : model) {
 							if (!data.isUse() || data.getNrois() <= 0 || data.getMetaData() == null) {
 								continue;
 							}
@@ -410,7 +414,7 @@ public class DiffractionCalibrationUtils {
 	public static void saveModelToCSVFile(DiffractionDataManager manager, String filepath) {
 		String[][] values = new String[manager.getSize()][NAMES.length];
 		int i = 0;
-		for (DiffractionTableData model : manager.iterable()) {
+		for (DiffractionImageData model : manager.iterable()) {
 			DetectorProperties dp = model.getMetaData().getDetector2DProperties();
 			double wavelength = model.getMetaData().getDiffractionCrystalEnvironment().getWavelength();
 			//wavelength = DiffractionCalibrationUtils.setPrecision(wavelength, 5);
@@ -485,7 +489,7 @@ public class DiffractionCalibrationUtils {
 			filepath += ".nxs";
 		}
 		
-		DiffractionTableData cd = manager.getCurrentData();
+		DiffractionImageData cd = manager.getCurrentData();
 		NexusFile nexusFile = NexusFileHDF5.createNexusFile(filepath, false);
 		IPersistenceService service = (IPersistenceService)LocalServiceManager.getPersistenceService();
 //		IPersistentFile file = service.createPersistentFile(filepath);
@@ -577,21 +581,52 @@ public class DiffractionCalibrationUtils {
 	
 	public static IRunnableWithProgress getCalibrationRunnable(SimpleCalibrationParameterModel model, DiffractionDataManager manager, IPlottingSystem<?> system){
 		
+		final Display display = Display.getDefault();
+		
+		ICalibrationUIProgressUpdate uiUpdate = new ICalibrationUIProgressUpdate() {
+			
+			@Override
+			public void updatePlotData(IDataset data) {
+				system.updatePlot2D(data, null, null);
+				
+			}
+			
+			@Override
+			public void removeRings() {
+				display.syncExec(new Runnable() {
+					@Override
+					public void run() {
+						PowderCalibrationUtils.clearFoundRings(system);
+					}
+				});
+				
+			}
+			
+			@Override
+			public void drawFoundRing(IROI roi) {
+				DiffractionCalibrationUtils.drawFoundRing(null, display, system, roi, false);
+			}
+			
+			@Override
+			public void completed() {
+			}
+		};
+		
 		if (manager.getSize() > 1) {
-			if (model.isAutomaticCalibration())return new AutoCalibrationRun(Display.getDefault(), system ,manager , model);
-			return new FromRingsCalibrationRun(Display.getDefault(), system, manager, model);
+			if (model.isAutomaticCalibration())return new AutoCalibrationRun(Display.getDefault(), system ,manager , model,uiUpdate);
+			return new FromRingsCalibrationRun(Display.getDefault(), system, manager, model,uiUpdate);
 		}
 		
 		if (!model.isAutomaticCalibration()) {
 			
 			if (model.isPointCalibration()) {
-				return new FromPointsCalibrationRun(Display.getDefault(), system, manager,model);
+				return new FromPointsCalibrationRun(Display.getDefault(), system, manager,model,uiUpdate);
 			} else {
-				return new FromRingsCalibrationRun(Display.getDefault(), system, manager, model);
+				return new FromRingsCalibrationRun(Display.getDefault(), system, manager, model,uiUpdate);
 			}
 		} 
 		
-		return new AutoCalibrationRun(Display.getDefault(), system ,manager , model);
+		return new AutoCalibrationRun(Display.getDefault(), system ,manager , model,uiUpdate);
 	}
 
 	/**

@@ -37,10 +37,10 @@ import org.eclipse.swt.widgets.Display;
 
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationStandards;
+import uk.ac.diamond.scisoft.diffraction.powder.DiffractionImageData;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.calibration.DiffractionCalibrationUtils;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDelegate;
-import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionTableData;
 
 public class PowderResultWizardPage extends WizardPage {
 
@@ -121,7 +121,7 @@ public class PowderResultWizardPage extends WizardPage {
 					ISelection is = event.getSelection();
 					if (is instanceof StructuredSelection) {
 						StructuredSelection structSelection = (StructuredSelection) is;
-						DiffractionTableData selectedData = (DiffractionTableData) structSelection.getFirstElement();
+						DiffractionImageData selectedData = (DiffractionImageData) structSelection.getFirstElement();
 						manager.setCurrentData(selectedData);
 						updatePlot(manager.getCurrentData().getImage());
 						augmenter.setDiffractionMetadata(manager.getCurrentData().getMetaData());

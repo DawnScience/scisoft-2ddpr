@@ -8,9 +8,12 @@ import java.util.TreeSet;
 
 import org.eclipse.dawnsci.analysis.api.diffraction.DetectorProperties;
 import org.eclipse.dawnsci.analysis.api.diffraction.DiffractionCrystalEnvironment;
+import org.eclipse.dawnsci.analysis.api.diffraction.IPowderCalibrationInfo;
 import org.eclipse.dawnsci.analysis.api.metadata.IDiffractionMetadata;
+import org.eclipse.dawnsci.analysis.api.roi.IParametricROI;
 import org.eclipse.dawnsci.analysis.api.roi.IPolylineROI;
 import org.eclipse.dawnsci.analysis.api.roi.IROI;
+import org.eclipse.dawnsci.analysis.dataset.roi.CircularROI;
 import org.eclipse.dawnsci.analysis.dataset.roi.EllipticalFitROI;
 import org.eclipse.dawnsci.analysis.dataset.roi.EllipticalROI;
 import org.eclipse.dawnsci.analysis.dataset.roi.PolylineROI;
@@ -29,7 +32,9 @@ import org.eclipse.january.dataset.Stats;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.HKL;
+import uk.ac.diamond.scisoft.analysis.diffraction.DSpacing;
 import uk.ac.diamond.scisoft.analysis.diffraction.PeakFittingEllipseFinder;
 import uk.ac.diamond.scisoft.analysis.diffraction.PowderRingsUtils;
 import uk.ac.diamond.scisoft.analysis.diffraction.ResolutionEllipseROI;
@@ -47,7 +52,38 @@ public class PowderCalibration {
 	private static final int MINIMUM_SPACING = 10;
 	
 	private static final String description = "Automatic powder diffraction image calibration using ellipse parameters";
+	private static final String descriptionManualEllipse = "Manual powder diffraction image calibration using ellipse parameters";
+	private static final String descriptionManualPoints = "Manual powder diffraction image calibration using point parameters";
 	private static final String addition = " with final point-based optimisation";
+	
+	private static final String descEllipse = "Reference for ellipse parameter calibration routine";
+	
+	private static final String doiEllipse ="10.1107/S0021889813022437";
+	
+	private static final String bibtexEllipse = "@article{hart2013complete, "+
+		 "title={Complete elliptical ring geometry provides energy and instrument calibration for synchrotron-based two-dimensional X-ray diffraction},"+
+		  "author={Hart, Michael L and Drakopoulos, Michael and Reinhard, Christina and Connolley, Thomas},"+
+		 "journal={Journal of applied crystallography},"+
+		  "volume={46},"+
+		  "number={5},"+
+		  "pages={1249--1260},"+
+		  "year={2013},"+
+		  "publisher={International Union of Crystallography}"+
+		"}";
+	
+	private static final String endnoteEllipse = "%0 Journal Article" +
+			"%T Complete elliptical ring geometry provides energy and instrument calibration for synchrotron-based two-dimensional X-ray diffraction"+
+			"%A Hart, Michael L"+
+			"%A Drakopoulos, Michael"+
+			"%A Reinhard, Christina"+
+			"%A Connolley, Thomas"+
+			"%J Journal of applied crystallography"+
+			"%V 46"+
+			"%N 5"+
+			"%P 1249-1260"+
+			"%@ 0021-8898"+
+			"%D 2013"+
+			"%I International Union of Crystallography";
 	
 	private final static Logger logger = LoggerFactory.getLogger(PowderCalibration.class);
 	
@@ -553,5 +589,269 @@ public class PowderCalibration {
 //		md.getDiffractionCrystalEnvironment().setWavelength(output.getWavelength());
 	}
 	
+	
+	public static CalibrationOutput manualCalibrateKnownWavelength(Dataset image, double wavelength, double pixel, List<HKL> spacings, int nRings,  PowderCalibrationInfoImpl info) {
+		
+		int[] options = new int[]{CENTRE_MASK_RADIUS, MINIMUM_SPACING, NUMBER_OF_POINTS};
+		SimpleCalibrationParameterModel params = new SimpleCalibrationParameterModel();
+		params.setNumberOfRings(nRings);
+		params.setFloatEnergy(false);
+		params.setIsPointCalibration(true);
+		params.setAutomaticCalibration(true);
+		
+		DiffractionImageData imdata = new DiffractionImageData();
+		imdata.setImage(image);
+//		imdata.se
+		
+//		findPointsOfInterest()
+		
+		return null;
+	}
+	
+	public static void findPointsOfInterest(DiffractionImageData currentData, SimpleCalibrationParameterModel model, ICalibrationUIProgressUpdate uiUpdater, List<HKL> hkls, IMonitor monitor, int minSpacing, int nPoints) {
+		int maxSize = model.getMaxSearchSize();
+		
+		final List<IROI> resROIs = DSpacing.getResolutionRings(currentData.getMetaData(),hkls);
+		
+		currentData.clearROIs();
+		currentData.setUse(false);
+		currentData.setNrois(0);
+		
+		if (uiUpdater != null) uiUpdater.removeRings();
+		
+		int numberToFit = resROIs.size();
+		
+		if (!model.isUseRingSet()) {
+			numberToFit = Math.min(resROIs.size(), model.getNumberOfRings());
+		}
+		
+//		int minSpacing = Activator.getDefault().getPreferenceStore().getInt(DiffractionCalibrationConstants.MINIMUM_SPACING);
+//		int nPoints = Activator.getDefault().getPreferenceStore().getInt(DiffractionCalibrationConstants.NUMBER_OF_POINTS);
+		int n = 0;
+		for (int i = 0; i < resROIs.size(); i++) {
+			IROI r = resROIs.get(i);
+			IROI roi = null;
+			try {
+				if (i >= numberToFit) continue;
+				if (monitor != null && monitor.isCancelled()) continue;
+				
+				
+				if (model.isUseRingSet() && !model.getRingSet().contains(i+1)) continue;
+				
+				if (r instanceof IParametricROI) {
+					try {
+					roi = DSpacing.fitParametricROI(resROIs,(IParametricROI)r, currentData.getImage(), i, minSpacing, nPoints, maxSize, monitor);
+					} catch (NullPointerException ex) {
+						n = -1; // indicate, to finally clause, problem with getting image or other issues
+						return;
+					}
+				}
+				
+				if (roi != null && uiUpdater != null) {
+					n++;
+					uiUpdater.drawFoundRing(roi);
+				}
 
+
+			} catch (IllegalArgumentException ex) {
+				logger.trace("Could not find ellipse with {}: {}", r, ex);
+			} finally {
+				if (n >= 0) {
+					currentData.addROI(roi); // can include null placeholder
+				} else {
+					currentData.clearROIs();
+				}
+			}
+		}
+		currentData.setNrois(n);
+		if (currentData.getNrois() > 0) {
+			currentData.setUse(true);
+		}
+		
+		if (uiUpdater != null) uiUpdater.completed();
+	}
+	
+	public static CalibrationOutput manualCalibrateMultipleImagesEllipse(List<DiffractionImageData> images, Dataset ddist, double pixelSize,
+			List<HKL> spacings, SimpleCalibrationParameterModel params) {
+		
+		List<List<EllipticalROI>> allEllipses = new ArrayList<>();
+		List<double[]> allDSpacings = new ArrayList<>();
+
+		for (DiffractionImageData data : images) {
+			
+			int n = data.getROISize();
+			if (n != spacings.size()) { // always allow a choice to be made
+				throw new IllegalArgumentException("Number of ellipses should be equal to spacings");
+			}
+
+			int totalNonNull = data.getNonNullROISize();
+
+			double[] ds = new double[totalNonNull];
+			List<EllipticalROI> erois = new ArrayList<EllipticalROI>(totalNonNull);
+
+			int count = 0;
+			for (int i = 0; i < data.getROISize(); i++) {
+				IROI roi = data.getRoi(i);
+				if (roi != null) {
+					ds[count]  = spacings.get(i).getDNano()*10;
+
+					if (roi instanceof EllipticalROI) {
+						erois.add((EllipticalROI)roi);
+					} else if(roi instanceof CircularROI) {
+						erois.add(new EllipticalROI((CircularROI)roi));
+					} else {
+						throw new IllegalArgumentException("ROI not elliptical or circular - try point calibration");
+					}
+
+					count++;
+				}
+			}
+			allEllipses.add(erois);
+			allDSpacings.add(ds);
+		}
+		
+		CalibrationOutput o = null;
+		
+		if (!params.isFloatEnergy()) {
+			o =  CalibrateEllipses.runKnownWavelength(allEllipses, allDSpacings, pixelSize,images.get(0).getMetaData().getDiffractionCrystalEnvironment().getWavelength());
+		} else if (!params.isFloatDistance()){
+			o =  CalibrateEllipses.runKnownDistance(allEllipses, allDSpacings, pixelSize,images.get(0).getMetaData().getDetector2DProperties().getBeamCentreDistance());
+		}else {
+			o =  CalibrateEllipses.run(allEllipses, allDSpacings,ddist, pixelSize);
+		}
+		
+		final CalibrationOutput output = o;
+		
+		double[] fullDSpace = new double[spacings.size()];
+		
+		for (int i = 0; i< spacings.size(); i++) fullDSpace[i] = spacings.get(i).getDNano()*10;
+		Dataset infoSpace = DatasetFactory.createFromObject(fullDSpace);
+		
+		PowderCalibrationInfoImpl[] info = new PowderCalibrationInfoImpl[images.size()];
+		
+		int count = 0;
+		for (DiffractionImageData data : images) {
+
+			info[count++] = createPowderCalibrationInfo(data,true);
+		}
+		
+		for (int i = 0; i < allEllipses.size(); i++) {
+			int[] infoIndex = new int[allDSpacings.get(i).length];
+			
+			for (int j = 0; j < infoIndex.length; j++) {
+				infoIndex[j] = Maths.abs(Maths.subtract(infoSpace, allDSpacings.get(0)[j])).argMin();
+			}
+			Dataset infoSpaceds = DatasetFactory.createFromObject(infoIndex);
+			
+			info[i].setPostCalibrationInformation(descriptionManualEllipse, infoSpace, infoSpaceds, output.getResidual());
+			info[i].setResultDescription(output.getCalibrationOutputDescription());
+			
+		}
+		output.setCalibrationInfo(info);
+		
+		return output;
+	}
+	
+	public static CalibrationOutput manualCalibrateMultipleImagesPoints(DiffractionImageData image, List<HKL> spacings,
+			SimpleCalibrationParameterModel params, IMonitor mon, ICalibrationUIProgressUpdate uiUpdate) {
+		
+		
+		int n = image.getROISize();
+		if (n != spacings.size()) { // always allow a choice to be made
+			throw new IllegalArgumentException("Number of ellipses should be equal to spacings");
+		}
+		
+		int totalNonNull = image.getNonNullROISize();
+		
+		double[] ds = new double[totalNonNull];
+		List<IPolylineROI> erois = new ArrayList<IPolylineROI>(totalNonNull);
+		
+		int count = 0;
+		for (int i = 0; i < image.getROISize(); i++) {
+			IROI roi = image.getRoi(i);
+			if (roi != null) {
+				ds[count]  = spacings.get(i).getDNano()*10;
+				
+				if (roi instanceof IPolylineROI) {
+					erois.add((IPolylineROI) roi);
+				} else if (roi instanceof EllipticalFitROI) {
+					erois.add(((EllipticalFitROI) roi).getPoints());
+				} else {
+					throw new IllegalArgumentException("ROI not elliptical fit");
+				}
+				count++;
+			}
+		}
+		
+		List<List<IPolylineROI>> allEllipses = new ArrayList<List<IPolylineROI>> ();
+		allEllipses.add(erois);
+		List<double[]> allDSpacings = new ArrayList<double[]>();
+		allDSpacings.add(ds);
+		
+		CalibrationOutput o = CalibratePoints.run(allEllipses.get(0), allDSpacings.get(0), image.getMetaData(),params);
+
+		final CalibrationOutput output = o;
+		
+		double[] fullDSpace = new double[spacings.size()];
+		
+		for (int i = 0; i< spacings.size(); i++) fullDSpace[i] = spacings.get(i).getDNano()*10;
+		Dataset infoSpace = DatasetFactory.createFromObject(fullDSpace);
+		int[] infoIndex = new int[allDSpacings.get(0).length];
+		
+		for (int j = 0; j < infoIndex.length; j++) {
+			infoIndex[j] = Maths.abs(Maths.subtract(infoSpace, allDSpacings.get(0)[j])).argMin();
+		}
+		Dataset infoSpaceds = DatasetFactory.createFromObject(infoIndex);
+		
+		PowderCalibrationInfoImpl info = createPowderCalibrationInfo(image, false);
+		
+		info.setPostCalibrationInformation(description, infoSpace, infoSpaceds, output.getResidual());
+		info.setResultDescription(output.getCalibrationOutputDescription());
+		output.setCalibrationInfo(new IPowderCalibrationInfo[]{info});
+		
+		DetectorProperties dp = image.getMetaData().getDetector2DProperties();
+
+		double roll = dp.getNormalAnglesInDegrees()[2];
+
+		image.getMetaData().getDiffractionCrystalEnvironment().setWavelength(output.getWavelength());
+
+		dp.setBeamCentreDistance(output.getDistance().getDouble(0));
+		double[] bc = new double[] {output.getBeamCentreX().getDouble(0),output.getBeamCentreY().getDouble(0) };
+		dp.setBeamCentreCoords(bc);
+
+		dp.setNormalAnglesInDegrees(output.getTilt().getDouble(0)*-1, 0, output.getTiltAngle().getDouble(0)*-1);
+
+		if (params.isFixDetectorRoll()) {
+			PowderCalibration.setDetectorFastAxisAngle(dp, roll);
+		}
+		
+		return output;
+	}
+	
+	public static CalibrationOutput calibrateSingleImageManualPoint(Dataset image, List<HKL> spacings, int nRings,IDiffractionMetadata metadata, boolean fixEnergy) {
+		
+		SimpleCalibrationParameterModel params = new SimpleCalibrationParameterModel();
+		params.setNumberOfRings(nRings);
+		params.setIsPointCalibration(true);
+		params.setFloatEnergy(!fixEnergy);
+		
+		DiffractionImageData imdata = new DiffractionImageData();
+		imdata.setImage(image);
+		imdata.setMetaData(metadata);
+		
+		
+		findPointsOfInterest(imdata, params, null, spacings, null, MINIMUM_SPACING, NUMBER_OF_POINTS);
+		
+		return manualCalibrateMultipleImagesPoints(imdata, spacings, params, (IMonitor)null, (ICalibrationUIProgressUpdate)null);
+	}
+	
+	private static PowderCalibrationInfoImpl createPowderCalibrationInfo(DiffractionImageData data, boolean ellipse) {
+		PowderCalibrationInfoImpl info = new PowderCalibrationInfoImpl(CalibrationFactory.getCalibrationStandards().getSelectedCalibrant(),
+				data.getPath() + data.getName(), "detector");
+		
+		if (!ellipse) return info;
+		
+		info.setCitationInformation(new String[]{descEllipse,doiEllipse,endnoteEllipse,bibtexEllipse});
+		return info;
+	}
 }

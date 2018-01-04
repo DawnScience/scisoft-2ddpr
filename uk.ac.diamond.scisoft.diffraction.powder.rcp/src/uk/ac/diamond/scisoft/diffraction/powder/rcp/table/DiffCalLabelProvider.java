@@ -12,6 +12,8 @@ import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.swt.graphics.Image;
 
+import uk.ac.diamond.scisoft.diffraction.powder.DiffractionImageData;
+
 public class DiffCalLabelProvider implements ITableLabelProvider {
 
 	@Override
@@ -41,7 +43,7 @@ public class DiffCalLabelProvider implements ITableLabelProvider {
 		if (element == null)
 			return null;
 
-		DiffractionTableData data = (DiffractionTableData) element;
+		DiffractionImageData data = (DiffractionImageData) element;
 		if (columnIndex == 0) {
 			return data.getName();
 		} else if (columnIndex == 1) { // # of rings
