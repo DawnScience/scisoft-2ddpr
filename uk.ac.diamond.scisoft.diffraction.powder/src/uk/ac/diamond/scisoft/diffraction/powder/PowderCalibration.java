@@ -32,7 +32,6 @@ import org.eclipse.january.dataset.Stats;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.ac.diamond.scisoft.analysis.crystallography.CalibrantSpacing;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.HKL;
 import uk.ac.diamond.scisoft.analysis.diffraction.DSpacing;
@@ -673,10 +672,10 @@ public class PowderCalibration {
 	}
 	
 	public static CalibrationOutput manualCalibrateMultipleImagesEllipse(List<DiffractionImageData> images, Dataset ddist, double pixelSize,
-			List<HKL> spacings, SimpleCalibrationParameterModel params, IMonitor mon, ICalibrationUIProgressUpdate uiUpdate, PowderCalibrationInfoImpl[] info) {
+			List<HKL> spacings, SimpleCalibrationParameterModel params) {
 		
-		List<List<EllipticalROI>> allEllipses = new ArrayList<List<EllipticalROI>>();
-		List<double[]> allDSpacings = new ArrayList<double[]>();
+		List<List<EllipticalROI>> allEllipses = new ArrayList<>();
+		List<double[]> allDSpacings = new ArrayList<>();
 
 		for (DiffractionImageData data : images) {
 			
@@ -728,6 +727,8 @@ public class PowderCalibration {
 		for (int i = 0; i< spacings.size(); i++) fullDSpace[i] = spacings.get(i).getDNano()*10;
 		Dataset infoSpace = DatasetFactory.createFromObject(fullDSpace);
 		
+		PowderCalibrationInfoImpl[] info = new PowderCalibrationInfoImpl[images.size()];
+		
 		int count = 0;
 		for (DiffractionImageData data : images) {
 
@@ -751,8 +752,8 @@ public class PowderCalibration {
 		return output;
 	}
 	
-	public static CalibrationOutput manualCalibrateMultipleImagesPoints(DiffractionImageData image, double pixelSize,
-			List<HKL> spacings, SimpleCalibrationParameterModel params, IMonitor mon, ICalibrationUIProgressUpdate uiUpdate) {
+	public static CalibrationOutput manualCalibrateMultipleImagesPoints(DiffractionImageData image, List<HKL> spacings,
+			SimpleCalibrationParameterModel params, IMonitor mon, ICalibrationUIProgressUpdate uiUpdate) {
 		
 		
 		int n = image.getROISize();
@@ -827,12 +828,12 @@ public class PowderCalibration {
 		return output;
 	}
 	
-	public static CalibrationOutput calibrateSingleImageManualPoint(Dataset image, double pixel, List<HKL> spacings, int nRings,IDiffractionMetadata metadata, PowderCalibrationInfoImpl info) {
+	public static CalibrationOutput calibrateSingleImageManualPoint(Dataset image, List<HKL> spacings, int nRings,IDiffractionMetadata metadata, boolean fixEnergy) {
 		
-		int[] options = new int[]{CENTRE_MASK_RADIUS, MINIMUM_SPACING, NUMBER_OF_POINTS};
 		SimpleCalibrationParameterModel params = new SimpleCalibrationParameterModel();
 		params.setNumberOfRings(nRings);
 		params.setIsPointCalibration(true);
+		params.setFloatEnergy(!fixEnergy);
 		
 		DiffractionImageData imdata = new DiffractionImageData();
 		imdata.setImage(image);
@@ -841,7 +842,7 @@ public class PowderCalibration {
 		
 		findPointsOfInterest(imdata, params, null, spacings, null, MINIMUM_SPACING, NUMBER_OF_POINTS);
 		
-		return manualCalibrateMultipleImagesPoints(imdata, pixel, spacings, params, (IMonitor)null, (ICalibrationUIProgressUpdate)null);
+		return manualCalibrateMultipleImagesPoints(imdata, spacings, params, (IMonitor)null, (ICalibrationUIProgressUpdate)null);
 	}
 	
 	private static PowderCalibrationInfoImpl createPowderCalibrationInfo(DiffractionImageData data, boolean ellipse) {

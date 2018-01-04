@@ -131,7 +131,7 @@ public class SimulatedDataTest {
 	}
 	
 	@Test
-	public void floatAllManualPoint(){
+	public void manualPointTest(){
 
 		IDiffractionMetadata meta = getPerkinElmerDiffractionMetadata();
 		DetectorProperties dp = meta.getDetector2DProperties();
@@ -150,13 +150,21 @@ public class SimulatedDataTest {
 		m.getDetector2DProperties().setBeamCentreDistance(m.getDetector2DProperties().getBeamCentreDistance()*1.005);
 		
 		
-		CalibrationOutput result = PowderCalibration.calibrateSingleImageManualPoint(image,
-				dp.getHPxSize(), ceO2.getHKLs(),10,meta,null);
+		CalibrationOutput result = PowderCalibration.calibrateSingleImageManualPoint(image, ceO2.getHKLs(),10,m,false);
 		
 		Assert.assertEquals(distance, result.getDistance().getDouble(0), 0.1);
 		Assert.assertEquals(bx, result.getBeamCentreX().getDouble(0), 0.1);
 		Assert.assertEquals(by, result.getBeamCentreY().getDouble(0), 0.1);
 		Assert.assertEquals(wavelength, result.getWavelength(), 0.0001);
+		
+		double w = m.getDiffractionCrystalEnvironment().getWavelength();
+		w *= 1.01;
+		m.getDiffractionCrystalEnvironment().setWavelength(w);
+		
+		result = PowderCalibration.calibrateSingleImageManualPoint(image, ceO2.getHKLs(),10,m,true);
+		
+		Assert.assertEquals(w, result.getWavelength(), 0.0001);
+		Assert.assertNotEquals(distance, result.getDistance().getDouble(0), 0.1);
 		
 	}
 	
