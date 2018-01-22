@@ -839,10 +839,10 @@ public class PowderCalibration {
 		params.setIsPointCalibration(true);
 		params.setFloatEnergy(!fixEnergy);
 		
-		return calibrateSingleImageManualPoint(image, spacings, nRings, metadata, params, minSpacing, nPoints);
+		return calibrateSingleImageManualPoint(image, spacings, metadata, params, minSpacing, nPoints);
 	}
 	
-public static CalibrationOutput calibrateSingleImageManualPoint(Dataset image, List<HKL> spacings, int nRings,IDiffractionMetadata metadata, SimpleCalibrationParameterModel model, int minSpacing, int nPoints) {
+public static CalibrationOutput calibrateSingleImageManualPoint(Dataset image, List<HKL> spacings,IDiffractionMetadata metadata, SimpleCalibrationParameterModel model, int minSpacing, int nPoints) {
 		
 		DiffractionImageData imdata = new DiffractionImageData();
 		imdata.setImage(image);
