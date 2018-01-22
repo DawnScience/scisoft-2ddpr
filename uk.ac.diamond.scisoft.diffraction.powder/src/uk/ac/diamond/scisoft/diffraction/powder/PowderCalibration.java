@@ -839,14 +839,19 @@ public class PowderCalibration {
 		params.setIsPointCalibration(true);
 		params.setFloatEnergy(!fixEnergy);
 		
+		return calibrateSingleImageManualPoint(image, spacings, nRings, metadata, params, minSpacing, nPoints);
+	}
+	
+public static CalibrationOutput calibrateSingleImageManualPoint(Dataset image, List<HKL> spacings, int nRings,IDiffractionMetadata metadata, SimpleCalibrationParameterModel model, int minSpacing, int nPoints) {
+		
 		DiffractionImageData imdata = new DiffractionImageData();
 		imdata.setImage(image);
 		imdata.setMetaData(metadata);
 		
 		
-		findPointsOfInterest(imdata, params, null, spacings, null, minSpacing, nPoints);
+		findPointsOfInterest(imdata, model, null, spacings, null, minSpacing, nPoints);
 		
-		return manualCalibrateMultipleImagesPoints(imdata, spacings, params, (IMonitor)null, (ICalibrationUIProgressUpdate)null);
+		return manualCalibrateMultipleImagesPoints(imdata, spacings, model, (IMonitor)null, (ICalibrationUIProgressUpdate)null);
 	}
 	
 	private static PowderCalibrationInfoImpl createPowderCalibrationInfo(DiffractionImageData data, boolean ellipse) {
