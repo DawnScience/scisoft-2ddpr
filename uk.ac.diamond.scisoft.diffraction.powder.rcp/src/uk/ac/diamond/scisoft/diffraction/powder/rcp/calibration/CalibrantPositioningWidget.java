@@ -8,20 +8,11 @@
  */
 package uk.ac.diamond.scisoft.diffraction.powder.rcp.calibration;
 
-import java.lang.reflect.InvocationTargetException;
-
 import org.dawb.common.ui.util.GridUtils;
-import org.dawb.workbench.ui.Activator;
 import org.dawb.workbench.ui.views.RepeatingMouseAdapter;
 import org.dawb.workbench.ui.views.SlowFastRunnable;
-import org.eclipse.dawnsci.analysis.api.diffraction.DetectorProperties;
 import org.eclipse.dawnsci.analysis.api.metadata.IDiffractionMetadata;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.dialogs.ProgressMonitorDialog;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -30,9 +21,8 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 
-import uk.ac.diamond.scisoft.diffraction.powder.DiffractionImageData;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.Activator;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.calibration.DiffractionCalibrationUtils.ManipulateMode;
-import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
 
 /**
  * 
