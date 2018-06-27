@@ -1,14 +1,6 @@
 package uk.ac.diamond.scisoft.diffraction.powder.rcp;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.measure.unit.NonSI;
-
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.dawnsci.analysis.api.diffraction.DetectorProperties;
-import org.eclipse.dawnsci.analysis.api.diffraction.DiffractionCrystalEnvironment;
-import org.eclipse.dawnsci.analysis.api.metadata.IDiffractionMetadata;
 import org.eclipse.dawnsci.analysis.api.roi.IPolylineROI;
 import org.eclipse.dawnsci.analysis.api.roi.IROI;
 import org.eclipse.dawnsci.analysis.dataset.roi.EllipticalFitROI;
@@ -20,11 +12,6 @@ import org.eclipse.dawnsci.plotting.api.region.RegionUtils;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
-
-import uk.ac.diamond.scisoft.analysis.crystallography.CalibrantSpacing;
-import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
-import uk.ac.diamond.scisoft.analysis.crystallography.HKL;
-import uk.ac.diamond.scisoft.analysis.diffraction.DSpacing;
 
 public class PowderCalibrationUtils {
 	
