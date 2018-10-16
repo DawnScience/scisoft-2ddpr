@@ -12,7 +12,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.dawnsci.analysis.dataset;bundle-version="1.0.0",
  uk.ac.diamond.scisoft.analysis;bundle-version="1.3.0"
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: uk.ac.diamond.scisoft.diffraction.powder
 Import-Package: org.apache.commons.lang;version="2.6.0",
  org.slf4j;version="[1.7.2,2.0.0)"
+Automatic-Module-Name: uk.ac.diamond.scisoft.diffraction.powder
