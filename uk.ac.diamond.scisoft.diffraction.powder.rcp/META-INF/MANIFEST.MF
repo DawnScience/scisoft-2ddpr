@@ -26,8 +26,7 @@ Require-Bundle: org.eclipse.ui,
  org.dawnsci.datavis.api
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
-Import-Package: javafx.scene.control;version="2.2.0",
- javax.vecmath,
+Import-Package: javax.vecmath,
  org.eclipse.core.resources,
  org.eclipse.draw2d,
  org.eclipse.ui.navigator,

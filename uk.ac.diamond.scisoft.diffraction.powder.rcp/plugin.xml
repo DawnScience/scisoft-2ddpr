@@ -262,26 +262,5 @@
             perspective="uk.ac.diamond.scisoft.diffraction.powder.rcp.calibrationPerspective">
       </fileOpen>
    </extension>
-   <extension
-         point="org.dawnsci.webintro.item">
-      <introAction
-            class="uk.ac.diamond.scisoft.diffraction.powder.rcp.DiffractionCalibrationPerspectiveLaunch"
-            description="For calibrating 2D powder diffraction images"
-            icon="intro/graphics/PowderCalibrationWelcome52.png"
-            id="uk.ac.diamond.scisoft.diffraction.powder.rcp.DiffractionCalibrationPerspectiveLaunch"
-            name="Powder Diffraction Calibration"
-            ordering="1"
-            parent_id="science_powderdiffraction">
-      </introAction>
-      <introAction
-            class="uk.ac.diamond.scisoft.diffraction.powder.rcp.DiffractionCalibrationPerspectiveLaunch"
-            description="For calibrating 2D powder diffraction images"
-            icon="intro/graphics/PowderCalibrationWelcome52.png"
-            id="uk.ac.diamond.scisoft.diffraction.powder.rcp.DiffractionCalibrationPerspectiveLaunch"
-            name="Powder Diffraction Calibration"
-            ordering="3"
-            parent_id="science_ncd">
-      </introAction>
-   </extension>
 
 </plugin>
