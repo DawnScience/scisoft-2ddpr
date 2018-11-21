@@ -2,6 +2,8 @@ package uk.ac.diamond.scisoft.diffraction.powder.rcp.views;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Dictionary;
+import java.util.Hashtable;
 
 import org.dawnsci.plotting.tools.diffraction.DiffractionImageAugmenter;
 import org.eclipse.dawnsci.analysis.api.diffraction.IPowderCalibrationInfo;
@@ -42,6 +44,11 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.service.event.Event;
+import org.osgi.service.event.EventConstants;
+import org.osgi.service.event.EventHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,6 +58,7 @@ import uk.ac.diamond.scisoft.analysis.io.NexusDiffractionCalibrationReader;
 import uk.ac.diamond.scisoft.diffraction.powder.DiffractionImageData;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.Activator;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.DiffractionCalibrationPerspective;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.PowderCalibrationUtils;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.calibration.DiffractionCalibrationUtils;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.preferences.DiffractionCalibrationConstants;
@@ -159,6 +167,46 @@ public class DiffractionCalibrationView extends ViewPart {
 				});
 			}
 		});
+		
+		Dictionary<String, Object> prop = new Hashtable<>();
+		prop.put(EventConstants.EVENT_TOPIC, "org/dawnsci/events/file/OPEN");
+		BundleContext ctx = FrameworkUtil.getBundle(DiffractionCalibrationView.class).getBundleContext();
+		ctx.registerService(EventHandler.class.getName(), new EventHandler() {
+			
+			@Override
+			public void handleEvent(Event event) {
+				if (Display.getCurrent() == null) {
+					PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+						
+						@Override
+						public void run() {
+							handleEvent(event);
+							
+						}
+					});
+					return;
+				}
+				
+				try {
+					String id = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getPerspective().getId();
+					if (!id.equals(DiffractionCalibrationPerspective.ID)) {
+						return;
+					}
+					
+					String[] paths = (String[]) event.getProperty("paths");
+					if (paths == null) {
+						String path = (String) event.getProperty("path");
+						paths = new String[] { path };
+					}
+					
+					manager.loadData(paths[0], null);
+					
+				} catch (Exception e) {
+					return;
+				}
+				
+			}
+		}, prop);
 
 		resultText = new StyledText(content, SWT.BORDER);
 		resultText.setAlwaysShowScrollBars(false);
