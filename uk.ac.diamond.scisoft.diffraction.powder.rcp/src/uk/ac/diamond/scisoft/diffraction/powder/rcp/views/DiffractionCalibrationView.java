@@ -9,6 +9,7 @@ import org.dawnsci.plotting.tools.diffraction.DiffractionImageAugmenter;
 import org.eclipse.dawnsci.analysis.api.diffraction.IPowderCalibrationInfo;
 import org.eclipse.dawnsci.analysis.api.metadata.IDiffractionMetadata;
 import org.eclipse.dawnsci.plotting.api.IPlottingSystem;
+import org.eclipse.dawnsci.plotting.api.PlottingEventConstants;
 import org.eclipse.dawnsci.plotting.api.PlottingFactory;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
@@ -169,7 +170,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		});
 		
 		Dictionary<String, Object> prop = new Hashtable<>();
-		prop.put(EventConstants.EVENT_TOPIC, "org/dawnsci/events/file/OPEN");
+		prop.put(EventConstants.EVENT_TOPIC, PlottingEventConstants.FILE_OPEN_EVENT);
 		BundleContext ctx = FrameworkUtil.getBundle(DiffractionCalibrationView.class).getBundleContext();
 		ctx.registerService(EventHandler.class.getName(), new EventHandler() {
 			
