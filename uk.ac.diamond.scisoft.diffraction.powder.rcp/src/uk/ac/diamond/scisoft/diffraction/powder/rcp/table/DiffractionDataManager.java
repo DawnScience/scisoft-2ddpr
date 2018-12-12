@@ -316,31 +316,12 @@ public class DiffractionDataManager {
 					logger.error("Error loading data",e);
 				}
 			}
-			
-//			if (outName[0] != null) image = SelectionUtils.loadData(path, outName[0]);
-			
-			return setUpImage(path, outName, data) ? Status.OK_STATUS : Status.CANCEL_STATUS;
-			
-//			if (image == null){
-//				model.remove(data);
-//				fireDiffractionDataListeners(null);
-//				return Status.CANCEL_STATUS;
-//			}
-//			
-//			int j = path.lastIndexOf(File.separator);
-//			String fileName = j > 0 ? path.substring(j + 1) : null;
-//			image.setName(fileName + ":" + image.getName());
-//			data.setImage(image);
-//			String[] statusString = new String[1];
-//			data.setMetaData(DiffractionUtils.getDiffractionMetadata(image, path, service, statusString));
-//			data.getImage().setMetadata(data.getMetaData());
-//			
-//			fireDiffractionDataListeners(new DiffractionDataChanged(data));
-//
-//			return Status.OK_STATUS;
-//		}
 
-	}
+			LocalServiceManager.getRecentPlaces().addFiles(path);
+
+			return setUpImage(path, outName, data) ? Status.OK_STATUS : Status.CANCEL_STATUS;
+
+		}
 	}
 	
 	private boolean setUpImage(String path, String[] datasetNames, DiffractionImageData data){
