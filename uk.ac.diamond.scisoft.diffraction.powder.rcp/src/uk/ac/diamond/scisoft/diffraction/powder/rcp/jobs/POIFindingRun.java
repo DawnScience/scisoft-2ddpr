@@ -1,7 +1,7 @@
 package uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs;
 
-import org.dawb.common.ui.monitor.ProgressMonitorWrapper;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.dawnsci.plotting.api.ProgressMonitorWrapper;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
