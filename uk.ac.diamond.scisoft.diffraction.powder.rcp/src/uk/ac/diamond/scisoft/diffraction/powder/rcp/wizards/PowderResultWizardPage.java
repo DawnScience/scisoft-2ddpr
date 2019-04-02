@@ -2,8 +2,8 @@ package uk.ac.diamond.scisoft.diffraction.powder.rcp.wizards;
 
 import java.io.File;
 
-import org.dawb.common.ui.widgets.ActionBarWrapper;
 import org.dawnsci.common.widgets.dialog.FileSelectionDialog;
+import org.dawnsci.plotting.actions.ActionBarWrapper;
 import org.dawnsci.plotting.tools.diffraction.DiffractionImageAugmenter;
 import org.eclipse.dawnsci.analysis.api.diffraction.IPowderCalibrationInfo;
 import org.eclipse.dawnsci.plotting.api.IPlottingSystem;
