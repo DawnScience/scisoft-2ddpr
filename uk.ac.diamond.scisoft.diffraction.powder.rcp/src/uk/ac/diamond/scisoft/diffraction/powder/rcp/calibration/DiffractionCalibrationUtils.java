@@ -30,6 +30,7 @@ import org.eclipse.dawnsci.analysis.api.persistence.IPersistenceService;
 import org.eclipse.dawnsci.analysis.api.persistence.IPersistentNodeFactory;
 import org.eclipse.dawnsci.analysis.api.roi.IROI;
 import org.eclipse.dawnsci.analysis.api.tree.GroupNode;
+import org.eclipse.dawnsci.analysis.dataset.roi.PolylineROI;
 import org.eclipse.dawnsci.hdf5.nexus.NexusFileHDF5;
 import org.eclipse.dawnsci.nexus.NexusFile;
 import org.eclipse.dawnsci.plotting.api.IPlottingSystem;
@@ -39,7 +40,6 @@ import org.eclipse.dawnsci.plotting.api.region.RegionUtils;
 import org.eclipse.dawnsci.plotting.api.trace.IImageTrace;
 import org.eclipse.dawnsci.plotting.api.trace.ITrace;
 import org.eclipse.draw2d.ColorConstants;
-import org.eclipse.january.IMonitor;
 import org.eclipse.january.dataset.Dataset;
 import org.eclipse.january.dataset.DatasetFactory;
 import org.eclipse.january.dataset.DatasetUtils;
@@ -204,13 +204,24 @@ public class DiffractionCalibrationUtils {
 
 			public void run() {
 				try {
-					IRegion region = plotter.createRegion(RegionUtils.getUniqueName(REGION_PREFIX, plotter), circle ? RegionType.CIRCLEFIT : RegionType.ELLIPSEFIT);
+
+					IRegion region = null;
+					
+					if (froi instanceof PolylineROI) {
+						region = plotter.createRegion(RegionUtils.getUniqueName(REGION_PREFIX, plotter), RegionType.POLYLINE);
+						region.setRegionColor(ColorConstants.lightBlue);
+						
+					} else {
+						region = plotter.createRegion(RegionUtils.getUniqueName(REGION_PREFIX, plotter), circle ? RegionType.CIRCLEFIT : RegionType.ELLIPSEFIT);
+						region.setRegionColor(circle ? ColorConstants.cyan : ColorConstants.orange);
+					}
+					
 					region.setROI(froi);
-					region.setRegionColor(circle ? ColorConstants.cyan : ColorConstants.orange);
 					if (monitor != null) monitor.subTask("Add region");
 					region.setUserRegion(false);
 					plotter.addRegion(region);
 					if (monitor != null) monitor.worked(1);
+					
 				} catch (Exception e) {
 					status[0] = false;
 				}
