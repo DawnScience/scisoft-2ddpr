@@ -16,7 +16,6 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
-import org.dawb.workbench.ui.Activator;
 import org.dawnsci.plotting.tools.diffraction.DiffractionDefaultMetadata;
 import org.dawnsci.plotting.tools.diffraction.DiffractionUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -50,6 +49,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.ac.diamond.scisoft.diffraction.powder.DiffractionImageData;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.Activator;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.LocalServiceManager;
 
 public class DiffractionDataManager {

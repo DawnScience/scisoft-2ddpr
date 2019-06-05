@@ -10,7 +10,6 @@ package uk.ac.diamond.scisoft.diffraction.powder.rcp.table;
 
 import org.dawb.common.ui.selection.SelectedTreeItemInfo;
 import org.dawb.common.ui.selection.SelectionUtils;
-import org.dawb.workbench.ui.Activator;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.dawnsci.analysis.api.diffraction.DetectorPropertyEvent;
 import org.eclipse.dawnsci.analysis.api.diffraction.IDetectorPropertyListener;
@@ -44,6 +43,7 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.part.ResourceTransfer;
 
 import uk.ac.diamond.scisoft.diffraction.powder.DiffractionImageData;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.Activator;
 
 /**
  * 
