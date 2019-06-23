@@ -28,17 +28,21 @@ public class CalibrationOptionsGroup {
 	Group ellipseParamGroup;
 	Group pointCalibrateGroup;
 	private StackLayout stackLayout; 
+	private Composite composite;
 	
 	public CalibrationOptionsGroup(Composite content, final SimpleCalibrationParameterModel parameters, boolean showEllipseOptions, boolean showPointOptions) {
 
-		Composite composite = new Composite(content, SWT.NONE);
+		composite = new Composite(content, SWT.NONE);
 		composite.setLayout(new GridLayout(1, false));
+		
+		Composite stackComp = new Composite(composite, SWT.NONE);
+		
 		stackLayout = new StackLayout();
-		composite.setLayout(stackLayout);
-		composite.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, true, false));
+		stackComp.setLayout(stackLayout);
+		stackComp.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
 		
 
-		ellipseParamGroup = new Group(composite, SWT.FILL);
+		ellipseParamGroup = new Group(stackComp, SWT.FILL);
 		ellipseParamGroup.setText("Ellipse Calibration Options");
 		ellipseParamGroup.setToolTipText("Set the Ellipse Parameters");
 		ellipseParamGroup.setLayout(new GridLayout());
@@ -50,7 +54,7 @@ public class CalibrationOptionsGroup {
 		RadioGroupWidget calibEllipseParamRadios = new RadioGroupWidget(ellipseParamGroup);
 		calibEllipseParamRadios.setActions(getEllipseParamActions(parameters), true);
 
-		pointCalibrateGroup = new Group(composite, SWT.FILL);
+		pointCalibrateGroup = new Group(stackComp, SWT.FILL);
 		pointCalibrateGroup.setText("Manual Point Calibration Options");
 		pointCalibrateGroup.setToolTipText("Set the Point Parameters");
 		pointCalibrateGroup.setLayout(new GridLayout());
@@ -97,10 +101,10 @@ public class CalibrationOptionsGroup {
 		});
 		fixTiltButton.setSelection(!parameters.isFloatTilt());
 
-		Button advanced = new Button(content, SWT.NONE);
+		Button advanced = new Button(composite, SWT.NONE);
 		advanced.setText("Advanced...");
 		advanced.setToolTipText("Open preference page for advanced settings");
-		advanced.setLayoutData(new GridData(SWT.LEFT, SWT.BOTTOM, true, false));
+		advanced.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, true, false));
 		advanced.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -129,6 +133,10 @@ public class CalibrationOptionsGroup {
 		GridUtils.setVisible(ellipseParamGroup, ellipse);
 		enableControl(pointCalibrateGroup, points);
 		GridUtils.setVisible(pointCalibrateGroup, points);
+	}
+	
+	public Control getControl() {
+		return composite;
 	}
 
 	private List<Action> getEllipseParamActions(final SimpleCalibrationParameterModel parameters) {

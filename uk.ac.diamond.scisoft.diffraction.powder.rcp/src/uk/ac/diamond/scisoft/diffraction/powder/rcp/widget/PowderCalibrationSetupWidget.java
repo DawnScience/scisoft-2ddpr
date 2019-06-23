@@ -6,7 +6,10 @@ import java.util.Set;
 import org.dawnsci.plotting.tools.diffraction.DiffractionImageAugmenter;
 import org.eclipse.dawnsci.analysis.api.metadata.IDiffractionMetadata;
 import org.eclipse.dawnsci.plotting.api.IPlottingSystem;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -16,6 +19,8 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.TabItem;
 
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationStandards;
@@ -58,7 +63,20 @@ public class PowderCalibrationSetupWidget {
 	
 	
 	public void createControl(final Composite left) {
-		final CalibrantSelectionGroup group = new CalibrantSelectionGroup(left);
+		
+	 CTabFolder folder = new CTabFolder(left, SWT.NONE);
+	 folder.setLayout(new GridLayout());
+	 folder.setLayoutData(GridDataFactory.fillDefaults().grab(false, false).create());
+		
+	 CTabItem tab1 = new CTabItem(folder, SWT.NONE);
+	    tab1.setText("Calibrant");
+	    
+	    Composite calComp = new Composite(folder, SWT.NONE);
+	    calComp.setLayoutData(GridDataFactory.fillDefaults().create());
+	    calComp.setLayout(new GridLayout());
+		
+		final CalibrantSelectionGroup group = new CalibrantSelectionGroup(calComp);
+//		tab1.setControl(group.getControl());
 		
 		group.addDisplaySelectionListener(new SelectionAdapter() {
 			@Override
@@ -68,7 +86,7 @@ public class PowderCalibrationSetupWidget {
 			}
 		});
 		
-		final RingSelectionGroup ringSelection = new RingSelectionGroup(left, CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs().size(), model);
+		final RingSelectionGroup ringSelection = new RingSelectionGroup(calComp, CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs().size(), model);
 		ringSelection.addRingNumberSpinnerListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -82,6 +100,7 @@ public class PowderCalibrationSetupWidget {
 			}
 		});
 		
+		tab1.setControl(calComp);
 		
 		group.addCalibrantSelectionListener(new SelectionAdapter() {
 			@Override
@@ -102,20 +121,25 @@ public class PowderCalibrationSetupWidget {
 			}
 		});
 		
-		final Button autoRadio = new Button(left, SWT.RADIO);
+		Composite routineComposite = new Composite(folder, SWT.NONE);
+		routineComposite.setLayout(new GridLayout());
+		routineComposite.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
+		
+		final Button autoRadio = new Button(routineComposite, SWT.RADIO);
 		autoRadio.setText("Automatic");
-		autoRadio.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
+		GridDataFactory.swtDefaults().applyTo(autoRadio);
 
-		final Button manualRadio = new Button(left, SWT.RADIO);
+		final Button manualRadio = new Button(routineComposite, SWT.RADIO);
 		manualRadio.setText("Manual");
-		manualRadio.setLayoutData(new GridData(SWT.LEFT, SWT.FILL, true, false));
+		GridDataFactory.swtDefaults().applyTo(manualRadio);
 		manualRadio.setSelection(false);
 		
-		final Composite autoManStack = new Composite(left, SWT.NONE);
+		final Composite autoManStack = new Composite(routineComposite, SWT.NONE);
 		final StackLayout stackLayout = new StackLayout();
 		autoManStack.setLayout(stackLayout);
 		final Label auto = new Label(autoManStack,SWT.WRAP);
 		auto.setText("Automatic Calibration");
+		GridDataFactory.swtDefaults().applyTo(autoManStack);
 		
 		
 		final Composite manualComposite = new Composite(autoManStack, SWT.None);
@@ -125,11 +149,14 @@ public class PowderCalibrationSetupWidget {
 		if (showSteering) {
 			cpw = new CalibrantPositioningWidget(manualComposite, meta);
 		} else {
-			new Label(manualComposite, SWT.WRAP).setText("Align rings to image");
+			Label l = new Label(manualComposite, SWT.WRAP);
+			l.setText("Align rings to image");
+			GridDataFactory.swtDefaults().applyTo(l);
 		}
+		
 		final Button findRings = new Button(manualComposite, SWT.PUSH);
 		findRings.setText("Find Rings");
-		findRings.setLayoutData(new GridData());
+		GridDataFactory.swtDefaults().applyTo(findRings);
 		stackLayout.topControl = auto;
 		autoManStack.layout();
 
@@ -153,11 +180,19 @@ public class PowderCalibrationSetupWidget {
 		
 		model.setAutomaticCalibration(true);
 		model.setIsPointCalibration(true);
-		usePoints = new Button(left, SWT.CHECK);
+		usePoints = new Button(routineComposite, SWT.CHECK);
+		GridDataFactory.swtDefaults().applyTo(usePoints);
 		usePoints.setText("Point calibration");
 		usePoints.setSelection(true);
+		CTabItem tab3 = new CTabItem(folder, SWT.NONE);
+	    tab3.setText("Routine");
+	    tab3.setControl(routineComposite);
 		
-		options = new CalibrationOptionsGroup(left, model, true,true);
+		options = new CalibrationOptionsGroup(folder, model, true,true);
+		
+		CTabItem tab4 = new CTabItem(folder, SWT.NONE);
+	    tab4.setText("Options");
+	    tab4.setControl(options.getControl());
 		
 		usePoints.addSelectionListener(new SelectionAdapter() {
 			
@@ -184,7 +219,8 @@ public class PowderCalibrationSetupWidget {
 					options.enable(false);
 				} else {
 					options.showOptions(!showPoint, showPoint);
-				}
+				}		
+				
 				stackLayout.topControl = s ? auto : manualComposite;
 				autoManStack.layout();
 				model.setAutomaticCalibration(s);
@@ -194,6 +230,9 @@ public class PowderCalibrationSetupWidget {
 		});
 		
 		autoRadio.setSelection(true);
+		
+		folder.setSelection(0);
+	    folder.layout(true);
 	}
 	
 	private void showCalibrantAndBeamCentre(boolean show) {

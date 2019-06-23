@@ -18,6 +18,7 @@ import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -211,7 +212,7 @@ public class DiffractionCalibrationView extends ViewPart {
 
 		resultText = new StyledText(content, SWT.BORDER);
 		resultText.setAlwaysShowScrollBars(false);
-		resultText.setLayoutData(new GridData(GridData.FILL_BOTH));
+		resultText.setLayoutData(GridDataFactory.fillDefaults().grab(true, true).create());
 		
 		final Button goBabyGoButton = new Button(content, SWT.PUSH);
 		goBabyGoButton.setImage(Activator.getImage("icons/CalibrationRun.png"));

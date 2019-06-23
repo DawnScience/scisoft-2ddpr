@@ -10,6 +10,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Spinner;
 
@@ -22,12 +23,13 @@ public class RingSelectionGroup {
 	private Button spinnerRadio;
 	private Button textRadio;
 	private SimpleCalibrationParameterModel model;
+	private Group group;
 
 	public RingSelectionGroup(Composite parent, int maximumRingNumber, final SimpleCalibrationParameterModel model) {
 		
 		this.model = model;
 
-		Group group = new Group(parent, SWT.FILL);
+		group = new Group(parent, SWT.FILL);
 		group.setLayout(new GridLayout(2, false));
 		group.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		group.setText("Select rings to use for calibration:");
@@ -90,6 +92,10 @@ public class RingSelectionGroup {
 				
 			}
 		});
+	}
+	
+	public Control getControl() {
+		return group;
 	}
 
 	public void addRingNumberSpinnerListener(SelectionListener selectionAdapter) {

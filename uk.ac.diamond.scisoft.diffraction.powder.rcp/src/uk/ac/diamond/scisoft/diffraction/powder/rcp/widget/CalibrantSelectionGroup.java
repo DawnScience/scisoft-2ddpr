@@ -16,6 +16,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.PlatformUI;
@@ -30,10 +31,11 @@ public class CalibrantSelectionGroup {
 	private Combo calibrantCombo;
 	private Button showCalibAndBeamCtrCheckBox;
 	private CalibrantSelectedListener calSelListener;
+	private Group selectCalibComp;
 	
 	public CalibrantSelectionGroup(Composite composite) {
 		
-		Group selectCalibComp = new Group(composite, SWT.FILL);
+		selectCalibComp = new Group(composite, SWT.FILL);
 		selectCalibComp.setText("Select calibrant:");
 		selectCalibComp.setLayout(new GridLayout(1, false));
 		selectCalibComp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
@@ -132,6 +134,10 @@ public class CalibrantSelectionGroup {
 //			}
 //		});
 		showCalibAndBeamCtrCheckBox.setSelection(true);
+	}
+	
+	public Control getControl() {
+		return selectCalibComp;
 	}
 	
 	public void addCalibrantSelectionListener(SelectionListener listener) {
