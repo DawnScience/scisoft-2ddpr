@@ -50,7 +50,7 @@ public class CalibrateEllipses {
 	 * @return calibrationOutput
 	 */
 	public static CalibrationOutput runKnownDistance(List<List<EllipticalROI>> allEllipses, List<double[]> allDSpacings,double pixel,double knownDistance) {
-		Dataset deltaDistance = DatasetFactory.zeros(new int[]{1}, Dataset.FLOAT64);
+		Dataset deltaDistance = DatasetFactory.zeros(1);
 		return run(allEllipses, allDSpacings, deltaDistance,pixel, knownDistance, false);
 	}
 	
@@ -66,7 +66,7 @@ public class CalibrateEllipses {
 	 * @return calibrationOutput
 	 */
 	public static CalibrationOutput runKnownWavelength(List<List<EllipticalROI>> allEllipses, List<double[]> allDSpacings,double pixel,double knownWavelength) {
-		Dataset deltaDistance = DatasetFactory.zeros(new int[]{1}, Dataset.FLOAT64);
+		Dataset deltaDistance = DatasetFactory.zeros(1);
 		return run(allEllipses, allDSpacings, deltaDistance,pixel, knownWavelength, true);
 	}
 	
@@ -117,7 +117,7 @@ public class CalibrateEllipses {
 		Dataset[] allDeltaDist= new Dataset[ellipseParams.size()];
 		Dataset[] allD= new Dataset[ellipseParams.size()];
 		Dataset[] allDSin= new Dataset[ellipseParams.size()];
-		Dataset dSint = DatasetFactory.zeros(new int[]{ellipseParams.size()}, Dataset.FLOAT64);
+		Dataset dSint = DatasetFactory.zeros(ellipseParams.size());
 		
 		for (int i = 0; i<ellipseParams.size(); i++) {
 			EllipseParameters params = ellipseParams.get(i);
@@ -144,8 +144,8 @@ public class CalibrateEllipses {
 			
 			allMajor[i] = ellipseParams.get(i).majorAxes;
 			allD[i] = DatasetFactory.createFromObject(allDSpacings.get(i));
-			allDeltaDist[i] = DatasetFactory.ones(new int[]{size},Dataset.FLOAT64).imultiply(normDist.getDouble(i));
-			allDSin[i] = DatasetFactory.ones(new int[]{size},Dataset.FLOAT64).imultiply(beamC[0]);
+			allDeltaDist[i] = DatasetFactory.zeros(size).fill(normDist.getDouble(i));
+			allDSin[i] = DatasetFactory.zeros(size).fill(beamC[0]);
 			dSint.set(beamC[0], i);
 			
 		}
@@ -226,10 +226,10 @@ public class CalibrateEllipses {
 	
 	private static EllipseParameters getParametersOfEllipse(List<EllipticalROI> rois) {
 		EllipseParameters els = new EllipseParameters();
-		Dataset major = DatasetFactory.zeros(new int[]{rois.size()}, Dataset.FLOAT64);
-		Dataset xc = DatasetFactory.zeros(new int[]{rois.size()}, Dataset.FLOAT64);
-		Dataset yc = DatasetFactory.zeros(new int[]{rois.size()}, Dataset.FLOAT64);
-		Dataset angle = DatasetFactory.zeros(new int[]{rois.size()}, Dataset.FLOAT64);
+		Dataset major = DatasetFactory.zeros(rois.size());
+		Dataset xc = DatasetFactory.zeros(rois.size());
+		Dataset yc = DatasetFactory.zeros(rois.size());
+		Dataset angle = DatasetFactory.zeros(rois.size());
 		
 		for (int i = 0; i < rois.size();i++) {
 			EllipticalROI el = rois.get(i);
@@ -262,7 +262,7 @@ public class CalibrateEllipses {
 	
 	private static Dataset getTiltAngles(List<EllipseParameters> ellipseParams, List<double[]> mcs) {
 		
-		Dataset tiltAngles = DatasetFactory.zeros(new int[]{ellipseParams.size()}, Dataset.FLOAT64);
+		Dataset tiltAngles = DatasetFactory.zeros(ellipseParams.size());
 		
 		for (int i = 0; i<ellipseParams.size(); i++) {
 			EllipseParameters params = ellipseParams.get(i);

@@ -97,7 +97,7 @@ public class BruteStandardMatcher {
 	 */
 	public static Dataset getFilterDataset(Dataset pixelRadius, double[] peakPositions) {
 		
-		Dataset filter = DatasetFactory.zeros(pixelRadius.getShape(), Dataset.FLOAT64);
+		Dataset filter = DatasetFactory.zeros(pixelRadius.getShape());
 		double val = 1;
 		for (double r : peakPositions) {
 			int rmin = (int)Math.round(r) - (int)defaultWidth;

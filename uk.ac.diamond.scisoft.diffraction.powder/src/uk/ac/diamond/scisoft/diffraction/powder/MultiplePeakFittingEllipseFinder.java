@@ -14,6 +14,7 @@ import org.eclipse.january.dataset.BooleanDataset;
 import org.eclipse.january.dataset.Dataset;
 import org.eclipse.january.dataset.DatasetFactory;
 import org.eclipse.january.dataset.DoubleDataset;
+import org.eclipse.january.dataset.IntegerDataset;
 import org.eclipse.january.dataset.Stats;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,7 +63,7 @@ public class MultiplePeakFittingEllipseFinder {
 			List<CompositeFunction> peaks;
 			
 			profile = getProfile(image, approxCentre, currentAngle, 0, maxDist);
-			Dataset x = DatasetFactory.createRange(profile.getSize(), Dataset.INT32);
+			Dataset x = DatasetFactory.createRange(IntegerDataset.class, profile.getSize());
 			
 			try {
 				peaks = Generic1DFitter.fitPeakFunctions(x, profile, Gaussian.class, new GeneticAlg(0.0001),
@@ -106,7 +107,7 @@ public class MultiplePeakFittingEllipseFinder {
 		
 		for (TreeSet<double[]> peaks : foundParams) {
 			
-			Dataset widths = DatasetFactory.zeros(new int[] {peaks.size()}, Dataset.FLOAT64);
+			Dataset widths = DatasetFactory.zeros(peaks.size());
 			int i = 0;
 			
 			Iterator<double[]> iter = peaks.iterator();
@@ -140,7 +141,7 @@ public class MultiplePeakFittingEllipseFinder {
 		
 		for (int j = 0; j < maxPeaks; j++) {
 			int i = 0;
-			Dataset first = DatasetFactory.zeros(new int[] {foundParams.size()}, Dataset.FLOAT64);
+			Dataset first = DatasetFactory.zeros(foundParams.size());
 			
 			for (TreeSet<double[]> peaks : foundParams) {
 				if (!peaks.isEmpty()) first.set(peaks.first()[0], i++);
@@ -271,7 +272,7 @@ public class MultiplePeakFittingEllipseFinder {
 			roi.setEndPoint(end[1], end[0]);
 
 			sub = ROIProfile.line(image,mask,roi,1,false)[0];
-			Dataset xAx = DatasetFactory.createRange(sub.getSize(), Dataset.INT32);
+			Dataset xAx = DatasetFactory.createRange(IntegerDataset.class, sub.getSize());
 
 			List<CompositeFunction> peaks= null;
 			

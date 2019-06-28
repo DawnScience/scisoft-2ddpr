@@ -16,6 +16,7 @@ import org.eclipse.dawnsci.plotting.api.PlottingFactory;
 import org.eclipse.dawnsci.plotting.api.tool.IToolPage;
 import org.eclipse.dawnsci.plotting.api.tool.IToolPageSystem;
 import org.eclipse.dawnsci.plotting.api.tool.ToolPageFactory;
+import org.eclipse.january.dataset.ByteDataset;
 import org.eclipse.january.dataset.Dataset;
 import org.eclipse.january.dataset.DatasetFactory;
 import org.eclipse.january.dataset.DatasetUtils;
@@ -188,7 +189,7 @@ public class GratingCalibrationDialog extends Dialog {
 				// mask = (maskMD != null) ? DatasetUtils.convertToDataset(maskMD.getMask()) : null;
 				
 				// So we shall create our own
-				mask = DatasetFactory.zeros(data, Dataset.INT8);
+				mask = DatasetFactory.zeros(data, ByteDataset.class);
 				
 				// On the basis that if not even one photon of radiation doesn't hit the detector we should ignore that pixel 
 				for (int loopIterX = 0; loopIterX < data.getShape()[0]; loopIterX ++) {

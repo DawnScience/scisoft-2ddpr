@@ -348,7 +348,7 @@ public class GratingCalibration {
 		
 		mindex = shiftedData.minPos()[0];
 //		Dataset parabolaX = DatasetFactory.createRange(mindex-1, mindex+2, 1);
-		Dataset parabolaX = DatasetFactory.createRange(mindex-1., mindex+2., 1.0, Dataset.FLOAT64);
+		Dataset parabolaX = DatasetFactory.createRange(mindex-1., mindex+2., 1.0);
 		Dataset parabolaY = shiftedData.getSlice(new int[]{mindex-1}, new int[]{mindex+2}, new int[]{1});
 		
 		AxesMetadata parabolaAxes;

@@ -57,7 +57,7 @@ public class ImageFitter {
 		
 		double xApprox = x.getDouble(0);
 		
-		Dataset xApproxGuess = DatasetFactory.createRange(xApprox, xApprox-(xDir*xRange), -xDir*xRange/100, Dataset.FLOAT64);
+		Dataset xApproxGuess = DatasetFactory.createRange(xApprox, xApprox-(xDir*xRange), -xDir*xRange/100);
 		
 		MultivariateOptimizer opt = new SimplexOptimizer(REL_TOL,ABS_TOL);
 		MultivariateFunction fun = new MultivariateFunction() {

@@ -46,7 +46,7 @@ public class CentreGuess {
 		my.isubtract(my.min().doubleValue());
 		mx.isubtract(mx.min().doubleValue());
 		
-		Dataset axis = DatasetFactory.createRange(samFW, Dataset.FLOAT64);
+		Dataset axis = DatasetFactory.createRange(samFW);
 		
 		Gaussian g = new Gaussian(samFW/2, samFW/4, my.max().doubleValue());
 		double yfound;

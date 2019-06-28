@@ -56,7 +56,7 @@ public class CalibratePoints {
 		ApacheOptimizer lma = new ApacheOptimizer(Optimizer.LEVENBERG_MARQUARDT);
 
 		try {
-			lma.optimize(new IDataset[]{DatasetFactory.createRange(qd.getSize(),Dataset.FLOAT64)}, qd,df);
+			lma.optimize(new IDataset[]{DatasetFactory.createRange(qd.getSize())}, qd,df);
 		} catch (Exception e) {
 			logger.error(e.getMessage(),e);
 		}

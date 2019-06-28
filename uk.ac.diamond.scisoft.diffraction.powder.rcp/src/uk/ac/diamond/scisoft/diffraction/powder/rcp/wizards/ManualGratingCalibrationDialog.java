@@ -23,6 +23,7 @@ import org.eclipse.dawnsci.plotting.api.tool.IToolPage;
 import org.eclipse.dawnsci.plotting.api.tool.IToolPageSystem;
 import org.eclipse.dawnsci.plotting.api.tool.ToolPageFactory;
 import org.eclipse.dawnsci.plotting.api.trace.MetadataPlotUtils;
+import org.eclipse.january.dataset.ByteDataset;
 import org.eclipse.january.dataset.Dataset;
 import org.eclipse.january.dataset.DatasetFactory;
 import org.eclipse.january.metadata.MaskMetadata;
@@ -260,7 +261,7 @@ public class ManualGratingCalibrationDialog extends Dialog {
 		}
 		else {
 			// Creating our own image mask where necessary
-			this.imageMask = DatasetFactory.zeros(this.diffractionImage, Dataset.INT8);
+			this.imageMask = DatasetFactory.zeros(this.diffractionImage, ByteDataset.class);
 			
 			// On the basis that if not even one photon of radiation doesn't hit the detector we should ignore that pixel 
 			for (int loopIterX = 0; loopIterX < this.diffractionImage.getShape()[0]; loopIterX ++) {
