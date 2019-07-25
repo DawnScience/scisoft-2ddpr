@@ -2,6 +2,7 @@ package uk.ac.diamond.scisoft.diffraction.powder;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
 
 public class Activator implements BundleActivator {
 
@@ -25,6 +26,13 @@ public class Activator implements BundleActivator {
 	 */
 	public void stop(BundleContext bundleContext) throws Exception {
 		Activator.context = null;
+	}
+	
+	public static <T> T getService(final Class<T> serviceClass) {
+		if (context == null) return null;
+		ServiceReference<T> ref = context.getServiceReference(serviceClass);
+		if (ref==null) return null;
+		return context.getService(ref);
 	}
 
 }

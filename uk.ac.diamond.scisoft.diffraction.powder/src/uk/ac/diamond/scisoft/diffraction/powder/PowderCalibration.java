@@ -185,6 +185,11 @@ public class PowderCalibration {
 
 		if (mon != null) mon.subTask("Calibrating");
 		//TODO make sure fix wavelength/distance ignored for multiple images
+		
+		if (deltaDistance == null) {
+			deltaDistance = DatasetFactory.zeros(1);
+		}
+		
 		CalibrationOutput output = CalibrateEllipses.run(allEllipses, allDSpacings,deltaDistance,pxSize, fixed, params);
 		
 		String desc = description;

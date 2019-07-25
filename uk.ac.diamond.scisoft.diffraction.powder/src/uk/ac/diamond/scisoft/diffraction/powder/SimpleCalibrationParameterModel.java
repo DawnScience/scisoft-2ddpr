@@ -21,7 +21,7 @@ public class SimpleCalibrationParameterModel {
 	private PointOptions pointOptions = new PointOptions();
 	
 	private boolean isPointCalibration = false;
-	private boolean isAutomaticCalibration = false;
+	private boolean automaticCalibration = false;
 	
 	private int nPointsPerRing = NUMBER_OF_POINTS;
 	private int minimumSpacing = MINIMUM_SPACING;
@@ -29,7 +29,7 @@ public class SimpleCalibrationParameterModel {
 	private int maxSearchSize = MAX_SIZE;
 	private boolean fixDetectorRoll = FIX_DETECTOR_ROLL;
 	
-	private int nRings;
+	private int numberOfRings;
 	private Set<Integer> ringSet;
 	
 	public SimpleCalibrationParameterModel() {}
@@ -38,29 +38,29 @@ public class SimpleCalibrationParameterModel {
 		this.pointOptions = new PointOptions(toCopy.pointOptions);
 		this.ellipseOptions = new EllipseOptions(toCopy.ellipseOptions);
 		this.isPointCalibration = toCopy.isPointCalibration;
-		this.isAutomaticCalibration = toCopy.isAutomaticCalibration;
-		this.nRings = toCopy.nRings;
+		this.automaticCalibration = toCopy.automaticCalibration;
+		this.numberOfRings = toCopy.numberOfRings;
 		this.ringSet = ringSet == null ? null : new TreeSet<Integer>(ringSet);
 	}
 	
 	public boolean isAutomaticCalibration() {
-		return isAutomaticCalibration;
+		return automaticCalibration;
 	}
 
 	public void setAutomaticCalibration(boolean isAutomaticCalibration) {
-		this.isAutomaticCalibration = isAutomaticCalibration;
+		this.automaticCalibration = isAutomaticCalibration;
 	}
 
 	public boolean isFloatDistance() {
-		return (!isAutomaticCalibration && isPointCalibration) ? pointOptions.floatDistance : ellipseOptions.floatDistance; 
+		return (!automaticCalibration && isPointCalibration) ? pointOptions.floatDistance : ellipseOptions.floatDistance; 
 	}
 
 	public boolean isFloatEnergy() {
-		return (!isAutomaticCalibration && isPointCalibration) ? pointOptions.floatEnergy : ellipseOptions.floatEnergy; 
+		return (!automaticCalibration && isPointCalibration) ? pointOptions.floatEnergy : ellipseOptions.floatEnergy; 
 	}
 	
 	public void setFloatEnergy(boolean floatEnergy) {
-		if (!isAutomaticCalibration && isPointCalibration) {
+		if (!automaticCalibration && isPointCalibration) {
 			pointOptions.floatEnergy = floatEnergy;
 		} else {
 			
@@ -70,7 +70,7 @@ public class SimpleCalibrationParameterModel {
 	}
 
 	public void setFloatDistance(boolean floatDistance) {
-		if (!isAutomaticCalibration && isPointCalibration) {
+		if (!automaticCalibration && isPointCalibration) {
 			pointOptions.floatDistance = floatDistance;
 		} else {
 			ellipseOptions.floatDistance = floatDistance;
@@ -78,12 +78,12 @@ public class SimpleCalibrationParameterModel {
 		}
 	}
 	
-	public void setNumberOfRings(int nRings) {
-		this.nRings = nRings;
+	public void setNumberOfRings(int numberOfRings) {
+		this.numberOfRings = numberOfRings;
 	}
 	
 	public int getNumberOfRings() {
-		return nRings;
+		return numberOfRings;
 	}
 	
 	public void setRingSet(Set<Integer> ringSet) {
@@ -108,17 +108,17 @@ public class SimpleCalibrationParameterModel {
 	
 	public IDiffractionMetadata getMetadata(double[] params, IDiffractionMetadata md) {
 		
-		return (!isAutomaticCalibration && isPointCalibration) ? pointOptions.getMetadata(params, md) : ellipseOptions.getMetadata(params, md); 
+		return (!automaticCalibration && isPointCalibration) ? pointOptions.getMetadata(params, md) : ellipseOptions.getMetadata(params, md); 
 	}
 	
 	public double[] getInitialParams(IDiffractionMetadata md) {
 		
-		return (!isAutomaticCalibration && isPointCalibration) ? pointOptions.getInitialParams(md) : ellipseOptions.getInitialParams(md); 
+		return (!automaticCalibration && isPointCalibration) ? pointOptions.getInitialParams(md) : ellipseOptions.getInitialParams(md); 
 	}
 	
 	public CalibrationErrorOutput getErrorOutput(double[] errors) {
 		
-		if (!isAutomaticCalibration && isPointCalibration) return pointOptions.getErrorOutput(errors);
+		if (!automaticCalibration && isPointCalibration) return pointOptions.getErrorOutput(errors);
 		
 		return ellipseOptions.getErrorOutput(errors);
 		
@@ -126,27 +126,27 @@ public class SimpleCalibrationParameterModel {
 	
 	public int getNumberOfFloatingParameters() {
 		
-		return  (!isAutomaticCalibration && isPointCalibration) ? 
+		return  (!automaticCalibration && isPointCalibration) ? 
 				pointOptions.getNumberOfFloatingParameters() : ellipseOptions.getNumberOfFloatingParameters();
 		
 	}
 
 	public boolean isFloatBeamCentre() {
-		return (!isAutomaticCalibration && isPointCalibration) ? pointOptions.floatBeamCentre : true; 
+		return (!automaticCalibration && isPointCalibration) ? pointOptions.floatBeamCentre : true; 
 	}
 
 	public boolean isFloatTilt() {
-		return (!isAutomaticCalibration && isPointCalibration) ? pointOptions.floatTilt : true; 
+		return (!automaticCalibration && isPointCalibration) ? pointOptions.floatTilt : true; 
 	}
 
 	public void setFloatBeamCentre(boolean floatBeamCentre) {
-		if (!isAutomaticCalibration && isPointCalibration) {
+		if (!automaticCalibration && isPointCalibration) {
 			pointOptions.floatBeamCentre = floatBeamCentre;
 		} 
 	}
 
 	public void setFloatTilt(boolean floatTilt) {
-		if (!isAutomaticCalibration && isPointCalibration) {
+		if (!automaticCalibration && isPointCalibration) {
 			pointOptions.floatTilt = floatTilt;
 		} 
 	}
@@ -200,13 +200,13 @@ public class SimpleCalibrationParameterModel {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((ellipseOptions == null) ? 0 : ellipseOptions.hashCode());
-		result = prime * result + (isAutomaticCalibration ? 1231 : 1237);
+		result = prime * result + (automaticCalibration ? 1231 : 1237);
 		result = prime * result + (isPointCalibration ? 1231 : 1237);
 		result = prime * result + maxSearchSize;
 		result = prime * result + minimumSpacing;
 		result = prime * result + nIgnoreCentre;
 		result = prime * result + nPointsPerRing;
-		result = prime * result + nRings;
+		result = prime * result + numberOfRings;
 		result = prime * result + ((pointOptions == null) ? 0 : pointOptions.hashCode());
 		result = prime * result + ((ringSet == null) ? 0 : ringSet.hashCode());
 		return result;
@@ -226,7 +226,7 @@ public class SimpleCalibrationParameterModel {
 				return false;
 		} else if (!ellipseOptions.equals(other.ellipseOptions))
 			return false;
-		if (isAutomaticCalibration != other.isAutomaticCalibration)
+		if (automaticCalibration != other.automaticCalibration)
 			return false;
 		if (isPointCalibration != other.isPointCalibration)
 			return false;
@@ -238,7 +238,7 @@ public class SimpleCalibrationParameterModel {
 			return false;
 		if (nPointsPerRing != other.nPointsPerRing)
 			return false;
-		if (nRings != other.nRings)
+		if (numberOfRings != other.numberOfRings)
 			return false;
 		if (pointOptions == null) {
 			if (other.pointOptions != null)

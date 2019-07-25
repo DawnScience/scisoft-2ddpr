@@ -54,6 +54,7 @@ import uk.ac.diamond.scisoft.analysis.fitting.Fitter;
 import uk.ac.diamond.scisoft.analysis.fitting.functions.Polynomial;
 import uk.ac.diamond.scisoft.diffraction.powder.DiffractionImageData;
 import uk.ac.diamond.scisoft.diffraction.powder.ICalibrationUIProgressUpdate;
+import uk.ac.diamond.scisoft.diffraction.powder.NexusCalibrationExportUtils;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.LocalServiceManager;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.PowderCalibrationUtils;
@@ -501,20 +502,7 @@ public class DiffractionCalibrationUtils {
 		}
 		
 		DiffractionImageData cd = manager.getCurrentData();
-		NexusFile nexusFile = NexusFileHDF5.createNexusFile(filepath, false);
-		IPersistenceService service = (IPersistenceService)LocalServiceManager.getPersistenceService();
-//		IPersistentFile file = service.createPersistentFile(filepath);
-		try {	
-			IPersistentNodeFactory pnf = service.getPersistentNodeFactory();
-			GroupNode n = pnf.writePowderCalibrationToFile(cd.getMetaData(),DatasetUtils.sliceAndConvertLazyDataset(cd.getImage()), cd.getCalibrationInfo());
-			nexusFile.addNode("/entry1", n);
-			
-		} catch(Exception e) {
-			logger.error(e.getMessage());
-		} finally {
-//			file.close();
-			nexusFile.close();
-		}
+		NexusCalibrationExportUtils.saveToNexusFile(cd.getImage(), cd.getMetaData(), cd.getCalibrationInfo(), filepath);
 	}
 	
 	private static boolean hasExtension(String filePath) {
