@@ -1,18 +1,12 @@
 package uk.ac.diamond.scisoft.diffraction.powder.application;
 
-import java.util.List;
-
 import org.dawnsci.plotting.tools.preference.detector.DiffractionDetector;
 import org.dawnsci.plotting.tools.preference.detector.DiffractionDetectorHelper;
-import org.dawnsci.plotting.tools.preference.detector.DiffractionDetectorPreferenceInitializer;
-import org.dawnsci.plotting.tools.preference.detector.DiffractionDetectors;
 import org.eclipse.dawnsci.analysis.api.diffraction.DetectorProperties;
 import org.eclipse.dawnsci.analysis.api.diffraction.DiffractionCrystalEnvironment;
 import org.eclipse.dawnsci.analysis.api.io.IDataHolder;
 import org.eclipse.dawnsci.analysis.api.io.ILoaderService;
 import org.eclipse.dawnsci.analysis.api.metadata.IDiffractionMetadata;
-import org.eclipse.dawnsci.analysis.api.persistence.IMarshallerService;
-import org.eclipse.equinox.log.LogFilter;
 import org.eclipse.january.dataset.DatasetUtils;
 import org.eclipse.january.dataset.IDataset;
 import org.osgi.framework.BundleContext;
@@ -22,8 +16,6 @@ import org.slf4j.LoggerFactory;
 
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrantSpacing;
 import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationFactory;
-import uk.ac.diamond.scisoft.analysis.crystallography.CalibrationStandards;
-import uk.ac.diamond.scisoft.analysis.crystallography.HKL;
 import uk.ac.diamond.scisoft.analysis.io.DiffractionMetadata;
 import uk.ac.diamond.scisoft.analysis.io.NexusDiffractionCalibrationReader;
 import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
@@ -38,9 +30,14 @@ public class CalibrationExecution {
 	private static final Logger logger = LoggerFactory.getLogger(CalibrationExecution.class);
 	
 	private PowderCalibrationConfig config;
+	private double fixedValue = 0;
 
 	public CalibrationExecution(PowderCalibrationConfig config) {
 		this.config = config;
+	}
+	
+	public void setFixedValue(double fixed) {
+		fixedValue = fixed;
 	}
 	
 	public void run() throws Exception {
@@ -55,8 +52,6 @@ public class CalibrationExecution {
 		IDataset[] images = getImages(config.getInputPath(), config.getDatasetPath(), loaderService);
 		
 		SimpleCalibrationParameterModel params = config.getModel();
-		
-		double fixedWavelengthOrDistance = 0;
 		
 		DiffractionDetector dd = DiffractionDetectorHelper.getMatchingDefaultDetector(images[0].getShape());
 		
@@ -76,7 +71,7 @@ public class CalibrationExecution {
 			output = PowderCalibration.calibrateSingleImageManualPoint(DatasetUtils.convertToDataset(images[0]), cs.getHKLs(), md,config.getModel());
 		} else {
 			output = PowderCalibration.calibrateMultipleImages(images,
-					null, dd.getXPixelMM(), cs.getHKLs(), fixedWavelengthOrDistance, options, params, null, null, null);
+					null, dd.getXPixelMM(), cs.getHKLs(), fixedValue, options, params, null, null, null);
 		}
 		
 	    if (output == null) {
