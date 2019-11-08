@@ -1,5 +1,7 @@
 package uk.ac.diamond.scisoft.diffraction.powder.application;
 
+import java.util.Arrays;
+
 import org.dawnsci.plotting.tools.preference.detector.DiffractionDetector;
 import org.dawnsci.plotting.tools.preference.detector.DiffractionDetectorHelper;
 import org.eclipse.dawnsci.analysis.api.diffraction.DetectorProperties;
@@ -7,8 +9,12 @@ import org.eclipse.dawnsci.analysis.api.diffraction.DiffractionCrystalEnvironmen
 import org.eclipse.dawnsci.analysis.api.io.IDataHolder;
 import org.eclipse.dawnsci.analysis.api.io.ILoaderService;
 import org.eclipse.dawnsci.analysis.api.metadata.IDiffractionMetadata;
+import org.eclipse.dawnsci.analysis.dataset.slicer.SliceViewIterator;
+import org.eclipse.january.dataset.Dataset;
 import org.eclipse.january.dataset.DatasetUtils;
 import org.eclipse.january.dataset.IDataset;
+import org.eclipse.january.dataset.ILazyDataset;
+import org.eclipse.january.dataset.ShapeUtils;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.slf4j.Logger;
@@ -51,6 +57,19 @@ public class CalibrationExecution {
 		
 		IDataset[] images = getImages(config.getInputPath(), config.getDatasetPath(), loaderService);
 		
+		Dataset ddistance = null;
+		
+		if (config.getDistancePath() != null) {
+			IDataHolder dh = loaderService.getData(config.getInputPath(), null);
+		    ILazyDataset lz = dh.getLazyDataset(config.getDistancePath());
+		    
+		    ddistance = DatasetUtils.sliceAndConvertLazyDataset(lz).squeeze();
+		    
+		    if (ddistance.getSize() != images.length) {
+		    	throw new IllegalArgumentException("Distance dataset size must match number of images");
+		    }
+		}
+		
 		SimpleCalibrationParameterModel params = config.getModel();
 		
 		DiffractionDetector dd = DiffractionDetectorHelper.getMatchingDefaultDetector(images[0].getShape());
@@ -71,7 +90,7 @@ public class CalibrationExecution {
 			output = PowderCalibration.calibrateSingleImageManualPoint(DatasetUtils.convertToDataset(images[0]), cs.getHKLs(), md,config.getModel());
 		} else {
 			output = PowderCalibration.calibrateMultipleImages(images,
-					null, dd.getXPixelMM(), cs.getHKLs(), fixedValue, options, params, null, null, null);
+					ddistance, dd.getXPixelMM(), cs.getHKLs(), fixedValue, options, params, null, null, null);
 		}
 		
 	    if (output == null) {
@@ -116,11 +135,39 @@ public class CalibrationExecution {
 		
 		IDataHolder dh = service.getData(path, null);
 		
-		if (dh.size() == 1 && dh.getDataset(0).getRank() == 2) {
-			return new IDataset[] {dh.getDataset(0).getSlice()};
+		if (datasetPath != null) {
+			ILazyDataset lz = dh.getLazyDataset(datasetPath);
+			
+			int[] shape = lz.getShape();
+			
+			int[] ss = ShapeUtils.squeezeShape(shape, false);
+			
+			if (ss.length == 2) {
+				return new IDataset[] {lz.getSlice().squeeze()};
+			} else if (ss.length == 3) {
+				
+				int rank = lz.getRank();
+				
+				SliceViewIterator it = new SliceViewIterator(lz, null, new int[] {rank-2,rank-1});
+				
+				IDataset[] out = new IDataset[it.getTotal()];
+				
+				int count = 0;
+				while(it.hasNext()) {
+					out[count++] = it.next().getSlice().squeeze();
+				}
+				return out;
+				
+			} else {
+				throw new IllegalArgumentException("Dataset " + datasetPath + " has illegal shape " + Arrays.toString(shape));
+			}
 		}
 		
-		return null;
+		
+		if (dh.size() == 1 && dh.getDataset(0).getRank() == 2) {
+			return new IDataset[] {dh.getDataset(0).getSlice()};
+		} else {
+			throw new IllegalArgumentException("Dataset name not specified and too many datasets in file!");
+		}
 	}
-
 }

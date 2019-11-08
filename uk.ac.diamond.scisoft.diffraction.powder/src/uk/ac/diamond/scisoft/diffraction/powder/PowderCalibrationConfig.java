@@ -5,6 +5,7 @@ public class PowderCalibrationConfig {
 	private String inputPath;
 	private String outputPath;
 	private String datasetPath;
+	private String distancePath;
 	private String initialCalibration;
 	private String standard;
 	
@@ -57,6 +58,12 @@ public class PowderCalibrationConfig {
 	public void setStandard(String standard) {
 		this.standard = standard;
 	}
+	
+	public String getDistancePath() {
+		return distancePath;
+	}
 
-
+	public void setDistancePath(String distancePath) {
+		this.distancePath = distancePath;
+	}
 }
