@@ -7,6 +7,7 @@ import org.eclipse.dawnsci.analysis.dataset.impl.Signal;
 import org.eclipse.january.dataset.Dataset;
 import org.eclipse.january.dataset.DatasetFactory;
 import org.eclipse.january.dataset.DatasetUtils;
+import org.eclipse.january.dataset.DoubleDataset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +31,7 @@ public class CentreGuess {
 		
 		Dataset small = ds.value(image).get(0);
 		
-		small = DatasetUtils.cast(small, Dataset.FLOAT64);
+		small = DatasetUtils.cast(DoubleDataset.class, small);
 		
 		Dataset conv = Signal.convolve(small, small, new int[]{0,1});
 		
