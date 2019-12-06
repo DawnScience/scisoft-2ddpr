@@ -9,8 +9,8 @@
 package uk.ac.diamond.scisoft.diffraction.powder.rcp.calibration;
 
 import org.dawb.common.ui.util.GridUtils;
-import org.dawb.workbench.ui.views.RepeatingMouseAdapter;
-import org.dawb.workbench.ui.views.SlowFastRunnable;
+import org.dawnsci.common.widgets.RepeatingMouseAdapter;
+import org.dawnsci.common.widgets.SlowFastRunnable;
 import org.eclipse.dawnsci.analysis.api.metadata.IDiffractionMetadata;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
