@@ -31,14 +31,16 @@ import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.CalibrationUIProgressUp
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.POIFindingRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.preferences.DiffractionCalibrationConstants;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.CalibrationMaskingManager;
 
 public class PowderCalibrationSetupWidget {
-	
+
 	private Set<ICalibrationStateListener> listeners;
-	
+
 	private DiffractionDataManager manager;
 	private SimpleCalibrationParameterModel model;
 	private DiffractionImageAugmenter augmenter;
+
 	private IPlottingSystem<?> system;
 	private IRunner runner;
 	private POIFindingRun poiFindingRun = null;
@@ -48,11 +50,12 @@ public class PowderCalibrationSetupWidget {
 
 	private CalibrantPositioningWidget cpw;
 	private CalibrationOptionsGroup options;
+	private MaskingOptionsGroup maskingOptions;
+	private CalibrationMaskingManager maskingManager;
 	private Button usePoints;
 
-	public PowderCalibrationSetupWidget(DiffractionDataManager manager, 
-			SimpleCalibrationParameterModel model, DiffractionImageAugmenter augmenter,
-			IPlottingSystem<?> system, IRunner runner){
+	public PowderCalibrationSetupWidget(DiffractionDataManager manager, SimpleCalibrationParameterModel model,
+			DiffractionImageAugmenter augmenter, IPlottingSystem<?> system, IRunner runner) {
 		this.manager = manager;
 		this.model = model;
 		this.augmenter = augmenter;
@@ -60,24 +63,23 @@ public class PowderCalibrationSetupWidget {
 		this.runner = runner;
 		listeners = new HashSet<>();
 	}
-	
-	
+
 	public void createControl(final Composite left) {
-		
-	 CTabFolder folder = new CTabFolder(left, SWT.NONE);
-	 folder.setLayout(new GridLayout());
-	 folder.setLayoutData(GridDataFactory.fillDefaults().grab(false, false).create());
-		
-	 CTabItem tab1 = new CTabItem(folder, SWT.NONE);
-	    tab1.setText("Calibrant");
-	    
-	    Composite calComp = new Composite(folder, SWT.NONE);
-	    calComp.setLayoutData(GridDataFactory.fillDefaults().create());
-	    calComp.setLayout(new GridLayout());
-		
+
+		CTabFolder folder = new CTabFolder(left, SWT.NONE);
+		folder.setLayout(new GridLayout());
+		folder.setLayoutData(GridDataFactory.fillDefaults().grab(false, false).create());
+
+		CTabItem tab1 = new CTabItem(folder, SWT.NONE);
+		tab1.setText("Calibrant");
+
+		Composite calComp = new Composite(folder, SWT.NONE);
+		calComp.setLayoutData(GridDataFactory.fillDefaults().create());
+		calComp.setLayout(new GridLayout());
+
 		final CalibrantSelectionGroup group = new CalibrantSelectionGroup(calComp);
-//		tab1.setControl(group.getControl());
-		
+		// tab1.setControl(group.getControl());
+
 		group.addDisplaySelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -85,8 +87,9 @@ public class PowderCalibrationSetupWidget {
 				showCalibrantAndBeamCentre(group.getShowRings());
 			}
 		});
-		
-		final RingSelectionGroup ringSelection = new RingSelectionGroup(calComp, CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs().size(), model);
+
+		final RingSelectionGroup ringSelection = new RingSelectionGroup(calComp,
+				CalibrationFactory.getCalibrationStandards().getCalibrant().getHKLs().size(), model);
 		ringSelection.addRingNumberSpinnerListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -94,14 +97,15 @@ public class PowderCalibrationSetupWidget {
 				model.setNumberOfRings(ringNumber);
 				augmenter.setMaxCalibrantRings(ringNumber);
 				augmenter.setRingSet(ringSelection.getRingSelectionText().getUniqueRingNumbers());
-				//force redraw
-				if (augmenter.isActive()) augmenter.activate();
-//				augmenter.activate();
+				// force redraw
+				if (augmenter.isActive())
+					augmenter.activate();
+				// augmenter.activate();
 			}
 		});
-		
+
 		tab1.setControl(calComp);
-		
+
 		group.addCalibrantSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -115,16 +119,16 @@ public class PowderCalibrationSetupWidget {
 				augmenter.setMaxCalibrantRings(ringMaxNumber);
 				ringSelection.setMaximumRingNumber(ringMaxNumber);
 				ringSelection.setRingSpinnerSelection(ringMaxNumber);
-				if (group.getShowRings()){
+				if (group.getShowRings()) {
 					augmenter.activate();
 				}
 			}
 		});
-		
+
 		Composite routineComposite = new Composite(folder, SWT.NONE);
 		routineComposite.setLayout(new GridLayout());
 		routineComposite.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
-		
+
 		final Button autoRadio = new Button(routineComposite, SWT.RADIO);
 		autoRadio.setText("Automatic");
 		GridDataFactory.swtDefaults().applyTo(autoRadio);
@@ -133,19 +137,19 @@ public class PowderCalibrationSetupWidget {
 		manualRadio.setText("Manual");
 		GridDataFactory.swtDefaults().applyTo(manualRadio);
 		manualRadio.setSelection(false);
-		
+
 		final Composite autoManStack = new Composite(routineComposite, SWT.NONE);
 		final StackLayout stackLayout = new StackLayout();
 		autoManStack.setLayout(stackLayout);
-		final Label auto = new Label(autoManStack,SWT.WRAP);
+		final Label auto = new Label(autoManStack, SWT.WRAP);
 		auto.setText("Automatic Calibration");
 		GridDataFactory.swtDefaults().applyTo(autoManStack);
-		
-		
+
 		final Composite manualComposite = new Composite(autoManStack, SWT.None);
 		manualComposite.setLayout(new GridLayout());
 		IDiffractionMetadata meta = null;
-		if (manager.getCurrentData() != null) meta = manager.getCurrentData().getMetaData();
+		if (manager.getCurrentData() != null)
+			meta = manager.getCurrentData().getMetaData();
 		if (showSteering) {
 			cpw = new CalibrantPositioningWidget(manualComposite, meta);
 		} else {
@@ -153,31 +157,32 @@ public class PowderCalibrationSetupWidget {
 			l.setText("Align rings to image");
 			GridDataFactory.swtDefaults().applyTo(l);
 		}
-		
+
 		final Button findRings = new Button(manualComposite, SWT.PUSH);
 		findRings.setText("Find Rings");
 		GridDataFactory.swtDefaults().applyTo(findRings);
 		stackLayout.topControl = auto;
 		autoManStack.layout();
 
-		poiFindingRun = new POIFindingRun(new CalibrationUIProgressUpdateImpl(system, Display.getCurrent()){
+		poiFindingRun = new POIFindingRun(new CalibrationUIProgressUpdateImpl(system, Display.getCurrent()) {
 			@Override
 			public void completed() {
 				fireListeners(new StateChangedEvent(this, canRun()));
 			}
-			
+
 		}, manager.getCurrentData(), model);
 		findRings.addSelectionListener(new SelectionAdapter() {
-			
+
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				model.setMaxSearchSize(Activator.getDefault().getPreferenceStore().getInt(DiffractionCalibrationConstants.MAX_SEARCH_SIZE));
-				
+				model.setMaxSearchSize(Activator.getDefault().getPreferenceStore()
+						.getInt(DiffractionCalibrationConstants.MAX_SEARCH_SIZE));
+
 				poiFindingRun.updateData(manager.getCurrentData());
-					runner.run(poiFindingRun);
+				runner.run(poiFindingRun);
 			}
 		});
-		
+
 		model.setAutomaticCalibration(true);
 		model.setIsPointCalibration(true);
 		usePoints = new Button(routineComposite, SWT.CHECK);
@@ -185,58 +190,65 @@ public class PowderCalibrationSetupWidget {
 		usePoints.setText("Point calibration");
 		usePoints.setSelection(true);
 		CTabItem tab3 = new CTabItem(folder, SWT.NONE);
-	    tab3.setText("Routine");
-	    tab3.setControl(routineComposite);
-		
-		options = new CalibrationOptionsGroup(folder, model, true,true);
-		
+		tab3.setText("Routine");
+		tab3.setControl(routineComposite);
+
+		options = new CalibrationOptionsGroup(folder, model, true, true);
+
 		CTabItem tab4 = new CTabItem(folder, SWT.NONE);
-	    tab4.setText("Options");
-	    tab4.setControl(options.getControl());
-		
+		tab4.setText("Options");
+		tab4.setControl(options.getControl());
+
+		CTabItem tab5 = new CTabItem(folder, SWT.NONE);
+		tab5.setText("Masking");
+		maskingOptions = new MaskingOptionsGroup(folder, model);
+		maskingOptions.disableMaskingOptions(model.isAutomaticCalibration() || model.isEllipseCalibration());
+		tab5.setControl(maskingOptions.getControl());
+		this.maskingManager = new CalibrationMaskingManager(system, manager, model, maskingOptions);
+
 		usePoints.addSelectionListener(new SelectionAdapter() {
-			
+
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				boolean s = ((Button)e.getSource()).getSelection();
+				boolean s = ((Button) e.getSource()).getSelection();
 				model.setIsPointCalibration(s);
-				boolean showPoint = s && !model.isAutomaticCalibration(); 
+				boolean showPoint = s && !model.isAutomaticCalibration();
+				maskingOptions.disableMaskingOptions(!showPoint);
 				options.showOptions(!showPoint, showPoint);
 				autoManStack.layout();
 				fireListeners(new StateChangedEvent(this, canRun()));
 			}
 		});
-		
-		
-		
+
 		autoRadio.addSelectionListener(new SelectionAdapter() {
-			
+
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				boolean s = ((Button)e.getSource()).getSelection();
-				boolean showPoint = !s && model.isPointCalibration(); 
-				if (manager.getSize() > 1){
+				boolean s = ((Button) e.getSource()).getSelection();
+				boolean showPoint = !s && model.isPointCalibration();
+				if (manager.getSize() > 1) {
 					options.enable(false);
 				} else {
 					options.showOptions(!showPoint, showPoint);
-				}		
-				
+				}
+				maskingOptions.disableMaskingOptions(!showPoint);
 				stackLayout.topControl = s ? auto : manualComposite;
 				autoManStack.layout();
 				model.setAutomaticCalibration(s);
 				fireListeners(new StateChangedEvent(this, canRun()));
-				
+
 			}
 		});
-		
+
 		autoRadio.setSelection(true);
-		
+
 		folder.setSelection(0);
-	    folder.layout(true);
+		folder.layout(true);
 	}
-	
+
 	private void showCalibrantAndBeamCentre(boolean show) {
-		if (augmenter == null) return;
+		if (augmenter == null)
+			return;
 		if (manager.isEmpty()) {
 			augmenter.deactivate(false);
 			return;
@@ -250,21 +262,24 @@ public class PowderCalibrationSetupWidget {
 			augmenter.deactivate(false);
 		}
 	}
-	
+
 	public void update() {
-		if (cpw != null) cpw.setDiffractionMeataData(manager.getCurrentData() != null ? manager.getCurrentData().getMetaData() : null);
+		if (cpw != null)
+			cpw.setDiffractionMeataData(
+					manager.getCurrentData() != null ? manager.getCurrentData().getMetaData() : null);
 		poiFindingRun.updateData(manager.getCurrentData());
 		showCalibrantAndBeamCentre(showRings);
 	}
-	
+
 	public void setShowSteering(boolean showSteering) {
 		this.showSteering = showSteering;
 	}
-	
+
 	private void fireListeners(StateChangedEvent event) {
-		for (ICalibrationStateListener l : listeners) l.calibrationStateChanged(event);
+		for (ICalibrationStateListener l : listeners)
+			l.calibrationStateChanged(event);
 	}
-	
+
 	public void addCalibrationStateListener(ICalibrationStateListener listener) {
 		listeners.add(listener);
 	}
@@ -272,21 +287,23 @@ public class PowderCalibrationSetupWidget {
 	public void removeCalibrationStateListener(ICalibrationStateListener listener) {
 		listeners.remove(listener);
 	}
-	
+
 	private boolean canRun() {
-		
-		if (model.isAutomaticCalibration()) return true;
-		
-		if (manager.getCurrentData().getNonNullROISize() > 0) return true;
-		
+
+		if (model.isAutomaticCalibration())
+			return true;
+
+		if (manager.getCurrentData().getNonNullROISize() > 0)
+			return true;
+
 		return false;
 	}
-	
+
 	public boolean isAutomatic() {
 		return model.isAutomaticCalibration();
 	}
-	
-	public void enableOptions(boolean enable){
+
+	public void enableOptions(boolean enable) {
 		usePoints.setEnabled(enable);
 		options.enable(enable);
 	}
