@@ -18,7 +18,7 @@
 <module>uk.ac.diamond.scisoft.diffraction.powder.application</module>
 <module>uk.ac.diamond.scisoft.diffraction.powder.feature</module>
 <module>uk.ac.diamond.scisoft.diffraction.powder.rcp</module>
-<module>uk.ac.diamond.scisoft.diffraction.powder.test</module>
+<!--module>uk.ac.diamond.scisoft.diffraction.powder.test</module-->
 
 	</modules>
 </project>
