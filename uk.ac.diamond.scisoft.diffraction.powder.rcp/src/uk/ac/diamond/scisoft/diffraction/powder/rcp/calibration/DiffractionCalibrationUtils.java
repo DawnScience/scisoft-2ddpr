@@ -26,13 +26,8 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.dawnsci.analysis.api.diffraction.DetectorProperties;
 import org.eclipse.dawnsci.analysis.api.diffraction.DiffractionCrystalEnvironment;
 import org.eclipse.dawnsci.analysis.api.metadata.IDiffractionMetadata;
-import org.eclipse.dawnsci.analysis.api.persistence.IPersistenceService;
-import org.eclipse.dawnsci.analysis.api.persistence.IPersistentNodeFactory;
 import org.eclipse.dawnsci.analysis.api.roi.IROI;
-import org.eclipse.dawnsci.analysis.api.tree.GroupNode;
 import org.eclipse.dawnsci.analysis.dataset.roi.PolylineROI;
-import org.eclipse.dawnsci.hdf5.nexus.NexusFileHDF5;
-import org.eclipse.dawnsci.nexus.NexusFile;
 import org.eclipse.dawnsci.plotting.api.IPlottingSystem;
 import org.eclipse.dawnsci.plotting.api.region.IRegion;
 import org.eclipse.dawnsci.plotting.api.region.IRegion.RegionType;
@@ -42,7 +37,6 @@ import org.eclipse.dawnsci.plotting.api.trace.ITrace;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.january.dataset.Dataset;
 import org.eclipse.january.dataset.DatasetFactory;
-import org.eclipse.january.dataset.DatasetUtils;
 import org.eclipse.january.dataset.IDataset;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Composite;
@@ -56,7 +50,6 @@ import uk.ac.diamond.scisoft.diffraction.powder.DiffractionImageData;
 import uk.ac.diamond.scisoft.diffraction.powder.ICalibrationUIProgressUpdate;
 import uk.ac.diamond.scisoft.diffraction.powder.NexusCalibrationExportUtils;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
-import uk.ac.diamond.scisoft.diffraction.powder.rcp.LocalServiceManager;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.PowderCalibrationUtils;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.AutoCalibrationRun;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.jobs.FromPointsCalibrationRun;
@@ -514,14 +507,14 @@ public class DiffractionCalibrationUtils {
 	/**
 	 * Returns the wavelength/energy given the energy/wavelength
 	 * with the same precision as the value entered
-	 * @param value
-	 * @return a double value with the same precision number as the value entered as parameter
+	 * @param value wavelength in Angstroms
+	 * @return a double value with the same precision number as the value entered as parameter in keV
 	 */
 	public static double getWavelengthEnergy(double value) {
 		BigDecimal valueBd = BigDecimal.valueOf(value);
 		int precision = valueBd.precision();
 
-		double result = 1. / (0.0806554465 * value); // constant from NIST CODATA 2006
+		double result = DiffractionCrystalEnvironment.calculateEnergy(value); // constant from NIST CODATA 2006
 
 		return setPrecision(result, precision);
 	}

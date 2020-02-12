@@ -51,8 +51,6 @@ public class GratingCalibrationDialog extends Dialog {
 	private Button calibrateButton;
 	private Action calibrateAction;
 	
-	static final double hc = 12.398419738620932; // keV Å 
-
 	public GratingCalibrationDialog(Shell shell, DiffractionDataManager manager) {
 		super(shell);
 		setShellStyle(getShellStyle() | SWT.RESIZE);
@@ -178,7 +176,7 @@ public class GratingCalibrationDialog extends Dialog {
 			public void run() {
 				GratingCalibration gc = new GratingCalibration();
 				gc.setBeamCentre(manager.getCurrentData().getMetaData().getDetector2DProperties().getBeamCentreCoords());
-				gc.setEnergy(hc/manager.getCurrentData().getMetaData().getDiffractionCrystalEnvironment().getWavelength());
+				gc.setEnergy(manager.getCurrentData().getMetaData().getDiffractionCrystalEnvironment().getEnergy());
 				gc.setGratingspacing(Double.parseDouble(rulingText.getText()));
 				gc.setPixelPitch(manager.getCurrentData().getMetaData().getDetector2DProperties().getHPxSize()); // Assume square pixels for now
 				
