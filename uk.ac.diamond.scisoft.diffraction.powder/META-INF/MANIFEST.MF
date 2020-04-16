@@ -15,6 +15,6 @@ Require-Bundle: org.eclipse.core.runtime,
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: uk.ac.diamond.scisoft.diffraction.powder
-Import-Package: org.apache.commons.lang;version="2.6.0",
+Import-Package: org.apache.commons.lang3;version="3.1.0",
  org.slf4j;version="[1.7.2,2.0.0)"
 Automatic-Module-Name: uk.ac.diamond.scisoft.diffraction.powder
