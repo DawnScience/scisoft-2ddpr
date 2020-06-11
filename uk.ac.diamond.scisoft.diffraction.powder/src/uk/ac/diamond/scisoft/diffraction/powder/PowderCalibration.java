@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
+import javax.vecmath.Matrix3d;
+import javax.vecmath.Vector3d;
+
 import org.eclipse.dawnsci.analysis.api.diffraction.DetectorProperties;
 import org.eclipse.dawnsci.analysis.api.diffraction.DiffractionCrystalEnvironment;
 import org.eclipse.dawnsci.analysis.api.diffraction.IPowderCalibrationInfo;
@@ -86,6 +89,8 @@ public class PowderCalibration {
 			"%I International Union of Crystallography";
 	
 	private final static Logger logger = LoggerFactory.getLogger(PowderCalibration.class);
+	
+	private final static Vector3d referenceBeamVector = new Vector3d(0.,0.,1.);
 	
 	public static CalibrationOutput calibrateKnownWavelength(Dataset image, double wavelength, double pixel, List<HKL> spacings, int nRings) {
 		
@@ -552,46 +557,47 @@ public class PowderCalibration {
 		md.getDiffractionCrystalEnvironment().setWavelength(output.getWavelength());
 		if (roll != null) setDetectorFastAxisAngle(md.getDetector2DProperties(),roll);
 		
-//		Specifying fast axis orientation
-//		double fastAngleDegrees = 30;
-//
-//		DetectorProperties dp = md.getDetector2DProperties();
-//		dp.setNormalAnglesInDegrees(0,0,0);
-//		dp.setDetectorDistance(100);
-//		dp.setBeamCentreCoords(new double[]{0,0});
-//
-//		double[] bc = new double[] {output.getBeamCentreX().getDouble(i),output.getBeamCentreY().getDouble(i) };
-//		dp.setOrientationEulerZYZ(Math.toRadians(-fastAngleDegrees), Math.toRadians(output.getTilt().getDouble(i)),Math.toRadians(output.getTiltAngle().getDouble(i)));
-//		dp.setBeamCentreCoords(bc);
-//		double offset = fastAngleDegrees - dp.getNormalAnglesInDegrees()[2];
-//		dp.setOrientationEulerZYZ(Math.toRadians(-fastAngleDegrees - offset), Math.toRadians(output.getTilt().getDouble(i)),Math.toRadians(output.getTiltAngle().getDouble(i)));
-//		dp.setBeamCentreCoords(bc);
-//		dp.setBeamCentreDistance(output.getDistance().getDouble(i));
-//		
-//		md.getDiffractionCrystalEnvironment().setWavelength(output.getWavelength());
 	}
 	
-	public static void setDetectorFastAxisAngle(DetectorProperties dp, double fastAngleDegrees){
-//		Specifying fast axis orientation
-//		double fastAngleDegrees = 30;
+	/**
+	 * Set the fast axis angle of the detector. N.B this rotates the detector around the beam vector centred on the intersection point of the 
+	 * detector plane and the direct beam, such that the reciprocal space values of the detector remain the same after transformation. Hence, it can be viewed as 
+	 * a transformation of the refined laboratory C/F such that the new laboratory C/F X and Y vectors remain in the same plane as in the original C/F but 
+	 * have different directions. In this way it can be used for assigning the correct orientation of the detector relative to important directions such as beam polarisation. 
+	 * 
+	 * Note that this implementation is limited to the case where the beam defines the z-direction of the reference space.
+	 * @param dp DetectorProperties object to be represented in a new orientation
+	 * @param fastAngleDegrees known roll angle in degrees
+	 */
+	public static void setDetectorFastAxisAngle(DetectorProperties dp, double fastAngleDegrees ) {
+		Vector3d beamVector = dp.getBeamVector();
 		
-		double[] beamCentre = dp.getBeamCentreCoords();
-		double[] normalAngles = dp.getNormalAnglesInDegrees();
-		double beamCentreDistance = dp.getBeamCentreDistance();
+		if (!beamVector.equals(referenceBeamVector)) {
+			logger.error("Unable to fix detector axis when beam vector is not the (0,0,1) in reference CS. Returning metadata as calibrated"); 
+			
+		}
 		
-		dp.setNormalAnglesInDegrees(0,0,0);
-		dp.setDetectorDistance(100);
-		dp.setBeamCentreCoords(new double[]{0,0});
+		Matrix3d ori = dp.getOrientation();
+		Matrix3d fixedOri = new Matrix3d();
+		Matrix3d rollMatrix = new Matrix3d();
+		rollMatrix.rotZ(-Math.toRadians(fastAngleDegrees));
+		fixedOri.mul(rollMatrix, ori);
+		
+		// now compute the new yaw and pitch from the fixedOri matrix (Rx(pitch')Ry(-yaw')Rz(-omega)) where these matrices 
+		//are in their passive forms. N.b. omega is now the angle of rotation about the beam vector that is required to result 
+		//in the correct representation of the detector. Value of omega becomes irrelevant and serves only to give the correct 
+		//representation of the new pitch and yaw angles.		 
+		double sy = fixedOri.getM02();
+		double cy = Math.sqrt(1 - sy * sy);
 
-		double[] bc = new double[] {beamCentre[0], beamCentre[1]};
-		dp.setOrientationEulerZYZ(Math.toRadians(-fastAngleDegrees), Math.toRadians(normalAngles[0]),Math.toRadians(normalAngles[2]));
-		dp.setBeamCentreCoords(bc);
-		double offset = fastAngleDegrees - dp.getNormalAnglesInDegrees()[2];
-		dp.setOrientationEulerZYZ(Math.toRadians(-fastAngleDegrees - offset), Math.toRadians(normalAngles[0]),Math.toRadians(normalAngles[2]));
-		dp.setBeamCentreCoords(bc);
-		dp.setBeamCentreDistance(beamCentreDistance);
+		// cy==0. indicates that the yaw is 90 and hence the pitch and omega are linearly dependent
+		// and hence the rotation can therefore be considered as pitch
+		double pitch  = (cy==0.) ? Math.atan2(-fixedOri.getM21(), fixedOri.getM11()): Math.atan2(fixedOri.getM12(), fixedOri.getM22());
+		//double omega = (cy==0.) ? 0.:Math.atan2(-fixedOri.getM10(), fixedOri.getM00());
 		
-//		md.getDiffractionCrystalEnvironment().setWavelength(output.getWavelength());
+		double yaw = Math.asin(sy);
+		dp.setNormalAnglesInDegrees(Math.toDegrees(yaw), Math.toDegrees(pitch),fastAngleDegrees);
+		
 	}
 	
 	

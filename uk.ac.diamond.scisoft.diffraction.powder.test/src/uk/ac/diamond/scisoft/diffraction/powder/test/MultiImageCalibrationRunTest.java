@@ -5,6 +5,10 @@ import static org.junit.Assert.assertEquals;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.vecmath.Matrix3d;
+import javax.vecmath.Vector3d;
+
+import org.eclipse.dawnsci.analysis.api.diffraction.DetectorProperties;
 import org.eclipse.dawnsci.analysis.dataset.roi.EllipticalROI;
 import org.eclipse.january.dataset.Dataset;
 import org.eclipse.january.dataset.DatasetFactory;
@@ -23,6 +27,75 @@ import uk.ac.diamond.scisoft.diffraction.powder.CalibrationOutput;
 import uk.ac.diamond.scisoft.diffraction.powder.PowderCalibration;
 
 public class MultiImageCalibrationRunTest {
+	
+	
+	@Test
+	public void setDetectorFastAxisTestInPlane() {
+		DetectorProperties dp = getModelDetectorGeometry();
+		dp.setNormalAnglesInDegrees(0., 0., 45.); //set this detector such that it's got a 45 degree roll
+		
+		
+		double rollDeg = 0.; //I want the equivalent representation of this rolled detector for a zero roll angle
+		PowderCalibration.setDetectorFastAxisAngle(dp, rollDeg);
+	
+		Vector3d origin = dp.getOrigin();
+		Assert.assertArrayEquals(new double[] {0.5, 1.0,100.}, new double[] {origin.getX(),origin.getY(),origin.getZ()},1e-6 );
+		Assert.assertEquals(rollDeg, dp.getNormalAnglesInDegrees()[2],1e-6);
+		
+		//now get the equivalent representation of 90 deg roll angle (if the detector is kept still this 
+		//is like rotating the DLS system 90deg clockwise around the z-axis so x+ becomes -Y, and
+		// y becomes X) 
+		rollDeg = 90.;  
+		
+		PowderCalibration.setDetectorFastAxisAngle(dp, rollDeg);
+		origin =dp.getOrigin();
+		Assert.assertEquals(90., dp.getNormalAnglesInDegrees()[2],1e-6);
+		Assert.assertArrayEquals(new double[] {1.0, -0.5,100.}, new double[] {origin.getX(),origin.getY(),origin.getZ()},1e-6 );
+		
+	}
+	
+	@Test
+	public void setDetectorFastAxisTestTwoAngles() {
+		
+		DetectorProperties dp = getModelDetectorGeometry();
+		
+		//combined yaw and roll- the new yaw and pitch provided should be corrected 
+		//45 deg yaw with a 90 deg roll should have an equivalent of a 45 deg pitch when the reference space has zero roll;
+		
+		dp.setNormalAnglesInDegrees(45,0.,90.);
+		double rollDeg = 0.;
+		PowderCalibration.setDetectorFastAxisAngle(dp, rollDeg);
+		double[] newAngles = dp.getNormalAnglesInDegrees();
+		Vector3d origin = dp.getOrigin();
+		Assert.assertArrayEquals(new double[] {0.,45.,0.},newAngles,1e-6);
+		//origin should be [(w/2), cos(45 deg)*(h/2), z0 + cos(45 deg)*(h/2)]
+		Assert.assertArrayEquals(new double[] {0.5,0.707107,100.707107}, new double[] {origin.getX(),origin.getY(),origin.getZ()},1e-5);
+		
+		
+		//combined pitch and roll- the new yaw and pitch provided should be corrected 
+		//45 deg pitch with a -90 deg roll should have an equivalent of a 45 deg yaw, when the reference space has zero roll;
+		dp = getModelDetectorGeometry(); //reset the detector
+		dp.setNormalAnglesInDegrees(0.,45.,-90.); 
+		PowderCalibration.setDetectorFastAxisAngle(dp, rollDeg);
+		origin = dp.getOrigin();
+		newAngles = dp.getNormalAnglesInDegrees();
+		Assert.assertArrayEquals(new double[] {45.,0.,0.},newAngles,1e-6);
+		//origin should be [cos(45 deg)*(w/2), (h/2), z0 + cos(45 deg)*(w/2)]
+		Assert.assertArrayEquals(new double[] {0.707107*0.5,1.0,100+(0.707107*0.5)}, new double[] {origin.getX(),origin.getY(),origin.getZ()},1e-5);
+		
+	}
+	
+	
+	private DetectorProperties getModelDetectorGeometry() {
+		//set up a fake detector with a pixel size of 1 um and 2000 pixels in height and 1000 pixels in width
+		Matrix3d ori = new  Matrix3d();
+		ori.setIdentity();
+		Vector3d origin = new Vector3d(0.5,1.,100.);
+		DetectorProperties dp = new DetectorProperties(origin, 2000, 1000, 1e-3, 1e-3, ori );
+		return dp;
+		
+	}
+	
 	
 	@Ignore("Hard coded paths, currently for TDD, will be a valid test when we have a location for the files.")
 	@Test
