@@ -34,3 +34,4 @@ Import-Package: javax.vecmath,
 Service-Component: OSGI-INF/localServiceManager.xml
 Export-Package: uk.ac.diamond.scisoft.diffraction.powder.rcp.calibration,
  uk.ac.diamond.scisoft.diffraction.powder.rcp.table
+Automatic-Module-Name: uk.ac.diamond.scisoft.diffraction.powder.rcp
