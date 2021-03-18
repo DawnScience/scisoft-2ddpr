@@ -99,6 +99,11 @@ public class CalibratePoints {
 		}
 
 		@Override
+		public int getNoOfParameters() {
+			return parameters == null ? -1 : parameters.length;
+		}
+
+		@Override
 		protected void setNames() {
 		}
 
