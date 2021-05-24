@@ -142,6 +142,8 @@ public class CalibrateEllipses {
 				beamcentres[1][i] = mc[0]*beamC[1]+mc[1];
 			}
 			
+			logger.debug("Fitted beam centre value {} for image {}", beamC[1], i);
+			
 			allMajor[i] = ellipseParams.get(i).majorAxes;
 			allD[i] = DatasetFactory.createFromObject(allDSpacings.get(i));
 			allDeltaDist[i] = DatasetFactory.zeros(size).fill(normDist.getDouble(i));
