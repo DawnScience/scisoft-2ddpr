@@ -92,7 +92,7 @@ public class CalibrantPositioningWidget {
 				}));
 		leftButton.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
 		l = new Label(padComp, SWT.NONE);
-		l.setImage(Activator.getImage("icons/centre.png"));
+		l.setImage(Activator.getImageAndAddDisposeListener(l, "icons/centre.png"));
 		l.setToolTipText("Move calibrant");
 		l.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
 		Button rightButton = new Button(padComp, SWT.ARROW | SWT.RIGHT);
@@ -142,7 +142,7 @@ public class CalibrantPositioningWidget {
 		GridUtils.removeMargins(sizeComp);
 
 		Button plusButton = new Button(sizeComp, SWT.PUSH);
-		plusButton.setImage(Activator.getImage("icons/arrow_out.png"));
+		plusButton.setImage(Activator.getImageAndAddDisposeListener(plusButton, "icons/arrow_out.png"));
 		plusButton.setToolTipText("Make rings larger");
 		plusButton.addMouseListener(new RepeatingMouseAdapter(display,
 				new SlowFastRunnable() {
@@ -157,7 +157,7 @@ public class CalibrantPositioningWidget {
 				}));
 		plusButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true));
 		Button minusButton = new Button(sizeComp, SWT.PUSH);
-		minusButton.setImage(Activator.getImage("icons/arrow_in.png"));
+		minusButton.setImage(Activator.getImageAndAddDisposeListener(minusButton, "icons/arrow_in.png"));
 		minusButton.setToolTipText("Make rings smaller");
 		minusButton.addMouseListener(new RepeatingMouseAdapter(display,
 				new SlowFastRunnable() {
@@ -216,7 +216,7 @@ public class CalibrantPositioningWidget {
 		GridUtils.removeMargins(rotateComp);
 
 		Button clockButton = new Button(rotateComp, SWT.PUSH);
-		clockButton.setImage(Activator.getImage("icons/arrow_rotate_clockwise.png"));
+		clockButton.setImage(Activator.getImageAndAddDisposeListener(clockButton, "icons/arrow_rotate_clockwise.png"));
 		clockButton.setToolTipText("Rotate rings clockwise");
 		clockButton.addMouseListener(new RepeatingMouseAdapter(display,
 				new SlowFastRunnable() {
@@ -231,7 +231,7 @@ public class CalibrantPositioningWidget {
 				}));
 		clockButton.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false));
 		Button antiClockButton = new Button(rotateComp, SWT.PUSH);
-		antiClockButton.setImage(Activator.getImage("icons/arrow_rotate_anticlockwise.png"));
+		antiClockButton.setImage(Activator.getImageAndAddDisposeListener(antiClockButton, "icons/arrow_rotate_anticlockwise.png"));
 		antiClockButton.setToolTipText("Rotate rings anti-clockwise");
 		antiClockButton.addMouseListener(new RepeatingMouseAdapter(display,
 				new SlowFastRunnable() {

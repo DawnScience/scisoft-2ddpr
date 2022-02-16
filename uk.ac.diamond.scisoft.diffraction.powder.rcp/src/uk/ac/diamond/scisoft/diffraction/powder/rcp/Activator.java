@@ -2,6 +2,7 @@ package uk.ac.diamond.scisoft.diffraction.powder.rcp;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Widget;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
@@ -53,18 +54,34 @@ public class Activator extends AbstractUIPlugin {
 		return plugin;
 	}
 	
+	/**
+	 * Get image descriptor from given path
+	 * @param path plugin relative path of image file
+	 * @return image descriptor
+	 */
 	public static ImageDescriptor getImageDescriptor(String path) {
 		return imageDescriptorFromPlugin(PLUGIN_ID, path);
 	}
 
 	/**
-	 * Creates the image, this should be disposed later.
-	 * @param path
-	 * @return Image
+	 * Get image from given path. The caller should dispose of it
+	 * @param path plugin relative path of image file
+	 * @return image
 	 */
 	public static Image getImage(String path) {
-		ImageDescriptor des = imageDescriptorFromPlugin(PLUGIN_ID, path);
-		return des.createImage();
+		return getImageDescriptor(path).createImage();
+	}
+
+	/**
+	 * Get image from given path and add dispose listener so caller does not need to dispose
+	 * @param w widget
+	 * @param path plugin relative path of image file
+	 * @return image
+	 */
+	public static Image getImageAndAddDisposeListener(Widget w, String path) {
+		Image i = getImageDescriptor(path).createImage();
+		w.addDisposeListener(e -> i.dispose());
+		return i;
 	}
 
 	public static <T> T getService(final Class<T> serviceClass) {
