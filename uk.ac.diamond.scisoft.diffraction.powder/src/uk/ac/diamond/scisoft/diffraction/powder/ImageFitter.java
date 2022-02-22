@@ -42,7 +42,8 @@ public class ImageFitter {
 	public static double[] fit(final Dataset major, final Dataset x, final Dataset y, final double[] line, double pixel){
 
 		//TODO check same length
-		int last = major.getSize()-1;
+		int last = -1;
+		
 		double xRange = Math.abs(x.getDouble(last)-x.getDouble(0))/10;
 		
 		if (xRange == 0) {
@@ -52,7 +53,7 @@ public class ImageFitter {
 		double xDir = Math.signum(x.getDouble(last)-x.getDouble(0));
 		
 		if (xDir == 0) {
-			Math.signum(x.getDouble(last)-x.getDouble(last-1)-x.getDouble(0)-x.getDouble(1));
+			xDir = Math.signum(x.getDouble(last)-x.getDouble(last-1)-x.getDouble(0)-x.getDouble(1));
 		}
 		
 		double xApprox = x.getDouble(0);
@@ -72,61 +73,76 @@ public class ImageFitter {
 		};
 		
 		Dataset errors = DatasetFactory.zeros(xApproxGuess);
-		errors.iadd(Double.MAX_VALUE);
+		errors.fill(Double.MAX_VALUE);
 		PointValuePair result;
 		double offset = 1e12;
 		double[] scale = new double[]{offset*0.25,offset*0.25};
 		for (int i = 0; i < xApproxGuess.count(); i++) {
 			
 			double[] initParam = new double[]{Math.pow(major.getDouble(last),2),xApproxGuess.getDouble(i)};
+			double[] lowerb = new double[]{Double.NEGATIVE_INFINITY,Double.NEGATIVE_INFINITY};
+			double[] upperb = new double[]{Double.POSITIVE_INFINITY,Double.POSITIVE_INFINITY};
 			
 			try {
 				
-				if (x.getDouble(0) < x.getDouble(last)) {
-					double[] lowerb = new double[]{Double.NEGATIVE_INFINITY,Double.NEGATIVE_INFINITY};
-					double[] upperb = new double[]{Double.POSITIVE_INFINITY,x.getDouble(0)};
-					MultivariateFunctionPenaltyAdapter of = new MultivariateFunctionPenaltyAdapter(fun, lowerb, upperb, offset, scale);
-					
-					result = opt.optimize(new InitialGuess(initParam), GoalType.MINIMIZE,
-							new ObjectiveFunction(of), new MaxEval(MAX_EVAL),
-							new NelderMeadSimplex(2));	
+				if (xDir == 1) {
+					upperb[1] = x.getDouble(0);
 				} else {
-					double[] lowerb = new double[]{Double.NEGATIVE_INFINITY,x.getDouble(0)};
-					double[] upperb = new double[]{Double.POSITIVE_INFINITY,Double.POSITIVE_INFINITY};
-					MultivariateFunctionPenaltyAdapter of = new MultivariateFunctionPenaltyAdapter(fun, lowerb, upperb, offset, scale);
-					
-					result = opt.optimize(new InitialGuess(initParam), GoalType.MINIMIZE,
-							new ObjectiveFunction(of), new MaxEval(MAX_EVAL),
-							new NelderMeadSimplex(2));	
+					lowerb[1] = x.getDouble(0);
 				}
+				
+				MultivariateFunctionPenaltyAdapter of = new MultivariateFunctionPenaltyAdapter(fun, lowerb, upperb, offset, scale);
+				
+				result = opt.optimize(new InitialGuess(initParam), GoalType.MINIMIZE,
+						new ObjectiveFunction(of), new MaxEval(MAX_EVAL),
+						new NelderMeadSimplex(2));	
 				
 				double[] estimates = result.getPointRef();
 				Dataset lineData = calculateLine(x, y, line, estimates);
 				errors.set(major.residual(lineData), i);
 				
 			} catch (Exception e) {
-				//to log
+				//only one fit needs to work, so fine to ignore
 			}
 		}
 		
 		double[] initParam = new double[]{Math.pow(major.getDouble(last),2),xApproxGuess.getDouble(errors.minPos())};
+
+		double[] lowerb = new double[]{Double.NEGATIVE_INFINITY,Double.NEGATIVE_INFINITY};
+		double[] upperb = new double[]{Double.POSITIVE_INFINITY,Double.POSITIVE_INFINITY};
 		
-		if (x.getDouble(0) < x.getDouble(last)) {
-			double[] lowerb = new double[]{Double.NEGATIVE_INFINITY,Double.NEGATIVE_INFINITY};
-			double[] upperb = new double[]{Double.POSITIVE_INFINITY,x.getDouble(0)};
-			MultivariateFunctionPenaltyAdapter of = new MultivariateFunctionPenaltyAdapter(fun, lowerb, upperb, offset, scale);
-			
-			result = opt.optimize(new InitialGuess(initParam), GoalType.MINIMIZE,
-					new ObjectiveFunction(of), new MaxEval(MAX_EVAL),
-					new NelderMeadSimplex(2));	
+		if (xDir == 1) {
+			upperb[1] = x.getDouble(0);
 		} else {
-			double[] lowerb = new double[]{Double.NEGATIVE_INFINITY,x.getDouble(0)};
-			double[] upperb = new double[]{Double.POSITIVE_INFINITY,Double.POSITIVE_INFINITY};
-			MultivariateFunctionPenaltyAdapter of = new MultivariateFunctionPenaltyAdapter(fun, lowerb, upperb, offset, scale);
+			lowerb[1] = x.getDouble(0);
+		}
+		
+		MultivariateFunctionPenaltyAdapter of = new MultivariateFunctionPenaltyAdapter(fun, lowerb, upperb, offset, scale);
+		
+		result = opt.optimize(new InitialGuess(initParam), GoalType.MINIMIZE,
+				new ObjectiveFunction(of), new MaxEval(MAX_EVAL),
+				new NelderMeadSimplex(2));	
+		
+		//when the beam centre variation is small the bounds may not be correct
+		//if the variation in the beam centre is small but the different between the
+		//fit and the starting beam centre is big, flip the bounds and fit again
+		if (x.peakToPeak(true).doubleValue() < 1 
+				&& Math.abs(result.getPointRef()[1] - xApproxGuess.getDouble(errors.minPos())) > 50) {
+			
+			if (xDir == 1) {
+				lowerb[1] = x.getDouble(0);
+			    upperb[1] = Double.POSITIVE_INFINITY;
+			} else {
+				lowerb[1] = Double.NEGATIVE_INFINITY;
+				upperb[1] = x.getDouble(0);
+			}
+			
+			of = new MultivariateFunctionPenaltyAdapter(fun, lowerb, upperb, offset, scale);
 			
 			result = opt.optimize(new InitialGuess(initParam), GoalType.MINIMIZE,
 					new ObjectiveFunction(of), new MaxEval(MAX_EVAL),
-					new NelderMeadSimplex(2));	
+					new NelderMeadSimplex(2));
+			
 		}
 		
 		return result.getPointRef();
