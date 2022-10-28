@@ -41,7 +41,7 @@ public class BruteStandardMatcher {
 	 */
 	public static Map<Double,Double> bruteForceMatchStandards(Dataset radius, Dataset integrated, double[] dSpace, double pixelSize) {
 		
-		double bestssq = Double.MIN_VALUE;
+		double bestssq = Double.NEGATIVE_INFINITY;
 		double[] bestValues = new double[] {energies[0],minDistance};
 		
 		DetectorProperties dp = new DetectorProperties(minDistance, 0, 0, radius.getSize(), radius.getSize(), pixelSize, pixelSize);
