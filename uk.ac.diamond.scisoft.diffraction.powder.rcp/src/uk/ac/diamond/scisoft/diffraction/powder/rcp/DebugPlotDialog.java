@@ -28,7 +28,6 @@ public class DebugPlotDialog extends Dialog {
 			ActionBarWrapper actionBarWrapper = ActionBarWrapper.createActionBars(container, null);
 			plottingSystem = PlottingFactory.createPlottingSystem();
 			plottingSystem.createPlotPart(container, "", actionBarWrapper, PlotType.IMAGE, null);
-			plottingSystem.setTitle("");
 			plottingSystem.getPlotComposite().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		} catch (Exception e1) {
 			

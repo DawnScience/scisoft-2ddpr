@@ -31,7 +31,6 @@ public class DiffractionPlotView extends ViewPart {
 				plottingSystem = PlottingFactory.createPlottingSystem();
 				plottingSystem.createPlotPart(parent, DiffractionPlotView.DIFFRACTION_PLOT_TITLE, 
 						this.getViewSite().getActionBars(), PlotType.IMAGE, this);
-				plottingSystem.setTitle("");
 			}
 		} catch (Exception e1) {
 			logger .error("Could not create plotting system:" + e1);
