@@ -1,6 +1,5 @@
 package uk.ac.diamond.scisoft.diffraction.powder.rcp.handlers;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,14 +8,11 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PlatformUI;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
 
-import uk.ac.diamond.scisoft.diffraction.powder.rcp.LocalServiceManager;
-import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
+import uk.ac.diamond.osgi.services.ServiceProvider;
 
 public class OpenPowderAction extends Action {
 	
@@ -53,14 +49,11 @@ public class OpenPowderAction extends Action {
 		ISelection selection = provider.getSelection();
 		if (!selection.isEmpty()) {
 			IStructuredSelection sSelection = (IStructuredSelection) selection;
-			if (sSelection.size() == 1 && sSelection.getFirstElement() instanceof IFile) {
-
-				IFile file = (IFile)sSelection.getFirstElement();
+			if (sSelection.size() == 1 && sSelection.getFirstElement() instanceof IFile file) {
 				String loc = file.getRawLocation().toOSString();
-				
 				String[] fullNames = {loc};
 				
-				EventAdmin eventAdmin = LocalServiceManager.getEventAdmin();
+				EventAdmin eventAdmin = ServiceProvider.getService(EventAdmin.class);
 				Map<String,String[]> props = new HashMap<>();
 				props.put("paths", fullNames);
 				eventAdmin.postEvent(new Event("org/dawnsci/events/file/powder/OPEN", props));

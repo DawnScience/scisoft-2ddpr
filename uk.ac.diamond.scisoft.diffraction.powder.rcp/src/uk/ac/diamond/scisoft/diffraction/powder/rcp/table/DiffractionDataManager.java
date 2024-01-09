@@ -16,6 +16,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
+import org.dawnsci.datavis.api.IRecentPlaces;
 import org.dawnsci.plotting.tools.diffraction.DiffractionDefaultMetadata;
 import org.dawnsci.plotting.tools.diffraction.DiffractionUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -48,9 +49,9 @@ import org.osgi.service.event.EventHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import uk.ac.diamond.osgi.services.ServiceProvider;
 import uk.ac.diamond.scisoft.diffraction.powder.DiffractionImageData;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.Activator;
-import uk.ac.diamond.scisoft.diffraction.powder.rcp.LocalServiceManager;
 
 public class DiffractionDataManager {
 	
@@ -222,7 +223,7 @@ public class DiffractionDataManager {
 			
 			
 			try {
-				dh = LocalServiceManager.getLoaderService().getData(path, null);
+				dh = ServiceProvider.getService(ILoaderService.class).getData(path, null);
 
 			} catch (Exception e1) {
 				model.remove(data);
@@ -250,9 +251,9 @@ public class DiffractionDataManager {
 			
 			if (image == null &&  fullName == null) {
 				try {
-					IMetadata metaData = LocalServiceManager.getLoaderService().getMetadata(path, null);
+					IMetadata metaData = ServiceProvider.getService(ILoaderService.class).getMetadata(path, null);
 					final Map<String, int[]> dataShapes = metaData.getDataShapes();
-					final List<String> dataNames = new ArrayList<String>();
+					final List<String> dataNames = new ArrayList<>();
 					for (String name : dataShapes.keySet()) {
 						int[] shape = dataShapes.get(name);
 						if (shape == null) continue;
@@ -317,7 +318,7 @@ public class DiffractionDataManager {
 				}
 			}
 
-			LocalServiceManager.getRecentPlaces().addFiles(path);
+			ServiceProvider.getService(IRecentPlaces.class).addFiles(path);
 
 			return setUpImage(path, outName, data) ? Status.OK_STATUS : Status.CANCEL_STATUS;
 
@@ -334,8 +335,9 @@ public class DiffractionDataManager {
 		ILazyDataset ld = null;
 		IDataset dist = null;
 		try {
-			ld = LocalServiceManager.getLoaderService().getData(path, null).getLazyDataset(datasetNames[0]);
-			dist = LocalServiceManager.getLoaderService().getData(path, null).getLazyDataset(datasetNames[1]).getSlice();
+			final ILoaderService ldr = ServiceProvider.getService(ILoaderService.class);
+			ld = ldr.getData(path, null).getLazyDataset(datasetNames[0]);
+			dist = ldr.getData(path, null).getLazyDataset(datasetNames[1]).getSlice();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -389,17 +391,13 @@ public class DiffractionDataManager {
 	}
 
 	private boolean setUpImage(String path, String datasetName, DiffractionImageData data){
-			
 		ILazyDataset ld = null;
 		try {
-			if (datasetName != null) {
-				ld = LocalServiceManager.getLoaderService().getData(path, null).getLazyDataset(datasetName);
-			} else {
-				ld = LocalServiceManager.getLoaderService().getData(path, null).getLazyDataset(0);
-			}
+			IDataHolder dataHolder = ServiceProvider.getService(ILoaderService.class).getData(path, null);
+			ld = datasetName == null ? dataHolder.getLazyDataset(0) : dataHolder.getLazyDataset(datasetName);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Could not get dataset ''{}'' at path ''{}''", datasetName, path, e);
+			return false;
 		}
 		
 		if (ld == null) return false;

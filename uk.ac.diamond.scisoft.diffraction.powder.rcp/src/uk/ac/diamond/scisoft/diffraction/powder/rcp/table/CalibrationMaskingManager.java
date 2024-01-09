@@ -6,13 +6,17 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.dawnsci.analysis.api.io.IDataHolder;
+import org.eclipse.dawnsci.analysis.api.io.ILoaderService;
 import org.eclipse.dawnsci.analysis.dataset.mask.MaskCircularBuffer;
 import org.eclipse.dawnsci.plotting.api.IPlottingSystem;
+import org.eclipse.dawnsci.plotting.api.trace.IImageTrace;
+import org.eclipse.dawnsci.plotting.api.trace.ITrace;
 import org.eclipse.january.MetadataException;
 import org.eclipse.january.dataset.BooleanDataset;
 import org.eclipse.january.dataset.Comparisons;
@@ -31,15 +35,13 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.dialogs.ListDialog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.eclipse.dawnsci.plotting.api.trace.IImageTrace;
-import org.eclipse.dawnsci.plotting.api.trace.ITrace;
 
+import uk.ac.diamond.osgi.services.ServiceProvider;
 import uk.ac.diamond.scisoft.diffraction.powder.DiffractionImageData;
 import uk.ac.diamond.scisoft.diffraction.powder.SimpleCalibrationParameterModel;
-import uk.ac.diamond.scisoft.diffraction.powder.rcp.LocalServiceManager;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.MaskChangedEvent;
-import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.MaskingOptionsGroup.MaskState;
 import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.MaskingOptionsGroup;
+import uk.ac.diamond.scisoft.diffraction.powder.rcp.widget.MaskingOptionsGroup.MaskState;
 
 public class CalibrationMaskingManager {
 
@@ -253,7 +255,7 @@ public class CalibrationMaskingManager {
 
 			IDataHolder dh = null;
 			try {
-				dh = LocalServiceManager.getLoaderService().getData(path, null);
+				dh = ServiceProvider.getService(ILoaderService.class).getData(path, null);
 			} catch (Exception e1) {
 				return Status.CANCEL_STATUS;
 			}
@@ -261,9 +263,9 @@ public class CalibrationMaskingManager {
 			final String[] outName = new String[1];
 
 			try {
-				IMetadata metaData = LocalServiceManager.getLoaderService().getMetadata(path, null);
+				IMetadata metaData = ServiceProvider.getService(ILoaderService.class).getMetadata(path, null);
 				final Map<String, int[]> dataShapes = metaData.getDataShapes();
-				final List<String> dataNames = new ArrayList<String>();
+				final List<String> dataNames = new ArrayList<>();
 				for (String name : dataShapes.keySet()) {
 					int[] shape = dataShapes.get(name);
 					if (shape == null)

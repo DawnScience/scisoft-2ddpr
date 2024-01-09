@@ -9,16 +9,12 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.ui.IViewPart;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
-import org.eclipse.ui.PlatformUI;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
 
-import uk.ac.diamond.scisoft.diffraction.powder.rcp.LocalServiceManager;
-import uk.ac.diamond.scisoft.diffraction.powder.rcp.table.DiffractionDataManager;
+import uk.ac.diamond.osgi.services.ServiceProvider;
 
 public class OpenLocalFileAction extends Action implements
 		IWorkbenchWindowActionDelegate {
@@ -44,7 +40,7 @@ public class OpenLocalFileAction extends Action implements
 			String[] fullNames = new String[names.length];
 			for (int i = 0; i < names.length; i++) fullNames[i] = dialog.getFilterPath() + File.separator + names[i];
 			
-			EventAdmin eventAdmin = LocalServiceManager.getEventAdmin();
+			EventAdmin eventAdmin = ServiceProvider.getService(EventAdmin.class);
 			Map<String,String[]> props = new HashMap<>();
 			props.put("paths", fullNames);
 			eventAdmin.postEvent(new Event("org/dawnsci/events/file/powder/OPEN", props));
