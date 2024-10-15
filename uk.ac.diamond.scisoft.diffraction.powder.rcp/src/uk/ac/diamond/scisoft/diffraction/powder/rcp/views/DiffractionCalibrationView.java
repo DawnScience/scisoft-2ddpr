@@ -377,6 +377,28 @@ public class DiffractionCalibrationView extends ViewPart {
 	private void createToolbarActions() {
 		IToolBarManager toolBarMan = this.getViewSite().getActionBars().getToolBarManager();
 		
+		IAction exportPONIAction = new Action("Export metadata to PONI file") {
+			@Override
+			public void run() {
+				try {
+					FileDialog dialog = new FileDialog(Display.getDefault().getActiveShell(), SWT.SAVE);
+
+					dialog.setFilterPath(lastPath);
+					String selectFile = dialog.open(); // use the return value as a check for whether the dialog was cancelled
+					if (selectFile != null) {
+						lastPath = dialog.getFilterPath();
+						String fn = lastPath + File.separator + dialog.getFileName();
+						DiffractionCalibrationUtils.saveToPONIFile(manager, selectFile);
+					}
+				} catch (Exception e) {
+					MessageDialog.openError(Display.getDefault().getActiveShell(), "File save error!", "Could not save calibration file! (Do you have write access to this folder?)");
+					logger.error("Problem opening export!", e);
+				}
+			}
+		};
+		
+		exportPONIAction.setImageDescriptor(Activator.getImageDescriptor("icons/stack.png"));
+		
 		IAction wizAction = new Action("Wizard") {
 			@Override
 			public void run() {
@@ -506,6 +528,7 @@ public class DiffractionCalibrationView extends ViewPart {
 		};
 		resetTableAction.setImageDescriptor(Activator.getImageDescriptor("icons/table_delete.png"));
 
+		toolBarMan.add(exportPONIAction);
 		toolBarMan.add(wizAction);
 		toolBarMan.add(importAction);
 		toolBarMan.add(exportAction);

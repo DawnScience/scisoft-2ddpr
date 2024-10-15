@@ -9,6 +9,7 @@
 
 package uk.ac.diamond.scisoft.diffraction.powder.rcp.calibration;
 
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -44,6 +45,7 @@ import org.eclipse.swt.widgets.Display;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import uk.ac.diamond.scisoft.analysis.diffraction.powder.PONIDiffractionMetadataDescriptor;
 import uk.ac.diamond.scisoft.analysis.fitting.Fitter;
 import uk.ac.diamond.scisoft.analysis.fitting.functions.Polynomial;
 import uk.ac.diamond.scisoft.diffraction.powder.DiffractionImageData;
@@ -497,6 +499,22 @@ public class DiffractionCalibrationUtils {
 		DiffractionImageData cd = manager.getCurrentData();
 		NexusCalibrationExportUtils.saveToNexusFile(cd.getImage(), cd.getMetaData(), cd.getCalibrationInfo(), filepath);
 	}
+	
+	public static void saveToPONIFile(DiffractionDataManager manager, String filepath) throws Exception {
+		
+		if (!hasExtension(filepath)) {
+			filepath += ".poni";
+		}
+		
+		DiffractionImageData cd = manager.getCurrentData();
+		
+		PONIDiffractionMetadataDescriptor ponid = new PONIDiffractionMetadataDescriptor(cd.getMetaData());
+		
+		try (FileOutputStream outStream = new FileOutputStream(filepath)) {
+			outStream.write(ponid.getStringDescription().getBytes());
+		}
+	}
+	
 	
 	private static boolean hasExtension(String filePath) {
 		int lastIndexOf = filePath.lastIndexOf('.');
